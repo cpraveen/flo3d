@@ -22,6 +22,8 @@ class Face
       int nvertex[2];
       Vec normal;
       int type;
+
+      bool operator== (const Face& face) const;
 };
 
 class Grid
@@ -31,6 +33,8 @@ class Grid
       unsigned int n_vertex;
       unsigned int n_cell;
       unsigned int n_face;
+      double min_cell_volume;
+      double max_cell_volume;
       std::vector<Vec>  vertex;
       std::vector<Cell> cell;
       std::vector<Face> face;
@@ -42,6 +46,8 @@ class Grid
       void preproc ();
       void compute_cell_volume ();
       void compute_face_normal ();
+      void add_face (const Face& new_face);
+      void make_faces ();
       void find_cell_surr_cell ();
       void info ();
 };

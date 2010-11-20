@@ -3,12 +3,28 @@
 
 #include "vec.h"
 
+const double GAMMA = 1.4;
+
 // Primitive variable
 class PrimVar
 {
    public:
       double density, pressure;
       Vec    velocity;
+};
+
+class Flux
+{
+   public:
+      double mass_flux;
+      Vec    momentum_flux;
+      double energy_flux;
+
+      Flux& operator+= (const Flux& flux);
+      Flux& operator-= (const Flux& flux);
+      Flux  operator*  (const double scalar);
+
+      void zero ();
 };
 
 // Conserved variable
@@ -21,23 +37,25 @@ class ConVar
       ConVar& operator+= (const ConVar& con_var);
       ConVar  operator+  (const ConVar& con_var) const;
       ConVar  operator-  (const ConVar& con_var) const;
-      ConVar  operator*  (const double scalar) const;
+      ConVar  operator-  (const Flux&   flux) const;
+      ConVar  operator*  (const double  scalar) const;
 
       double density, energy;
       Vec    momentum;
 
       void zero ();
+      double pressure () const;
 
 };
 
 class Material
 {
    public:
-      static const unsigned int n_var = 5;
-      static const double gamma = 1.4;
 
       ConVar  prim2con (const PrimVar& prim_var);
       PrimVar con2prim (const ConVar&  con_var);
+      Flux    num_flux (const ConVar&, const ConVar&, const Vec);
+      Flux    slip_flux (const ConVar& state, const Vec& normal);
 };
 
 #endif
