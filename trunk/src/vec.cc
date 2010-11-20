@@ -19,11 +19,20 @@ Vec& Vec::operator= (const double scalar){
    return *this;
 }
 
-// Assign one vector to another
+// Add vector to given vector: this = this + rhs
 Vec& Vec::operator+= (const Vec rhs){
    x += rhs.x;
    y += rhs.y;
    z += rhs.z;
+
+   return *this;
+}
+
+// Subtract vector from given vector: this = this - rhs
+Vec& Vec::operator-= (const Vec rhs){
+   x -= rhs.x;
+   y -= rhs.y;
+   z -= rhs.z;
 
    return *this;
 }

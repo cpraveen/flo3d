@@ -22,12 +22,18 @@ class FiniteVolume
       std::vector<ConVar> solution;
       std::vector<ConVar> solution_old;
       std::vector<ConVar> solution_vertex;
-      std::vector<ConVar> residual;
+      std::vector<Flux>   residual;
       std::vector<double> dt;
+
+      std::vector<ConVar> reconstruct (const unsigned int,
+                                       const unsigned int,
+                                       const unsigned int,
+                                       const unsigned int);
 
       void initialize ();
       void interpolate_vertex ();
       void compute_residual ();
+      void compute_dt ();
       void update_solution ();
       void solve ();
       void output ();
