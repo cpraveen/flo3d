@@ -24,11 +24,12 @@ class FiniteVolume
       std::vector<ConVar> solution_vertex;
       std::vector<Flux>   residual;
       std::vector<double> dt;
+      double              dt_global;
 
       std::vector<ConVar> reconstruct (const unsigned int,
                                        const unsigned int,
                                        const unsigned int,
-                                       const unsigned int);
+                                       const unsigned int) const;
 
       void initialize ();
       void interpolate_vertex ();
