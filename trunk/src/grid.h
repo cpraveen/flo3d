@@ -9,19 +9,19 @@ class Cell
 {
    public:
       unsigned int vertex[4];
-      int neighbour[4];
-      double volume;
-      double weight[4];
+      int          neighbour[4];
+      double       volume;
+      double       weight[4];
 };
 
 class Face
 {
    public:
       unsigned int vertex[3];
-      int ncell[2];
-      int nvertex[2];
-      Vec normal;
-      int type;
+      int          lcell, rcell;
+      int          lvertex, rvertex;
+      Vec          normal;
+      int          type;
 
       bool operator== (const Face& face) const;
 };

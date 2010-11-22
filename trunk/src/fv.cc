@@ -44,7 +44,7 @@ void FiniteVolume::interpolate_vertex ()
 vector<ConVar> FiniteVolume::reconstruct (const unsigned int vl,
                                           const unsigned int cl,
                                           const unsigned int vr,
-                                          const unsigned int cr)
+                                          const unsigned int cr) const
 {
    vector<ConVar> state(2);
 
@@ -72,10 +72,10 @@ void FiniteVolume::compute_residual ()
    {
       if(param.bc[grid.face[i].type] == interior)
       {
-         vl = grid.face[i].nvertex[0];
-         vr = grid.face[i].nvertex[1];
-         cl = grid.face[i].ncell[0];
-         cr = grid.face[i].ncell[1];
+         vl = grid.face[i].lvertex;
+         vr = grid.face[i].rvertex;
+         cl = grid.face[i].lcell;
+         cr = grid.face[i].rcell;
          state = reconstruct ( vl, cl, vr, cr );
          flux  = material.num_flux ( state[0], state[1], grid.face[i].normal );
          residual[cl] += flux;
@@ -83,8 +83,15 @@ void FiniteVolume::compute_residual ()
       }
       else if(param.bc[grid.face[i].type] == slip)
       {
-         vl = grid.face[i].nvertex[0];
-         cl = grid.face[i].ncell[0];
+         vl = grid.face[i].lvertex;
+         cl = grid.face[i].lcell;
+         flux = material.slip_flux ( solution[cl], grid.face[i].normal );
+         residual[cl] += flux;
+      }
+      else if(param.bc[grid.face[i].type] == farfield)
+      {
+         vl = grid.face[i].lvertex;
+         cl = grid.face[i].lcell;
          flux = material.slip_flux ( solution[cl], grid.face[i].normal );
          residual[cl] += flux;
       }
@@ -101,6 +108,36 @@ void FiniteVolume::compute_dt ()
 {
    for(unsigned int i=0; i<grid.n_cell; ++i)
       dt[i] = 0.0;
+
+   for(unsigned int i=0; i<grid.n_face; ++i)
+   {
+      double area = grid.face[i].normal.norm();
+
+      unsigned int cl = grid.face[i].lcell;
+      PrimVar prim_left = material.con2prim(solution[cl]);
+      double vel_normal_left = prim_left.velocity * grid.face[i].normal;
+      double c_left = sqrt( GAMMA * prim_left.pressure / prim_left.density );
+
+      dt[cl] += fabs(vel_normal_left) + c_left * area;
+
+      if(grid.face[i].type == -1) // Right cell exists only for interior face
+      {
+         unsigned int cr = grid.face[i].rcell;
+         PrimVar prim_right = material.con2prim(solution[cr]);
+         double vel_normal_right = prim_right.velocity * grid.face[i].normal;
+         double c_right = sqrt( GAMMA * prim_right.pressure / prim_right.density );
+
+         dt[cr] += fabs(vel_normal_right) + c_right * area;
+      }
+   }
+
+   dt_global = 1.0e20;
+   for(unsigned int i=0; i<grid.n_cell; ++i)
+   {
+      dt[i] = param.cfl * grid.cell[i].volume / dt[i];
+      dt_global = min( dt_global, dt[i] );
+   }
+
 }
 
 // Update solution by RK scheme
@@ -130,9 +167,11 @@ void FiniteVolume::solve ()
       update_solution ();
 
       ++iter;
+      time += dt_global;
    }
 }
 
+// Save solution to file
 void FiniteVolume::output ()
 {
 }

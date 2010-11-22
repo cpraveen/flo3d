@@ -60,22 +60,22 @@ void Grid::add_face (const Face& new_face)
    // Loop over all existing faces
    while (!found && n < n_face)
    {
-      if(face[n].ncell[0]==-1) // Boundary face not filled yet
+      if(face[n].lcell==-1) // Boundary face not filled yet
       {
          if(face[n] == new_face)
          {
-            face[n].ncell[0]   = new_face.ncell[0];
-            face[n].nvertex[0] = new_face.nvertex[0];
+            face[n].lcell   = new_face.lcell;
+            face[n].lvertex = new_face.lvertex;
 
             found = true;
          }
       }
-      else if(face[n].ncell[1] == -1) // Boundary or interior face
+      else if(face[n].rcell == -1) // Boundary or interior face
       {
          if(face[n] == new_face)
          {
-            face[n].ncell[1]   = new_face.ncell[0];
-            face[n].nvertex[1] = new_face.nvertex[0];
+            face[n].rcell   = new_face.lcell;
+            face[n].rvertex = new_face.lvertex;
 
             found = true;
          }
@@ -91,27 +91,11 @@ void Grid::add_face (const Face& new_face)
       face[n_face].vertex [0] = new_face.vertex [0];
       face[n_face].vertex [1] = new_face.vertex [1];
       face[n_face].vertex [2] = new_face.vertex [2];
-      face[n_face].ncell  [0] = new_face.ncell  [0]; // left cell
-      face[n_face].nvertex[0] = new_face.nvertex[0]; // left vertex
-      face[n_face].ncell  [1] = -1; // right cell to be found
-      face[n_face].nvertex[1] = -1; // right vertex to be found
+      face[n_face].lcell      = new_face.lcell; // left cell
+      face[n_face].lvertex    = new_face.lvertex; // left vertex
+      face[n_face].rcell      = -1; // right cell to be found
+      face[n_face].rvertex    = -1; // right vertex to be found
       ++n_face;
-   }
-
-}
-
-// Find cells surrounding a cell
-void Grid::find_cell_surr_cell ()
-{
-   unsigned int i;
-
-   // First put all neighbours to -1
-   for(i=0; i<n_cell; ++i)
-   {
-      cell[i].neighbour[0] = -1;
-      cell[i].neighbour[1] = -1;
-      cell[i].neighbour[2] = -1;
-      cell[i].neighbour[3] = -1;
    }
 
 }
@@ -124,10 +108,10 @@ void Grid::make_faces ()
 
    for(i=0; i<n_face; ++i)
    {
-      face[i].ncell[0]   = -1;
-      face[i].ncell[1]   = -1;
-      face[i].nvertex[0] = -1;
-      face[i].nvertex[1] = -1;
+      face[i].lcell   = -1;
+      face[i].rcell   = -1;
+      face[i].lvertex = -1;
+      face[i].rvertex = -1;
    }
 
    Face new_face;
@@ -138,32 +122,32 @@ void Grid::make_faces ()
       new_face.vertex[0] = cell[i].vertex[0];
       new_face.vertex[1] = cell[i].vertex[2];
       new_face.vertex[2] = cell[i].vertex[1];
-      new_face.ncell[0]  = i;
-      new_face.nvertex[0]= cell[i].vertex[3];
+      new_face.lcell     = i;
+      new_face.lvertex   = cell[i].vertex[3];
       add_face (new_face);
 
       // second face
       new_face.vertex[0] = cell[i].vertex[1];
       new_face.vertex[1] = cell[i].vertex[2];
       new_face.vertex[2] = cell[i].vertex[3];
-      new_face.ncell[0]  = i;
-      new_face.nvertex[0]= cell[i].vertex[0];
+      new_face.lcell     = i;
+      new_face.lvertex   = cell[i].vertex[0];
       add_face (new_face);
 
       // third face
       new_face.vertex[0] = cell[i].vertex[2];
       new_face.vertex[1] = cell[i].vertex[0];
       new_face.vertex[2] = cell[i].vertex[3];
-      new_face.ncell[0]  = i;
-      new_face.nvertex[0]= cell[i].vertex[1];
+      new_face.lcell     = i;
+      new_face.lvertex   = cell[i].vertex[1];
       add_face (new_face);
 
       // fourth face
       new_face.vertex[0] = cell[i].vertex[1];
       new_face.vertex[1] = cell[i].vertex[3];
       new_face.vertex[2] = cell[i].vertex[0];
-      new_face.ncell[0]  = i;
-      new_face.nvertex[0]= cell[i].vertex[2];
+      new_face.lcell     = i;
+      new_face.lvertex   = cell[i].vertex[2];
       add_face (new_face);
 
    }
@@ -174,11 +158,29 @@ void Grid::make_faces ()
    for(i=0; i<n_face; ++i)
    {
       // Check left cell exists
-      assert(face[i].ncell[0] != -1);
+      assert(face[i].lcell != -1);
 
       if(face[i].type == -1) // Interior face, check right cell
-         assert(face[i].ncell[1] != -1);
+         assert(face[i].rcell != -1);
    }
+}
+
+// Find cells surrounding a cell
+void Grid::find_cell_surr_cell ()
+{
+   cout << "TODO: cell surrounding cell" << endl;
+
+   unsigned int i;
+
+   // First put all neighbours to -1
+   for(i=0; i<n_cell; ++i)
+   {
+      cell[i].neighbour[0] = -1;
+      cell[i].neighbour[1] = -1;
+      cell[i].neighbour[2] = -1;
+      cell[i].neighbour[3] = -1;
+   }
+
 }
 
 // Preprocess the grid
