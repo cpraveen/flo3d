@@ -139,9 +139,9 @@ Flux Material::num_flux (const ConVar& state_left,
    PrimVar prim_right = con2prim(state_right);
 
    // Enthalpy
-   double h_left = GAMMA*prim_left.pressure/prim_left.density/(GAMMA-1.0)
+   double h_left = GAMMA*prim_left.pressure/(prim_left.density*(GAMMA-1.0))
       + 0.5 * prim_left.velocity.square();
-   double h_right = GAMMA*prim_right.pressure/prim_right.density/(GAMMA-1.0)
+   double h_right = GAMMA*prim_right.pressure/(prim_right.density*(GAMMA-1.0))
       + 0.5 * prim_right.velocity.square();
 
    double rho_left_sqrt = sqrt(prim_left.density);
@@ -172,12 +172,12 @@ Flux Material::num_flux (const ConVar& state_left,
 
       flux.mass_flux = state_left.density * vel_left_normal;
       flux.momentum_flux = unit_normal * prim_left.pressure +
-         state_left.momentum * vel_left_normal;
+                           state_left.momentum * vel_left_normal;
       flux.energy_flux = h_left * flux.mass_flux;
 
-      flux.mass_flux += factor;
+      flux.mass_flux     += factor;
       flux.momentum_flux += (velocity - unit_normal * c) * factor;
-      flux.energy_flux += (h - c * vel_normal) * factor;
+      flux.energy_flux   += (h - c * vel_normal) * factor;
    }
    else
    {
@@ -187,12 +187,12 @@ Flux Material::num_flux (const ConVar& state_left,
 
       flux.mass_flux = state_right.density * vel_right_normal;
       flux.momentum_flux = unit_normal * prim_right.pressure +
-         state_right.momentum * vel_right_normal;
+                           state_right.momentum * vel_right_normal;
       flux.energy_flux = h_right * flux.mass_flux;
 
-      flux.mass_flux -= factor;
+      flux.mass_flux     -= factor;
       flux.momentum_flux -= (velocity + unit_normal * c) * factor;
-      flux.energy_flux -= (h + c * vel_normal) * factor;
+      flux.energy_flux   -= (h + c * vel_normal) * factor;
    }
 
    return flux * area;
