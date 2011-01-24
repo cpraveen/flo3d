@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cassert>
 #include <string>
+#include <cstdlib>
 #include "grid.h"
 
 using namespace std;
