@@ -17,16 +17,14 @@ void FiniteVolume::initialize ()
    dt.resize (grid.n_cell);
 
    PrimVar prim_var;
-   ConVar  con_var;
-
    prim_var.density  = 1.0;
    prim_var.velocity = param.velocity_inf;
    prim_var.pressure  = 1.0/(GAMMA * pow(param.mach_inf,2));
 
-   con_var = material.prim2con(prim_var);
+   param.con_inf = material.prim2con(prim_var);
 
    for(unsigned int i=0; i<grid.n_cell; ++i)
-      solution[i] = con_var;
+      solution[i] = param.con_inf;
 }
 
 // Interpolate solution from cell center to vertices
@@ -93,7 +91,7 @@ void FiniteVolume::compute_residual ()
       {
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
-         flux = material.slip_flux ( solution[cl], grid.face[i].normal );
+         flux = material.num_flux ( solution[cl], param.con_inf, grid.face[i].normal );
          residual[cl] += flux;
       }
       else
