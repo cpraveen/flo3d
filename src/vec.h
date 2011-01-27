@@ -10,6 +10,7 @@ class Vec
       Vec&    operator=  (const double scalar);
       Vec&    operator+= (const Vec rhs);
       Vec&    operator-= (const Vec rhs);
+      Vec&    operator*= (const double scalar);
       Vec     operator/  (const double scalar) const;
       Vec     operator*  (const double scalar) const;
       double  operator*  (const Vec vec) const; // Dot product of two vectors

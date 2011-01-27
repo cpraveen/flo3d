@@ -104,6 +104,17 @@ Flux& Flux::operator-= (const Flux& flux)
    return *this;
 }
 
+// Multiply flux by a scalar
+Flux& Flux::operator*= (const double& scalar)
+{
+   mass_flux     *= scalar;
+   momentum_flux *= scalar;
+   energy_flux   *= scalar;
+
+   return *this;
+}
+
+// Add two fluxes
 Flux Flux::operator+ (const Flux& flux)
 {
    Flux result;
@@ -127,19 +138,20 @@ Flux Flux::operator* (const double scalar)
 }
 
 // Numerical flux function
-Flux Material::num_flux (const ConVar& state_left,
+void Material::num_flux (const ConVar& state_left,
                          const ConVar& state_right,
-                         const Vec&    normal)
+                         const Vec&    normal,
+                         Flux& flux)
 {
    
    double area = normal.norm();
    Vec unit_normal = normal / area;
 
-   PrimVar prim_left = con2prim(state_left);
+   PrimVar prim_left  = con2prim(state_left);
    PrimVar prim_right = con2prim(state_right);
 
    // Enthalpy
-   double h_left = GAMMA*prim_left.pressure/(prim_left.density*(GAMMA-1.0))
+   double h_left  = GAMMA*prim_left.pressure/(prim_left.density*(GAMMA-1.0))
       + 0.5 * prim_left.velocity.square();
    double h_right = GAMMA*prim_right.pressure/(prim_right.density*(GAMMA-1.0))
       + 0.5 * prim_right.velocity.square();
@@ -151,18 +163,17 @@ Flux Material::num_flux (const ConVar& state_left,
 
    // Roe average state
    double density = rho_left_sqrt * rho_right_sqrt;
-   Vec velocity = prim_left.velocity * fact_left + prim_right.velocity * fact_right;
+   Vec velocity   = prim_left.velocity  * fact_left + 
+                    prim_right.velocity * fact_right;
    double h = h_left * fact_left + h_right * fact_right;
 
    double vel_normal = velocity * unit_normal;
    double c = sqrt( (GAMMA-1.0) * (h - 0.5*velocity.square()) );
 
    double dp = prim_right.pressure - prim_left.pressure;
-   double vel_left_normal = prim_left.velocity * unit_normal;
+   double vel_left_normal  = prim_left.velocity  * unit_normal;
    double vel_right_normal = prim_right.velocity * unit_normal;
    double dV = vel_right_normal - vel_left_normal;
-
-   Flux flux;
 
    if(vel_normal > 0.0)
    {
@@ -170,11 +181,13 @@ Flux Material::num_flux (const ConVar& state_left,
       double coeff  = 0.5 * (dp - density * c * dV) / (c * c);
       double factor = min(lambda, 0.0) * coeff;
 
+      // Left flux
       flux.mass_flux = state_left.density * vel_left_normal;
       flux.momentum_flux = unit_normal * prim_left.pressure +
                            state_left.momentum * vel_left_normal;
       flux.energy_flux = h_left * flux.mass_flux;
 
+      // Upwind term
       flux.mass_flux     += factor;
       flux.momentum_flux += (velocity - unit_normal * c) * factor;
       flux.energy_flux   += (h - c * vel_normal) * factor;
@@ -185,17 +198,19 @@ Flux Material::num_flux (const ConVar& state_left,
       double coeff  = 0.5 * (dp + density * c * dV) / (c * c);
       double factor = max(lambda, 0.0) * coeff;
 
+      // Right flux
       flux.mass_flux = state_right.density * vel_right_normal;
       flux.momentum_flux = unit_normal * prim_right.pressure +
                            state_right.momentum * vel_right_normal;
       flux.energy_flux = h_right * flux.mass_flux;
 
+      // Upwind term
       flux.mass_flux     -= factor;
       flux.momentum_flux -= (velocity + unit_normal * c) * factor;
       flux.energy_flux   -= (h + c * vel_normal) * factor;
    }
 
-   return flux * area;
+   flux *= area;
 }
 
 // Flux on slip walls

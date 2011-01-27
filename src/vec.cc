@@ -37,6 +37,15 @@ Vec& Vec::operator-= (const Vec rhs){
    return *this;
 }
 
+// Multiply vector by scalar and copy result to same vector
+Vec& Vec::operator*= (const double scalar){
+   x *= scalar;
+   y *= scalar;
+   z *= scalar;
+
+   return *this;
+}
+
 // Add two vectors
 Vec Vec::operator+  (const Vec vec) const
 {
