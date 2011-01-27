@@ -22,6 +22,7 @@ class Flux
 
       Flux& operator+= (const Flux& flux);
       Flux& operator-= (const Flux& flux);
+      Flux& operator*= (const double& scalar);
       Flux  operator+  (const Flux& flux);
       Flux  operator*  (const double scalar);
 
@@ -55,7 +56,7 @@ class Material
 
       ConVar  prim2con (const PrimVar& prim_var);
       PrimVar con2prim (const ConVar&  con_var);
-      Flux    num_flux (const ConVar&, const ConVar&, const Vec&);
+      void    num_flux (const ConVar&, const ConVar&, const Vec&, Flux&);
       Flux    slip_flux (const ConVar& state, const Vec& normal);
 };
 

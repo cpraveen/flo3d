@@ -76,7 +76,7 @@ void FiniteVolume::compute_residual ()
          cl = grid.face[i].lcell;
          cr = grid.face[i].rcell;
          state = reconstruct ( vl, cl, vr, cr );
-         flux  = material.num_flux ( state[0], state[1], grid.face[i].normal );
+         material.num_flux ( state[0], state[1], grid.face[i].normal, flux );
          residual[cl] += flux;
          residual[cr] -= flux;
       }
@@ -91,7 +91,7 @@ void FiniteVolume::compute_residual ()
       {
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
-         flux = material.num_flux ( solution[cl], param.con_inf, grid.face[i].normal );
+         material.num_flux ( solution[cl], param.con_inf, grid.face[i].normal, flux );
          residual[cl] += flux;
       }
       else
