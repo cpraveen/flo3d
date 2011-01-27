@@ -46,7 +46,7 @@ void Grid::compute_face_normal ()
       r01 = vertex[v1] - vertex[v0];
       r12 = vertex[v2] - vertex[v1];
 
-      face[i].normal = r01 ^ r12;
+      face[i].normal = (r01 ^ r12) / 2.0;
    }
 
 }

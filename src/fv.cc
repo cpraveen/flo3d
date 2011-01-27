@@ -30,7 +30,7 @@ void FiniteVolume::initialize ()
 // Interpolate solution from cell center to vertices
 void FiniteVolume::interpolate_vertex ()
 {
-   for(unsigned int i=0; i<grid.n_cell; ++i)
+   for(unsigned int i=0; i<grid.n_vertex; ++i)
       solution_vertex[i].zero ();
 
    for(unsigned int i=0; i<grid.n_cell; ++i)
