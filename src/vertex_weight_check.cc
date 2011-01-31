@@ -12,7 +12,7 @@ using namespace std ;
 void Grid::vertex_weight_check ()
 {     
    unsigned int v;
-   vector<unsigned int> weight_flag (n_vertex, 1);
+   vector<double> weight_flag (n_vertex, 1);
    int nega_vertex_weight = 0 ;
    int vertex_interior = 0 ;
 
@@ -51,7 +51,7 @@ void Grid::vertex_weight_check ()
    
 
    Writer writer (*this);
-   writer.attach_data (weight_flag, "weight_flag");
+   writer.attach_vertex_data (weight_flag, "weight_flag");
    writer.output_vtk ("weight.vtk");
 }
 

@@ -21,7 +21,6 @@ class Parameter
       double mach_inf;
       Vector velocity_inf;
       PrimVar prim_inf;
-      ConVar  con_inf;
 
       std::string grid_file;
       GridType    grid_type;

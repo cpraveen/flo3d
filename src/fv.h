@@ -18,7 +18,6 @@ class FiniteVolume
       Parameter param;
       Grid      grid;
       Material  material;
-      void*     mat;
 
       std::vector<PrimVar> primitive;
       std::vector<ConVar>  conserved_old;
@@ -32,6 +31,10 @@ class FiniteVolume
                         const unsigned int,
                         const unsigned int,
                         std::vector<PrimVar>&) const;
+
+      void reconstruct (const unsigned int vl,
+                        const unsigned int cl,
+                        PrimVar            state) const;
 
       void initialize ();
       void interpolate_vertex ();

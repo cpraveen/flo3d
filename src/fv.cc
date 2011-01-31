@@ -17,12 +17,6 @@ void FiniteVolume::initialize ()
    residual.resize (grid.n_cell);
    dt.resize (grid.n_cell);
 
-   param.prim_inf.density  = 1.0;
-   param.prim_inf.velocity = param.velocity_inf;
-   param.prim_inf.pressure  = 1.0/(GAMMA * pow(param.mach_inf,2));
-
-   param.con_inf = material.prim2con(param.prim_inf);
-
    for(unsigned int i=0; i<grid.n_cell; ++i)
       primitive[i] = param.prim_inf;
 }
@@ -48,6 +42,15 @@ void FiniteVolume::reconstruct (const unsigned int vl,
 {
    state[0] = primitive[cl];
    state[1] = primitive[cr];
+}
+
+// Reconstruct left state for a boundary face
+// CURRENTLY FIRST ORDER
+void FiniteVolume::reconstruct (const unsigned int vl,
+                                const unsigned int cl,
+                                PrimVar            state) const
+{
+   state = primitive[cl];
 }
 
 // Compute residual for each cell
@@ -81,7 +84,8 @@ void FiniteVolume::compute_residual ()
       {
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
-         flux = material.slip_flux ( primitive[cl], grid.face[i].normal );
+         reconstruct ( vl, cl, state[0] );
+         flux = material.slip_flux ( state[0], grid.face[i].normal );
          residual[cl] += flux;
       }
       else if(param.bc_type[grid.face[i].type] == farfield)
@@ -180,6 +184,8 @@ void FiniteVolume::solve ()
 void FiniteVolume::output ()
 {
    Writer writer (grid);
+   writer.attach_cell_data (primitive);
+   writer.output_vtk ("out.vtk");
 }
 
 // This is where the real work starts
