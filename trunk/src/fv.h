@@ -18,22 +18,24 @@ class FiniteVolume
       Parameter param;
       Grid      grid;
       Material  material;
+      void*     mat;
 
-      std::vector<ConVar> solution;
-      std::vector<ConVar> solution_old;
-      std::vector<ConVar> solution_vertex;
-      std::vector<Flux>   residual;
-      std::vector<double> dt;
-      double              dt_global;
+      std::vector<PrimVar> primitive;
+      std::vector<ConVar>  conserved_old;
+      std::vector<PrimVar> primitive_vertex;
+      std::vector<Flux>    residual;
+      std::vector<double>  dt;
+      double               dt_global;
 
       void reconstruct (const unsigned int,
                         const unsigned int,
                         const unsigned int,
                         const unsigned int,
-                        std::vector<ConVar>&) const;
+                        std::vector<PrimVar>&) const;
 
       void initialize ();
       void interpolate_vertex ();
+      void store_conserved_old ();
       void compute_residual ();
       void compute_dt ();
       void update_solution ();

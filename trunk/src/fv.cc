@@ -11,32 +11,31 @@ using namespace std;
 // Set initial condition
 void FiniteVolume::initialize ()
 {
-   solution.resize (grid.n_cell);
-   solution_old.resize (grid.n_cell);
-   solution_vertex.resize (grid.n_vertex);
+   primitive.resize (grid.n_cell);
+   conserved_old.resize (grid.n_cell);
+   primitive_vertex.resize (grid.n_vertex);
    residual.resize (grid.n_cell);
    dt.resize (grid.n_cell);
 
-   PrimVar prim_var;
-   prim_var.density  = 1.0;
-   prim_var.velocity = param.velocity_inf;
-   prim_var.pressure  = 1.0/(GAMMA * pow(param.mach_inf,2));
+   param.prim_inf.density  = 1.0;
+   param.prim_inf.velocity = param.velocity_inf;
+   param.prim_inf.pressure  = 1.0/(GAMMA * pow(param.mach_inf,2));
 
-   param.con_inf = material.prim2con(prim_var);
+   param.con_inf = material.prim2con(param.prim_inf);
 
    for(unsigned int i=0; i<grid.n_cell; ++i)
-      solution[i] = param.con_inf;
+      primitive[i] = param.prim_inf;
 }
 
 // Interpolate solution from cell center to vertices
 void FiniteVolume::interpolate_vertex ()
 {
    for(unsigned int i=0; i<grid.n_vertex; ++i)
-      solution_vertex[i].zero ();
+      primitive_vertex[i].zero ();
 
    for(unsigned int i=0; i<grid.n_cell; ++i)
       for(unsigned int j=0; j<4; ++j)
-         solution_vertex[grid.cell[i].vertex[j]] += solution[i] * grid.cell[i].weight[j];
+         primitive_vertex[grid.cell[i].vertex[j]] += primitive[i] * grid.cell[i].weight[j];
 }
 
 // Reconstruct left and right states
@@ -45,10 +44,10 @@ void FiniteVolume::reconstruct (const unsigned int vl,
                                 const unsigned int cl,
                                 const unsigned int vr,
                                 const unsigned int cr,
-                                vector<ConVar>& state) const
+                                vector<PrimVar>&   state) const
 {
-   state[0] = solution[cl];
-   state[1] = solution[cr];
+   state[0] = primitive[cl];
+   state[1] = primitive[cr];
 }
 
 // Compute residual for each cell
@@ -61,13 +60,13 @@ void FiniteVolume::compute_residual ()
       residual[i].zero ();
 
    unsigned int vl, vr, cl, cr;
-   vector<ConVar> state(2);
+   vector<PrimVar> state(2);
    Flux flux;
 
    // Loop over faces and accumulate flux
    for(unsigned int i=0; i<grid.n_face; ++i)
    {
-      if(param.bc[grid.face[i].type] == interior)
+      if(param.bc_type[grid.face[i].type] == interior)
       {
          vl = grid.face[i].lvertex;
          vr = grid.face[i].rvertex;
@@ -78,18 +77,18 @@ void FiniteVolume::compute_residual ()
          residual[cl] += flux;
          residual[cr] -= flux;
       }
-      else if(param.bc[grid.face[i].type] == slip)
+      else if(param.bc_type[grid.face[i].type] == slip)
       {
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
-         flux = material.slip_flux ( solution[cl], grid.face[i].normal );
+         flux = material.slip_flux ( primitive[cl], grid.face[i].normal );
          residual[cl] += flux;
       }
-      else if(param.bc[grid.face[i].type] == farfield)
+      else if(param.bc_type[grid.face[i].type] == farfield)
       {
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
-         material.num_flux ( solution[cl], param.con_inf, grid.face[i].normal, flux );
+         material.num_flux ( primitive[cl], param.prim_inf, grid.face[i].normal, flux );
          residual[cl] += flux;
       }
       else
@@ -111,18 +110,17 @@ void FiniteVolume::compute_dt ()
       double area = grid.face[i].normal.norm();
 
       unsigned int cl = grid.face[i].lcell;
-      PrimVar prim_left = material.con2prim(solution[cl]);
-      double vel_normal_left = prim_left.velocity * grid.face[i].normal;
-      double c_left = sqrt( GAMMA * prim_left.pressure / prim_left.density );
+
+      double vel_normal_left = primitive[cl].velocity * grid.face[i].normal;
+      double c_left = sqrt( GAMMA * primitive[cl].pressure / primitive[cl].density );
 
       dt[cl] += fabs(vel_normal_left) + c_left * area;
 
       if(grid.face[i].type == -1) // Right cell exists only for interior face
       {
          unsigned int cr = grid.face[i].rcell;
-         PrimVar prim_right = material.con2prim(solution[cr]);
-         double vel_normal_right = prim_right.velocity * grid.face[i].normal;
-         double c_right = sqrt( GAMMA * prim_right.pressure / prim_right.density );
+         double vel_normal_right = primitive[cr].velocity * grid.face[i].normal;
+         double c_right = sqrt( GAMMA * primitive[cr].pressure / primitive[cr].density );
 
          dt[cr] += fabs(vel_normal_right) + c_right * area;
       }
@@ -137,15 +135,26 @@ void FiniteVolume::compute_dt ()
 
 }
 
+// Store old conserved variables for multi-stage RK
+void FiniteVolume::store_conserved_old ()
+{
+   for(unsigned int i=0; i<grid.n_cell; ++i)
+   {
+      conserved_old[i] = material.prim2con (primitive[i]);
+   }
+}
+
 // Update solution by RK scheme
 void FiniteVolume::update_solution ()
 {
    double factor;
+   ConVar conserved;
 
    for(unsigned int i=0; i<grid.n_cell; ++i)
    {
       factor      = dt[i] / grid.cell[i].volume;
-      solution[i] = solution_old[i] - residual[i] * factor;
+      conserved   = conserved_old[i] - residual[i] * factor;
+      primitive[i]= material.con2prim (conserved);
    }
 }
 
@@ -157,10 +166,9 @@ void FiniteVolume::solve ()
 
    while (iter < param.max_iter && time < param.final_time)
    {
-      solution_old = solution;
-
+      store_conserved_old ();
+      compute_dt ();
       compute_residual ();
-
       update_solution ();
 
       ++iter;
