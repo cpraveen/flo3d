@@ -26,10 +26,11 @@ class FiniteVolume
       std::vector<double> dt;
       double              dt_global;
 
-      std::vector<ConVar> reconstruct (const unsigned int,
-                                       const unsigned int,
-                                       const unsigned int,
-                                       const unsigned int) const;
+      void reconstruct (const unsigned int,
+                        const unsigned int,
+                        const unsigned int,
+                        const unsigned int,
+                        std::vector<ConVar>&) const;
 
       void initialize ();
       void interpolate_vertex ();

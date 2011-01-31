@@ -40,17 +40,14 @@ void FiniteVolume::interpolate_vertex ()
 
 // Reconstruct left and right states
 // CURRENTLY FIRST ORDER
-vector<ConVar> FiniteVolume::reconstruct (const unsigned int vl,
-                                          const unsigned int cl,
-                                          const unsigned int vr,
-                                          const unsigned int cr) const
+void FiniteVolume::reconstruct (const unsigned int vl,
+                                const unsigned int cl,
+                                const unsigned int vr,
+                                const unsigned int cr,
+                                vector<ConVar>& state) const
 {
-   vector<ConVar> state(2);
-
    state[0] = solution[cl];
    state[1] = solution[cr];
-
-   return state;
 }
 
 // Compute residual for each cell
@@ -75,7 +72,7 @@ void FiniteVolume::compute_residual ()
          vr = grid.face[i].rvertex;
          cl = grid.face[i].lcell;
          cr = grid.face[i].rcell;
-         state = reconstruct ( vl, cl, vr, cr );
+         reconstruct ( vl, cl, vr, cr, state );
          material.num_flux ( state[0], state[1], grid.face[i].normal, flux );
          residual[cl] += flux;
          residual[cr] -= flux;
