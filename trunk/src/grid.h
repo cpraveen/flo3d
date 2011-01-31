@@ -48,8 +48,11 @@ class Grid
       void compute_face_normal ();
       void add_face (const Face& new_face);
       void make_faces ();
+      void weight_average () ;
+      void vertex_weight_check () ;
       void find_cell_surr_cell ();
       void info ();
+
 };
 
 #endif
