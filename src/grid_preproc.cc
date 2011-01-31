@@ -29,13 +29,15 @@ void Grid::compute_cell_volume ()
       min_cell_volume = min ( min_cell_volume, cell[i].volume );
       max_cell_volume = max ( max_cell_volume, cell[i].volume );
    }
+
 }
 
 // Compute face normals
 void Grid::compute_face_normal ()
 {
-   unsigned int v0, v1, v2;
+   unsigned int v0, v1, v2 ,lvertex ;
    Vec r01, r12;
+   double check_normal_l;
 
    for(unsigned int i=0; i<n_face; ++i)
    {
@@ -45,10 +47,16 @@ void Grid::compute_face_normal ()
 
       r01 = vertex[v1] - vertex[v0];
       r12 = vertex[v2] - vertex[v1];
-
+      
       face[i].normal = (r01 ^ r12) / 2.0;
-   }
 
+      // Check orientation of normal
+      lvertex        =  face[i].lvertex ;
+      check_normal_l = face[i].normal * ( vertex[lvertex]- vertex[v0]);
+
+      if ( check_normal_l > 0.0 )
+      	 face[i].normal *=  -1.0 ;
+  }
 }
 
 // Add new_face to face list
@@ -180,7 +188,6 @@ void Grid::find_cell_surr_cell ()
       cell[i].neighbour[2] = -1;
       cell[i].neighbour[3] = -1;
    }
-
 }
 
 // Preprocess the grid
@@ -190,4 +197,6 @@ void Grid::preproc ()
    find_cell_surr_cell ();
    compute_cell_volume ();
    compute_face_normal ();
+   weight_average ();
+   vertex_weight_check ();
 }
