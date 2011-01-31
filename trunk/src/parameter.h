@@ -18,7 +18,7 @@ class Parameter
       double final_time;
       double min_residue;
       double mach_inf;
-      Vec    velocity_inf;
+      Vector velocity_inf;
       ConVar con_inf;
 
       std::string grid_file;

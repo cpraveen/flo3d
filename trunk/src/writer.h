@@ -1,3 +1,6 @@
+#ifndef __WRITER_H__
+#define __WRITER_H__
+
 #include <vector>
 #include <string>
 #include "grid.h"
@@ -17,3 +20,5 @@ class Writer
       std::vector<std::string> integer_data_name;
 
 };
+
+#endif

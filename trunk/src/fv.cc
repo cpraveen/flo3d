@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include "parameter.h"
 #include "fv.h"
+#include "writer.h"
 
 using namespace std;
 
@@ -53,15 +54,15 @@ void FiniteVolume::reconstruct (const unsigned int vl,
 // Compute residual for each cell
 void FiniteVolume::compute_residual ()
 {
-   unsigned int vl, vr, cl, cr;
-   vector<ConVar> state(2);
-   Flux flux;
-
    // Interpolate solution from cell to vertex
    interpolate_vertex ();
 
    for(unsigned int i=0; i<grid.n_cell; ++i)
       residual[i].zero ();
+
+   unsigned int vl, vr, cl, cr;
+   vector<ConVar> state(2);
+   Flux flux;
 
    // Loop over faces and accumulate flux
    for(unsigned int i=0; i<grid.n_face; ++i)
@@ -170,6 +171,7 @@ void FiniteVolume::solve ()
 // Save solution to file
 void FiniteVolume::output ()
 {
+   Writer writer (grid);
 }
 
 // This is where the real work starts

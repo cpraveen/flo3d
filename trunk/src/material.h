@@ -10,14 +10,14 @@ class PrimVar
 {
    public:
       double density, pressure;
-      Vec    velocity;
+      Vector velocity;
 };
 
 class Flux
 {
    public:
       double mass_flux;
-      Vec    momentum_flux;
+      Vector momentum_flux;
       double energy_flux;
 
       Flux& operator+= (const Flux& flux);
@@ -43,7 +43,7 @@ class ConVar
       ConVar  operator*  (const double  scalar) const;
 
       double density, energy;
-      Vec    momentum;
+      Vector momentum;
 
       void zero ();
       double pressure () const;
@@ -56,8 +56,8 @@ class Material
 
       ConVar  prim2con (const PrimVar& prim_var);
       PrimVar con2prim (const ConVar&  con_var);
-      void    num_flux (const ConVar&, const ConVar&, const Vec&, Flux&);
-      Flux    slip_flux (const ConVar& state, const Vec& normal);
+      void    num_flux (const ConVar&, const ConVar&, const Vector&, Flux&);
+      Flux    slip_flux (const ConVar& state, const Vector& normal);
 };
 
 #endif
