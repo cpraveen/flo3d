@@ -36,7 +36,7 @@ void Grid::compute_cell_volume ()
 void Grid::compute_face_normal ()
 {
    unsigned int v0, v1, v2 ,lvertex ;
-   Vec r01, r12;
+   Vector r01, r12;
    double check_normal_l;
 
    for(unsigned int i=0; i<n_face; ++i)

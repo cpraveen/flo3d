@@ -140,12 +140,12 @@ Flux Flux::operator* (const double scalar)
 // Numerical flux function
 void Material::num_flux (const ConVar& state_left,
                          const ConVar& state_right,
-                         const Vec&    normal,
+                         const Vector& normal,
                          Flux& flux)
 {
    
    double area = normal.norm();
-   Vec unit_normal = normal / area;
+   Vector unit_normal = normal / area;
 
    PrimVar prim_left  = con2prim(state_left);
    PrimVar prim_right = con2prim(state_right);
@@ -162,9 +162,9 @@ void Material::num_flux (const ConVar& state_left,
    double fact_right = 1.0 - fact_left;
 
    // Roe average state
-   double density = rho_left_sqrt * rho_right_sqrt;
-   Vec velocity   = prim_left.velocity  * fact_left + 
-                    prim_right.velocity * fact_right;
+   double density  = rho_left_sqrt * rho_right_sqrt;
+   Vector velocity = prim_left.velocity  * fact_left + 
+                     prim_right.velocity * fact_right;
    double h = h_left * fact_left + h_right * fact_right;
 
    double vel_normal = velocity * unit_normal;
@@ -215,7 +215,7 @@ void Material::num_flux (const ConVar& state_left,
 
 // Flux on slip walls
 Flux Material::slip_flux (const ConVar& state,
-                          const Vec& normal)
+                          const Vector& normal)
 {
    double pressure = state.pressure ();
 

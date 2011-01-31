@@ -20,7 +20,7 @@ class Face
       unsigned int vertex[3];
       int          lcell, rcell;
       int          lvertex, rvertex;
-      Vec          normal;
+      Vector       normal;
       int          type;
 
       bool operator== (const Face& face) const;
@@ -35,9 +35,9 @@ class Grid
       unsigned int n_face;
       double min_cell_volume;
       double max_cell_volume;
-      std::vector<Vec>  vertex;
-      std::vector<Cell> cell;
-      std::vector<Face> face;
+      std::vector<Vector> vertex;
+      std::vector<Cell>   cell;
+      std::vector<Face>   face;
 
       void read (GridType grid_type, std::string grid_file);
 
