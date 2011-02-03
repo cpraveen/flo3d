@@ -14,7 +14,7 @@ void Grid::vertex_weight_check ()
    unsigned int v;
    vector<double> weight_flag (n_vertex, 1);
    int nega_vertex_weight = 0 ;
-   int vertex_interior = 0 ;
+   int vertex_boundary = 0 ;
 
    for (unsigned int i=0; i< n_cell ; i++)
       for (unsigned int j=0; j<4 ; j++)
@@ -33,21 +33,21 @@ void Grid::vertex_weight_check ()
       for (unsigned int j=0; j<3; j++)
       {
          v =  face[i].vertex[j] ;
-         if (weight_flag[v]==0  && face[i].type == -1 && weight_flag[v] != 2)
+         if (weight_flag[v]==0  && face[i].type == -1 )
             {
 
-            vertex_interior += 1;
+            vertex_boundary += 1;
             weight_flag[v] = 2 ;
 
             }          
       }
 
-   cout << " The number of vertex having negative weight are : "
+   cout << " No. of vertex with negative weight: "
         << nega_vertex_weight << endl ;
-   cout << " The number of vertex having negative weight on interior faces  are : "
-        << vertex_interior <<endl;
-   cout << " The number of vertex having negative weight on boundary faces  are : "
-        << nega_vertex_weight-vertex_interior << endl;
+   cout << " No. of vertex with negative weight on boundary: "
+        << vertex_boundary <<endl;
+   cout << " No. of vertex with negative weight in interior: "
+        << nega_vertex_weight-vertex_boundary << endl;
    
 
    Writer writer (*this);
