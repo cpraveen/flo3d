@@ -130,6 +130,7 @@ void FiniteVolume::compute_dt ()
       }
    }
 
+   // Compute global time step
    dt_global = 1.0e20;
    for(unsigned int i=0; i<grid.n_cell; ++i)
    {
@@ -143,9 +144,7 @@ void FiniteVolume::compute_dt ()
 void FiniteVolume::store_conserved_old ()
 {
    for(unsigned int i=0; i<grid.n_cell; ++i)
-   {
       conserved_old[i] = material.prim2con (primitive[i]);
-   }
 }
 
 // Update solution by RK scheme
@@ -162,11 +161,29 @@ void FiniteVolume::update_solution ()
    }
 }
 
+// Compute L2 norm of mass, momentum and energy residuals
+void FiniteVolume::compute_residual_norm (Flux& norm)
+{
+   norm.mass_flux     = 0.0;
+   norm.momentum_flux = 0.0;
+   norm.energy_flux   = 0.0;
+
+   for(unsigned int i=0; i<grid.n_cell; ++i)
+   {
+      norm.mass_flux       += pow(residual[i].mass_flux,       2);
+      norm.momentum_flux.x += pow(residual[i].momentum_flux.x, 2);
+      norm.momentum_flux.y += pow(residual[i].momentum_flux.y, 2);
+      norm.momentum_flux.z += pow(residual[i].momentum_flux.z, 2);
+      norm.energy_flux     += pow(residual[i].energy_flux,     2);
+   }
+}
+
 // Perform time marching iterations
 void FiniteVolume::solve ()
 {
    unsigned int iter = 0;
    double time = 0.0;
+   Flux   residual_norm;
 
    while (iter < param.max_iter && time < param.final_time)
    {
@@ -174,9 +191,18 @@ void FiniteVolume::solve ()
       compute_dt ();
       compute_residual ();
       update_solution ();
+      compute_residual_norm (residual_norm);
 
       ++iter;
       time += dt_global;
+      cout << iter << "  " 
+           << dt_global << "  " 
+           << residual_norm.mass_flux << "  "
+           << residual_norm.momentum_flux.x << "  "
+           << residual_norm.momentum_flux.y << "  "
+           << residual_norm.momentum_flux.z << "  "
+           << residual_norm.energy_flux
+           << endl;
    }
 }
 
