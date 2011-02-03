@@ -48,6 +48,7 @@ void Writer::output_vtk (string filename)
    for(unsigned int i=0; i<grid->n_cell; ++i)
       vtk << 10 << endl;
 
+   // Write vertex data to file
    for(unsigned int d=0; d<vertex_data.size(); ++d)
    {
       if(d==0) vtk << "POINT_DATA  " << grid->n_vertex << endl;
@@ -55,6 +56,22 @@ void Writer::output_vtk (string filename)
       vtk << "LOOKUP_TABLE default" << endl;
       for(unsigned int i=0; i<grid->n_vertex; ++i)
          vtk << (*vertex_data[d])[i] << endl;
+   }
+
+   // If cell primitive data is available, write to file
+   if (has_cell_primitive)
+   {
+      vtk << "CELL_DATA  " << grid->n_cell << endl;
+
+      vtk << "SCALARS density float 1" << endl;
+      vtk << "LOOKUP_TABLE default" << endl;
+      for(unsigned int i=0; i<grid->n_cell; ++i)
+         vtk << (*cell_primitive)[i].density << endl;
+
+      vtk << "SCALARS pressure float 1" << endl;
+      vtk << "LOOKUP_TABLE default" << endl;
+      for(unsigned int i=0; i<grid->n_cell; ++i)
+         vtk << (*cell_primitive)[i].pressure << endl;
    }
 
    vtk.close ();
