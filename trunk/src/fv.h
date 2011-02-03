@@ -41,6 +41,7 @@ class FiniteVolume
       void store_conserved_old ();
       void compute_residual ();
       void compute_dt ();
+      void compute_residual_norm (Flux&);
       void update_solution ();
       void solve ();
       void output ();
