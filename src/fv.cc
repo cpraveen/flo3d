@@ -221,7 +221,7 @@ void FiniteVolume::run ()
    param.read ();
    
    // Read grid from file
-   grid.read (param.grid_type, param.grid_file);
+   grid.read (param);
 
    // Set initial condition
    initialize ();
