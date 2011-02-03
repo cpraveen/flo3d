@@ -39,10 +39,11 @@ class Grid
       std::vector<Cell>   cell;
       std::vector<Face>   face;
 
-      void read (GridType grid_type, std::string grid_file);
+      void read (const Parameter& param);
 
    private:
       void read_gmsh (std::string grid_file);
+      void check_face_type (const std::map<int,BCType>& bc_type);
       void preproc ();
       void compute_cell_volume ();
       void compute_face_normal ();
