@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <cassert>
 #include "grid.h"
 #include "parameter.h"
 
@@ -36,6 +37,8 @@ void Grid::info ()
 void Grid::check_face_type (const map<int,BCType>& bc_type)
 {
    for(unsigned int i=0; i<face.size(); ++i)
+   {
+      assert (face[i].type != -1);
       if(bc_type.find(face[i].type) == bc_type.end())
       {
          cout << "check_face_type: No boundary condition specified for\n";
@@ -43,4 +46,5 @@ void Grid::check_face_type (const map<int,BCType>& bc_type)
          cout << "   There may be more faces with similar problem.\n";
          abort ();
       }
+   }
 }
