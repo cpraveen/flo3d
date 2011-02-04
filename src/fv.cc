@@ -204,11 +204,14 @@ void FiniteVolume::solve ()
            << residual_norm.momentum_flux.z << "  "
            << residual_norm.energy_flux
            << endl;
+      if(iter % 1000 == 0) output (iter);
    }
+
+   output (iter);
 }
 
 // Save solution to file
-void FiniteVolume::output ()
+void FiniteVolume::output (const unsigned int iter)
 {
    Writer writer (grid);
    writer.attach_cell_data (primitive);
@@ -228,6 +231,4 @@ void FiniteVolume::run ()
 
    // Solve the problem
    solve ();
-
-   output ();
 }
