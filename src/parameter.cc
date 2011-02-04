@@ -20,4 +20,6 @@ void Parameter::read ()
    prim_inf.density  = 1.0;
    prim_inf.velocity = velocity_inf;
    prim_inf.pressure  = 1.0/(GAMMA * pow(mach_inf,2));
+
+   bc_type.insert(pair<int,BCType>(10001, slip));
 }
