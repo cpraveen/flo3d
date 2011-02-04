@@ -44,7 +44,7 @@ class FiniteVolume
       void compute_residual_norm (Flux&);
       void update_solution ();
       void solve ();
-      void output ();
+      void output (const unsigned int iter);
 };
 
 #endif
