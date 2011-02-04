@@ -69,7 +69,7 @@ void FiniteVolume::compute_residual ()
    // Loop over faces and accumulate flux
    for(unsigned int i=0; i<grid.n_face; ++i)
    {
-      if(param.bc_type[grid.face[i].type] == interior)
+      if(grid.face[i].type == -1)
       {
          vl = grid.face[i].lvertex;
          vr = grid.face[i].rvertex;
