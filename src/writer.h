@@ -12,10 +12,14 @@ class Writer
       Writer (const Grid& grid) 
          : 
          grid (&grid),
-         has_cell_primitive (false)
+         has_vertex_primitive (false),
+         has_cell_primitive (false),
+         has_cell_mach (false)
          {};
       void attach_vertex_data (std::vector<double>& data, std::string name);
+      void attach_vertex_data (std::vector<PrimVar>& data);
       void attach_cell_data (std::vector<PrimVar>& data);
+      void attach_cell_mach ();
       void output_vtk (std::string filename);
 
    private:
@@ -24,9 +28,13 @@ class Writer
 
       std::vector< std::vector<double>* > vertex_data;
       std::vector<std::string> vertex_data_name;
+      std::vector<PrimVar>* vertex_primitive;
+      bool has_vertex_primitive;
 
       std::vector<PrimVar>* cell_primitive;
       bool has_cell_primitive;
+
+      bool has_cell_mach;
 
 };
 
