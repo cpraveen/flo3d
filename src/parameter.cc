@@ -11,7 +11,7 @@ void Parameter::read ()
    grid_file = "bump.msh";
 
    cfl = 0.8;
-   max_iter = 1000;
+   max_iter = 10000;
    final_time = 1.0e20;
    min_residue = 1.0e-6;
    mach_inf = 0.6;

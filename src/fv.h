@@ -23,6 +23,9 @@ class FiniteVolume
       std::vector<ConVar>  conserved_old;
       std::vector<PrimVar> primitive_vertex;
       std::vector<Flux>    residual;
+      Flux                 residual_norm;
+      double               residual_norm_total;
+      double               residual_norm_total0;
       std::vector<double>  dt;
       double               dt_global;
 
@@ -41,7 +44,7 @@ class FiniteVolume
       void store_conserved_old ();
       void compute_residual ();
       void compute_dt ();
-      void compute_residual_norm (Flux&);
+      void compute_residual_norm (const unsigned int iter);
       void update_solution ();
       void solve ();
       void output (const unsigned int iter);
