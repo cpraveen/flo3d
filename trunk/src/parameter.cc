@@ -2,7 +2,6 @@
 #include "parameter.h"
 #include<map>
 
-
 using namespace std;
 
 void Parameter::read ()
