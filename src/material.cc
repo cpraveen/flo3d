@@ -231,14 +231,11 @@ void Material::num_flux (const PrimVar& left,
 }
 
 // Flux on slip walls
-Flux Material::slip_flux (const PrimVar& state,
-                          const Vector& normal)
+void Material::slip_flux (const PrimVar& state,
+                          const Vector&  normal,
+                          Flux&          flux)
 {
-   Flux flux;
-
    flux.mass_flux     = 0.0;
    flux.momentum_flux = normal * state.pressure;
    flux.energy_flux   = 0.0;
-
-   return flux;
 }

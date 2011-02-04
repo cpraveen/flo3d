@@ -59,8 +59,8 @@ class Material
 
       ConVar  prim2con (const PrimVar& prim_var);
       PrimVar con2prim (const ConVar&  con_var);
-      void    num_flux (const PrimVar&, const PrimVar&, const Vector&, Flux&);
-      Flux    slip_flux (const PrimVar& state, const Vector& normal);
+      void    num_flux (const PrimVar& left, const PrimVar& right, const Vector& normal, Flux& flux);
+      void    slip_flux (const PrimVar& state, const Vector& normal, Flux& flux);
 };
 
 #endif
