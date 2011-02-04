@@ -34,7 +34,7 @@ class FiniteVolume
 
       void reconstruct (const unsigned int vl,
                         const unsigned int cl,
-                        PrimVar            state) const;
+                        PrimVar&           state) const;
 
       void initialize ();
       void interpolate_vertex ();
