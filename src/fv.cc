@@ -48,7 +48,7 @@ void FiniteVolume::reconstruct (const unsigned int vl,
 // CURRENTLY FIRST ORDER
 void FiniteVolume::reconstruct (const unsigned int vl,
                                 const unsigned int cl,
-                                PrimVar            state) const
+                                PrimVar&           state) const
 {
    state = primitive[cl];
 }
