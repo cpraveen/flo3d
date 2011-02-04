@@ -7,6 +7,9 @@
 #include "vec.h"
 #include "material.h"
 
+static const double a_rk[] = {0.0, 3.0/4.0, 1.0/3.0};
+static const double b_rk[] = {1.0, 1.0/4.0, 2.0/3.0};
+
 enum GridType {gmsh};
 
 enum BCType { interior, slip, noslip, farfield };

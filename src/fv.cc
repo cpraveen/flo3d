@@ -149,7 +149,7 @@ void FiniteVolume::store_conserved_old ()
 }
 
 // Update solution by RK scheme
-void FiniteVolume::update_solution ()
+void FiniteVolume::update_solution (const unsigned int r)
 {
    double factor;
    ConVar conserved;
@@ -157,7 +157,9 @@ void FiniteVolume::update_solution ()
    for(unsigned int i=0; i<grid.n_cell; ++i)
    {
       factor      = dt[i] / grid.cell[i].volume;
-      conserved   = conserved_old[i] - residual[i] * factor;
+      conserved   = material.prim2con (primitive[i]);
+      conserved   = conserved_old[i] * a_rk[r] +
+                    (conserved - residual[i] * factor) * b_rk[r];
       primitive[i]= material.con2prim (conserved);
    }
 }
@@ -221,8 +223,11 @@ void FiniteVolume::solve ()
    {
       store_conserved_old ();
       compute_dt ();
-      compute_residual ();
-      update_solution ();
+      for(unsigned int r=0; r<3; ++r)
+      {
+         compute_residual ();
+         update_solution (r);
+      }
       compute_residual_norm (iter);
 
       ++iter;
