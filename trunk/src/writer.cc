@@ -72,6 +72,13 @@ void Writer::output_vtk (string filename)
       vtk << "LOOKUP_TABLE default" << endl;
       for(unsigned int i=0; i<grid->n_cell; ++i)
          vtk << (*cell_primitive)[i].pressure << endl;
+
+      vtk << "VECTORS velocity float" << endl;
+      for(unsigned int i=0; i<grid->n_cell; ++i)
+         vtk << (*cell_primitive)[i].velocity.x << "  "
+             << (*cell_primitive)[i].velocity.y << "  "
+             << (*cell_primitive)[i].velocity.z
+             << endl;
    }
 
    vtk.close ();
