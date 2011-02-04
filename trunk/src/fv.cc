@@ -85,7 +85,7 @@ void FiniteVolume::compute_residual ()
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
          reconstruct ( vl, cl, state[0] );
-         flux = material.slip_flux ( state[0], grid.face[i].normal );
+         material.slip_flux ( state[0], grid.face[i].normal, flux );
          residual[cl] += flux;
       }
       else if(param.bc_type[grid.face[i].type] == farfield)
