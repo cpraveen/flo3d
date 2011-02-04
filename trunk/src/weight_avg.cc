@@ -11,7 +11,7 @@ void Grid::weight_average ()
 {     
    cout << "Computing averaging weights ...\n";
 
-      unsigned int i,j, Val ;
+      unsigned int v ;
       unsigned int v0, v1, v2, v3;
 
      
@@ -29,7 +29,8 @@ void Grid::weight_average ()
 
       double dx, dy, dz;
 
-      for ( i=0; i< n_cell ; i++)
+      // Compute matrix entries and rhs
+      for (unsigned int i=0; i< n_cell ; i++)
       {  
          v0 = cell[i].vertex[0];
          v1 = cell[i].vertex[1];
@@ -40,30 +41,31 @@ void Grid::weight_average ()
          Yc = ( vertex[v0].y + vertex[v1].y + vertex[v2].y + vertex[v3].y ) / 4.0 ;
          Zc = ( vertex[v0].z + vertex[v1].z + vertex[v2].z + vertex[v3].z ) / 4.0 ;
 
-         for ( j=0; j<4 ; j++)
+         for (unsigned int j=0; j<4 ; j++)
          {     
-                Val =  cell[i].vertex[j] ;
+                v =  cell[i].vertex[j] ;
 
-                dx = Xc - vertex[Val].x ;
-                dy = Yc - vertex[Val].y ;
-                dz = Zc - vertex[Val].z ;
+                dx = Xc - vertex[v].x ;
+                dy = Yc - vertex[v].y ;
+                dz = Zc - vertex[v].z ;
 
-                Rx[Val] += dx;
-                Ry[Val] += dy;
-                Rz[Val] += dz;
-                Ixx[Val] += dx * dx;
-                Iyy[Val] += dy * dy;
-                Izz[Val] += dz * dz;
-                Ixy[Val] += dx * dy;
-                Iyz[Val] += dy * dz;
-                Izx[Val] += dz * dx;
+                Rx[v] += dx;
+                Ry[v] += dy;
+                Rz[v] += dz;
+                Ixx[v] += dx * dx;
+                Iyy[v] += dy * dy;
+                Izz[v] += dz * dz;
+                Ixy[v] += dx * dy;
+                Iyz[v] += dy * dz;
+                Izx[v] += dz * dx;
           }
 
        }
 
 
+      // Solve matrix problem
       double Det, lambda_x, lambda_y, lambda_z;
-      for ( i=0; i< n_vertex ; i++)
+      for (unsigned int i=0; i< n_vertex ; i++)
       {
 
        Det = Ixx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) -  Ixy[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) +  Izx[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]) ;
@@ -86,25 +88,23 @@ void Grid::weight_average ()
 
        }
        
-       unsigned int v;
-
+      // For boundary vertices, we do arithmetic averaging
        for(unsigned int i=0; i<n_face; ++i)
           if ( face[i].type != -1 )
             for (unsigned int j=0; j<3; j++)
             {
                v =  face[i].vertex[j] ;
-               Rx[v] = 0.0;
-               Ry[v] = 0.0;
-               Rz[v] = 0.0;
+               Rx[v] = Ry[v] = Rz[v] = 0.0;
             }          
 
 
-      double min_weight , max_weight ;
+       // Compute weights
+      double min_weight, max_weight ;
       min_weight =  1.0e20;
       max_weight = -1.0e20;
       vector<double> sum_weight(n_vertex, 0.0);
 
-      for ( i=0; i< n_cell ; i++)
+      for (unsigned int i=0; i< n_cell ; i++)
       {  
          v0 = cell[i].vertex[0];
          v1 = cell[i].vertex[1];
@@ -115,24 +115,24 @@ void Grid::weight_average ()
          Yc = ( vertex[v0].y + vertex[v1].y + vertex[v2].y + vertex[v3].y ) / 4.0 ;
          Zc = ( vertex[v0].z + vertex[v1].z + vertex[v2].z + vertex[v3].z ) / 4.0 ;
 
-         for ( j=0; j<4 ; j++)
+         for (unsigned int j=0; j<4 ; j++)
          {     
-             Val =  cell[i].vertex[j] ;
-             cell[i].weight[j] = 1.0 + Rx[Val] * (Xc - vertex[Val].x) + 
-                                       Ry[Val] * (Yc - vertex[Val].y) + 
-                                       Rz[Val] * (Zc - vertex[Val].z) ;
+             v =  cell[i].vertex[j] ;
+             cell[i].weight[j] = 1.0 + Rx[v] * (Xc - vertex[v].x) + 
+                                       Ry[v] * (Yc - vertex[v].y) + 
+                                       Rz[v] * (Zc - vertex[v].z) ;
 
               min_weight = min ( min_weight, cell[i].weight[j] );
               max_weight = max ( max_weight, cell[i].weight[j] );
 
-              sum_weight[Val] += cell[i].weight[j];
+              sum_weight[v] += cell[i].weight[j];
            }
         }
 
       // Divide by sum of weights to normalize
-      for ( i=0; i< n_cell ; i++)
+      for (unsigned int i=0; i< n_cell ; i++)
       {  
-         for(j=0; j<4; ++j)
+         for(unsigned int j=0; j<4; ++j)
             cell[i].weight[j] /= sum_weight[cell[i].vertex[j]];
        }
 

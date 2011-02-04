@@ -163,20 +163,49 @@ void FiniteVolume::update_solution ()
 }
 
 // Compute L2 norm of mass, momentum and energy residuals
-void FiniteVolume::compute_residual_norm (Flux& norm)
+void FiniteVolume::compute_residual_norm (const unsigned int iter)
 {
-   norm.mass_flux     = 0.0;
-   norm.momentum_flux = 0.0;
-   norm.energy_flux   = 0.0;
+   residual_norm.mass_flux     = 0.0;
+   residual_norm.momentum_flux = 0.0;
+   residual_norm.energy_flux   = 0.0;
 
+   // Sum of squares for each component
    for(unsigned int i=0; i<grid.n_cell; ++i)
    {
-      norm.mass_flux       += pow(residual[i].mass_flux,       2);
-      norm.momentum_flux.x += pow(residual[i].momentum_flux.x, 2);
-      norm.momentum_flux.y += pow(residual[i].momentum_flux.y, 2);
-      norm.momentum_flux.z += pow(residual[i].momentum_flux.z, 2);
-      norm.energy_flux     += pow(residual[i].energy_flux,     2);
+      residual_norm.mass_flux       += pow(residual[i].mass_flux,       2);
+      residual_norm.momentum_flux.x += pow(residual[i].momentum_flux.x, 2);
+      residual_norm.momentum_flux.y += pow(residual[i].momentum_flux.y, 2);
+      residual_norm.momentum_flux.z += pow(residual[i].momentum_flux.z, 2);
+      residual_norm.energy_flux     += pow(residual[i].energy_flux,     2);
    }
+
+   // Take square root and normalize by n_cell
+   residual_norm.mass_flux       = sqrt (residual_norm.mass_flux) / grid.n_cell;
+   residual_norm.momentum_flux.x = sqrt (residual_norm.momentum_flux.x) / grid.n_cell;
+   residual_norm.momentum_flux.y = sqrt (residual_norm.momentum_flux.y) / grid.n_cell;
+   residual_norm.momentum_flux.z = sqrt (residual_norm.momentum_flux.z) / grid.n_cell;
+   residual_norm.energy_flux     = sqrt (residual_norm.energy_flux) / grid.n_cell;
+
+   // Total residual of all components
+   residual_norm_total = pow(residual_norm.mass_flux, 2) +
+                         residual_norm.momentum_flux.square () +
+                         pow(residual_norm.energy_flux, 2);
+   residual_norm_total = sqrt (residual_norm_total);
+
+   // Copy residual in first iteration for normalization
+   if(iter == 0)
+   {
+      residual_norm_total0 = residual_norm_total;
+      cout << "  Initial residual = " << residual_norm_total0 << endl;
+      if(residual_norm_total0 == 0.0)
+      {
+         cout << "  WARNING: Initial residual is zero !!!\n";
+         cout << "  WARNING: Setting it to 1.0\n";
+         residual_norm_total0 = 1.0;
+      }
+   }
+
+   residual_norm_total /= residual_norm_total0;
 }
 
 // Perform time marching iterations
@@ -184,15 +213,17 @@ void FiniteVolume::solve ()
 {
    unsigned int iter = 0;
    double time = 0.0;
-   Flux   residual_norm;
+   residual_norm_total = 1.0e20;
 
-   while (iter < param.max_iter && time < param.final_time)
+   while (residual_norm_total > param.min_residue &&
+          iter < param.max_iter && 
+          time < param.final_time)
    {
       store_conserved_old ();
       compute_dt ();
       compute_residual ();
       update_solution ();
-      compute_residual_norm (residual_norm);
+      compute_residual_norm (iter);
 
       ++iter;
       time += dt_global;
