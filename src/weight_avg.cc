@@ -9,6 +9,8 @@ using namespace std ;
 
 void Grid::weight_average ()
 {     
+   cout << "Computing averaging weights ...\n";
+
       unsigned int i,j, Val ;
       unsigned int v0, v1, v2, v3;
 
@@ -83,8 +85,20 @@ void Grid::weight_average ()
         }
 
        }
+       
+       unsigned int v;
 
- 
+       for(unsigned int i=0; i<n_face; ++i)
+          if ( face[i].type != -1 )
+            for (unsigned int j=0; j<3; j++)
+            {
+               v =  face[i].vertex[j] ;
+               Rx[v] = 0.0;
+               Ry[v] = 0.0;
+               Rz[v] = 0.0;
+            }          
+
+
       double min_weight , max_weight ;
       min_weight =  1.0e20;
       max_weight = -1.0e20;

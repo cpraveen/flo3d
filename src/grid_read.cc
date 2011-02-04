@@ -20,7 +20,6 @@ void Grid::read (const Parameter& param)
    check_face_type (param.bc_type);
    preproc ();
    info ();
-   abort();
 }
 
 // Print some grid information to screen

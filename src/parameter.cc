@@ -1,12 +1,14 @@
 #include <cmath>
 #include "parameter.h"
+#include<map>
+
 
 using namespace std;
 
 void Parameter::read ()
 {
    grid_type = gmsh;
-   grid_file = "cube.msh";
+   grid_file = "bump.msh";
 
    cfl = 0.8;
    max_iter = 1000;
@@ -21,5 +23,16 @@ void Parameter::read ()
    prim_inf.velocity = velocity_inf;
    prim_inf.pressure  = 1.0/(GAMMA * pow(mach_inf,2));
 
-   bc_type.insert(pair<int,BCType>(10001, slip));
+   bc_type.insert(pair<int,BCType>(-1, interior));
+   bc_type.insert(pair<int,BCType>(100001, farfield));
+
+   bc_type.insert(pair<int,BCType>(100002, slip));
+
+   bc_type.insert(pair<int,BCType>(100003, slip));
+   bc_type.insert(pair<int,BCType>(100004, slip));
+
+   bc_type.insert(pair<int,BCType>(100005, slip));
+   bc_type.insert(pair<int,BCType>(100006, slip));
+   bc_type.insert(pair<int,BCType>(100007, slip));
+   bc_type.insert(pair<int,BCType>(100008, farfield));
 }

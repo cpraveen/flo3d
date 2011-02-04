@@ -33,7 +33,7 @@ void Grid::vertex_weight_check ()
       for (unsigned int j=0; j<3; j++)
       {
          v =  face[i].vertex[j] ;
-         if (weight_flag[v]==0  && face[i].type == -1 )
+         if (weight_flag[v]==0  && face[i].type != -1 )
             {
 
             vertex_boundary += 1;
