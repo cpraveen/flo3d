@@ -54,6 +54,8 @@ class Grid
       void find_cell_surr_cell ();
       void info ();
 
+      std::vector< std::vector<unsigned int> > node_face;
+
 };
 
 #endif
