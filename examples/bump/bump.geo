@@ -1,5 +1,6 @@
 L = 0.5; // extrusion in third direction
 R = 2.0; // radius of arc
+h1 = 0.01; // point density on bump
 h = 0.1; // point density
 l1= 1*R;
 l2=1*R;
@@ -10,9 +11,9 @@ C= Sqrt(R^2-0.5^2);
 // Height
 H=1*R;
 
-Point(1) = {0,0,0,h};
+Point(1) = {0,0,0,h1};
 
-Point(2) = {1,0,0,h};
+Point(2) = {1,0,0,h1};
 Point(3) = {1+l2,0,0,h};
 Point(4) = {1+l2,H,0,h};
 Point(5) = {-l1,H,0,h};
