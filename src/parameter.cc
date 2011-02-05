@@ -1,6 +1,6 @@
 #include <cmath>
+#include <map>
 #include "parameter.h"
-#include<map>
 
 using namespace std;
 
@@ -22,7 +22,6 @@ void Parameter::read ()
    prim_inf.velocity = velocity_inf;
    prim_inf.pressure  = 1.0/(GAMMA * pow(mach_inf,2));
 
-   bc_type.insert(pair<int,BCType>(-1, interior));
    bc_type.insert(pair<int,BCType>(100001, farfield));
 
    bc_type.insert(pair<int,BCType>(100002, slip));

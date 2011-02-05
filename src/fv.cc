@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
@@ -174,19 +175,20 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
    // Sum of squares for each component
    for(unsigned int i=0; i<grid.n_cell; ++i)
    {
-      residual_norm.mass_flux       += pow(residual[i].mass_flux,       2);
-      residual_norm.momentum_flux.x += pow(residual[i].momentum_flux.x, 2);
-      residual_norm.momentum_flux.y += pow(residual[i].momentum_flux.y, 2);
-      residual_norm.momentum_flux.z += pow(residual[i].momentum_flux.z, 2);
-      residual_norm.energy_flux     += pow(residual[i].energy_flux,     2);
+      double volume = grid.cell[i].volume;
+      residual_norm.mass_flux       += pow(residual[i].mass_flux       / volume, 2);
+      residual_norm.momentum_flux.x += pow(residual[i].momentum_flux.x / volume, 2);
+      residual_norm.momentum_flux.y += pow(residual[i].momentum_flux.y / volume, 2);
+      residual_norm.momentum_flux.z += pow(residual[i].momentum_flux.z / volume, 2);
+      residual_norm.energy_flux     += pow(residual[i].energy_flux     / volume, 2);
    }
 
    // Take square root and normalize by n_cell
-   residual_norm.mass_flux       = sqrt (residual_norm.mass_flux) / grid.n_cell;
+   residual_norm.mass_flux       = sqrt (residual_norm.mass_flux)       / grid.n_cell;
    residual_norm.momentum_flux.x = sqrt (residual_norm.momentum_flux.x) / grid.n_cell;
    residual_norm.momentum_flux.y = sqrt (residual_norm.momentum_flux.y) / grid.n_cell;
    residual_norm.momentum_flux.z = sqrt (residual_norm.momentum_flux.z) / grid.n_cell;
-   residual_norm.energy_flux     = sqrt (residual_norm.energy_flux) / grid.n_cell;
+   residual_norm.energy_flux     = sqrt (residual_norm.energy_flux)     / grid.n_cell;
 
    // Total residual of all components
    residual_norm_total = pow(residual_norm.mass_flux, 2) +
@@ -208,6 +210,15 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
    }
 
    residual_norm_total /= residual_norm_total0;
+}
+
+// Save solution to file
+void FiniteVolume::output (const unsigned int iter)
+{
+   Writer writer (grid);
+   writer.attach_cell_data (primitive);
+   writer.attach_cell_mach ();
+   writer.output_vtk ("out.vtk");
 }
 
 // Perform time marching iterations
@@ -232,7 +243,9 @@ void FiniteVolume::solve ()
 
       ++iter;
       time += dt_global;
-      cout << iter << "  " 
+      cout << setw(6) << iter << "  " 
+           << scientific
+           << setprecision (4) 
            << dt_global << "  " 
            << residual_norm.mass_flux << "  "
            << residual_norm.momentum_flux.x << "  "
@@ -244,14 +257,6 @@ void FiniteVolume::solve ()
    }
 
    output (iter);
-}
-
-// Save solution to file
-void FiniteVolume::output (const unsigned int iter)
-{
-   Writer writer (grid);
-   writer.attach_cell_data (primitive);
-   writer.output_vtk ("out.vtk");
 }
 
 // This is where the real work starts

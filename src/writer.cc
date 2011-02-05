@@ -127,6 +127,7 @@ void Writer::output_vtk (string filename)
              << endl;
    }
 
+   // Write mach number at vertices
    if(has_cell_mach)
    {
       vtk << "SCALARS mach float 1" << endl;
@@ -135,7 +136,7 @@ void Writer::output_vtk (string filename)
       {
          double sonic_square = GAMMA * (*cell_primitive)[i].pressure /
                                        (*cell_primitive)[i].density;
-         double mach = sqrt ( (*cell_primitive)[i].velocity. square() /
+         double mach = sqrt ( (*cell_primitive)[i].velocity.square() /
                                sonic_square );
          vtk << mach << endl;
       }
