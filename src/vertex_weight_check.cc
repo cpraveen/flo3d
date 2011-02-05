@@ -42,8 +42,8 @@ void Grid::vertex_weight_check ()
             }          
       }
 
-   cout << " No. of vertex with negative weight: "
-        << nega_vertex_weight << endl ;
+   cout << " No. of vertex with negative weight            : "
+        << nega_vertex_weight << endl;
    cout << " No. of vertex with negative weight on boundary: "
         << vertex_boundary <<endl;
    cout << " No. of vertex with negative weight in interior: "

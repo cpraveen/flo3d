@@ -240,7 +240,7 @@ void FiniteVolume::solve ()
            << residual_norm.momentum_flux.z << "  "
            << residual_norm.energy_flux
            << endl;
-      if(iter % 1000 == 0) output (iter);
+      if(iter % param.write_frequency == 0) output (iter);
    }
 
    output (iter);

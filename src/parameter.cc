@@ -34,4 +34,6 @@ void Parameter::read ()
    bc_type.insert(pair<int,BCType>(100006, slip));
    bc_type.insert(pair<int,BCType>(100007, slip));
    bc_type.insert(pair<int,BCType>(100008, farfield));
+
+   write_frequency = 100;
 }
