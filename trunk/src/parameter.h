@@ -31,6 +31,8 @@ class Parameter
       std::map<int,BCType> bc_type;
       std::map< int,std::vector<double> > bc_state;
 
+      unsigned int write_frequency;
+
       void read ();
 };
 
