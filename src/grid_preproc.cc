@@ -5,7 +5,9 @@
 
 using namespace std;
 
+//------------------------------------------------------------------------------
 // Compute cell volumes
+//------------------------------------------------------------------------------
 void Grid::compute_cell_volume ()
 {
    unsigned int v0, v1, v2, v3;
@@ -32,7 +34,9 @@ void Grid::compute_cell_volume ()
 
 }
 
+//------------------------------------------------------------------------------
 // Compute face normals
+//------------------------------------------------------------------------------
 void Grid::compute_face_normal ()
 {
    unsigned int v0, v1, v2 ,lvertex ;
@@ -59,31 +63,38 @@ void Grid::compute_face_normal ()
   }
 }
 
+//------------------------------------------------------------------------------
 // Add new_face to face list
+//------------------------------------------------------------------------------
 void Grid::add_face (const Face& new_face)
 {
    bool found = false;
    unsigned int n = 0;
 
-   // Loop over all existing faces
-   while (!found && n < n_face)
+   // Take any vertex of this face
+   unsigned int v = new_face.vertex[0];
+
+   // Loop over all existing faces of vertex v
+   while (n<node_face[v].size() && !found)
    {
-      if(face[n].lcell==-1) // Boundary face not filled yet
+      unsigned int f = node_face[v][n];
+
+      if(face[f].lcell==-1) // Boundary face not filled yet
       {
-         if(face[n] == new_face)
+         if(face[f] == new_face)
          {
-            face[n].lcell   = new_face.lcell;
-            face[n].lvertex = new_face.lvertex;
+            face[f].lcell   = new_face.lcell;
+            face[f].lvertex = new_face.lvertex;
 
             found = true;
          }
       }
-      else if(face[n].rcell == -1) // Boundary or interior face
+      else if(face[f].rcell == -1) // Boundary or interior face
       {
-         if(face[n] == new_face)
+         if(face[f] == new_face)
          {
-            face[n].rcell   = new_face.lcell;
-            face[n].rvertex = new_face.lvertex;
+            face[f].rcell   = new_face.lcell;
+            face[f].rvertex = new_face.lvertex;
 
             found = true;
          }
@@ -103,23 +114,43 @@ void Grid::add_face (const Face& new_face)
       face[n_face].lvertex    = new_face.lvertex; // left vertex
       face[n_face].rcell      = -1; // right cell to be found
       face[n_face].rvertex    = -1; // right vertex to be found
+
+      // Add this face to its three vertices
+      for(unsigned int i=0; i<3; ++i)
+      {
+         v = new_face.vertex[i];
+         node_face[v].push_back (n_face);
+      }
+
       ++n_face;
    }
 
 }
 
+//------------------------------------------------------------------------------
 // Create interior faces and connectivity data
+//------------------------------------------------------------------------------
 void Grid::make_faces ()
 {
    cout << "Creating faces ..." << endl;
    unsigned int i;
 
+   node_face.resize (n_vertex);
+
+   // Existing boundary faces
    for(i=0; i<n_face; ++i)
    {
       face[i].lcell   = -1;
       face[i].rcell   = -1;
       face[i].lvertex = -1;
       face[i].rvertex = -1;
+
+      // Add this face to the three vertices
+      for(unsigned int j=0; j<3; ++j)
+      {
+         unsigned int v = face[i].vertex[j];
+         node_face[v].push_back(i);
+      }
    }
 
    Face new_face;
@@ -171,9 +202,16 @@ void Grid::make_faces ()
       if(face[i].type == -1) // Interior face, check right cell
          assert(face[i].rcell != -1);
    }
+
+   // Free memory of node_face since we dont need it any more
+   for(i=0; i<n_vertex; ++i)
+      node_face[i].resize (0);
+   node_face.resize (0);
 }
 
+//------------------------------------------------------------------------------
 // Find cells surrounding a cell
+//------------------------------------------------------------------------------
 void Grid::find_cell_surr_cell ()
 {
    cout << "TODO: cell surrounding cell" << endl;
@@ -190,7 +228,9 @@ void Grid::find_cell_surr_cell ()
    }
 }
 
+//------------------------------------------------------------------------------
 // Preprocess the grid
+//------------------------------------------------------------------------------
 void Grid::preproc ()
 {
    make_faces ();
