@@ -7,6 +7,8 @@
 #include "grid.h"
 #include "writer.h"
 
+extern bool debug;
+
 using namespace std ;
 
 void Grid::vertex_weight_check ()
@@ -50,8 +52,11 @@ void Grid::vertex_weight_check ()
         << nega_vertex_weight-vertex_boundary << endl;
    
 
-   Writer writer (*this);
-   writer.attach_vertex_data (weight_flag, "weight_flag");
-   writer.output_vtk ("weight.vtk");
+   if(debug)
+   {
+      Writer writer (*this);
+      writer.attach_vertex_data (weight_flag, "weight_flag");
+      writer.output_vtk ("weight.vtk");
+   }
 }
 
