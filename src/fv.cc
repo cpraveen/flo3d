@@ -213,7 +213,7 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
    residual_norm_total = sqrt (residual_norm_total);
 
    // Copy residual in first iteration for normalization
-   if(iter == 0)
+   if(iter == 1)
    {
       residual_norm_total0 = residual_norm_total;
       cout << "  Initial residual = " << residual_norm_total0 << endl;
@@ -226,6 +226,18 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
    }
 
    residual_norm_total /= residual_norm_total0;
+
+   // Screen output
+   cout << setw(6) << iter << "  " 
+        << scientific
+        << setprecision (4) 
+        << dt_global << "  " 
+        << residual_norm.mass_flux << "  "
+        << residual_norm.momentum_flux.x << "  "
+        << residual_norm.momentum_flux.y << "  "
+        << residual_norm.momentum_flux.z << "  "
+        << residual_norm.energy_flux
+        << endl;
 }
 
 //------------------------------------------------------------------------------
@@ -259,23 +271,15 @@ void FiniteVolume::solve ()
          compute_residual ();
          update_solution (r);
       }
-      compute_residual_norm (iter);
 
       ++iter;
       time += dt_global;
-      cout << setw(6) << iter << "  " 
-           << scientific
-           << setprecision (4) 
-           << dt_global << "  " 
-           << residual_norm.mass_flux << "  "
-           << residual_norm.momentum_flux.x << "  "
-           << residual_norm.momentum_flux.y << "  "
-           << residual_norm.momentum_flux.z << "  "
-           << residual_norm.energy_flux
-           << endl;
+
+      compute_residual_norm (iter);
       if(iter % param.write_frequency == 0) output (iter);
    }
 
+   // Save final solution
    output (iter);
 }
 
