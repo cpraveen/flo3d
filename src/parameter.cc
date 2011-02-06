@@ -3,7 +3,7 @@
 #include <map>
 #include <cassert>
 #include "parameter.h"
-
+#include <cstdlib>
 using namespace std;
 
 ifstream& skipComment (ifstream &strm);
