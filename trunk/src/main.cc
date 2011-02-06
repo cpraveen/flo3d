@@ -3,11 +3,19 @@
 #include <cassert>
 #include "fv.h"
 
+bool debug;
+
 using namespace std;
+
+void process_command_line (int argc, char* argv[], int& ifile);
 
 int main(int argc, char* argv[])
 {
-   assert (argc==2);
-   FiniteVolume problem (argv[1]);
+   cout << "Starting flo3d\n";
+
+   int ifile;
+   process_command_line (argc, argv, ifile);
+
+   FiniteVolume problem (argv[ifile]);
    problem.run ();
 }
