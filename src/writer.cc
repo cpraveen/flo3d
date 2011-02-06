@@ -8,14 +8,18 @@
 
 using namespace std;
 
+//------------------------------------------------------------------------------
 // Add integer data
+//------------------------------------------------------------------------------
 void Writer::attach_vertex_data (vector<double>& data, string name)
 {
    vertex_data.push_back (&data);
    vertex_data_name.push_back (name);
 }
 
+//------------------------------------------------------------------------------
 // Add primitive variables defined at vertices
+//------------------------------------------------------------------------------
 void Writer::attach_vertex_data (vector<PrimVar>& data)
 {
    assert (!has_vertex_primitive);
@@ -23,7 +27,9 @@ void Writer::attach_vertex_data (vector<PrimVar>& data)
    has_vertex_primitive = true;
 }
 
+//------------------------------------------------------------------------------
 // Add primitive variables defined at cells
+//------------------------------------------------------------------------------
 void Writer::attach_cell_data (vector<PrimVar>& data)
 {
    assert (!has_cell_primitive);
@@ -31,7 +37,9 @@ void Writer::attach_cell_data (vector<PrimVar>& data)
    has_cell_primitive = true;
 }
 
+//------------------------------------------------------------------------------
 // Add mach number at cell centers
+//------------------------------------------------------------------------------
 void Writer::attach_cell_mach ()
 {
    assert (!has_cell_mach);
@@ -39,7 +47,9 @@ void Writer::attach_cell_mach ()
    has_cell_mach = true;
 }
 
+//------------------------------------------------------------------------------
 // Write data to vtk file
+//------------------------------------------------------------------------------
 void Writer::output_vtk (string filename)
 {
    ofstream vtk;
