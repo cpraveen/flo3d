@@ -130,11 +130,6 @@ void PrimVar::zero ()
    pressure = 0.0;
 }
 
-double ConVar::pressure () const
-{
-   return (GAMMA - 1.0) * (energy - 0.5 * momentum.square() / density);
-}
-
 // Set all flux components to zero
 void Flux::zero ()
 {
@@ -207,9 +202,9 @@ void Material::num_flux (const PrimVar& left,
    Vector unit_normal = normal / area;
 
    // Enthalpy
-   double h_left  = GAMMA*left.pressure/(left.density*(GAMMA-1.0))
+   double h_left  = gamma*left.pressure/(left.density*(gamma-1.0))
       + 0.5 * left.velocity.square();
-   double h_right = GAMMA*right.pressure/(right.density*(GAMMA-1.0))
+   double h_right = gamma*right.pressure/(right.density*(gamma-1.0))
       + 0.5 * right.velocity.square();
 
    double rho_left_sqrt = sqrt(left.density);
@@ -224,7 +219,7 @@ void Material::num_flux (const PrimVar& left,
    double h = h_left * fact_left + h_right * fact_right;
 
    double vel_normal = velocity * unit_normal;
-   double c = sqrt( (GAMMA-1.0) * (h - 0.5*velocity.square()) );
+   double c = sqrt( (gamma-1.0) * (h - 0.5*velocity.square()) );
 
    double dp = right.pressure - left.pressure;
    double vel_left_normal  = left.velocity  * unit_normal;

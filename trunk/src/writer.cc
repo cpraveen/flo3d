@@ -144,8 +144,9 @@ void Writer::output_vtk (string filename)
       vtk << "LOOKUP_TABLE default" << endl;
       for(unsigned int i=0; i<grid->n_cell; ++i)
       {
-         double sonic_square = GAMMA * (*cell_primitive)[i].pressure /
-                                       (*cell_primitive)[i].density;
+         double sonic_square = material->gamma * 
+                               (*cell_primitive)[i].pressure /
+                               (*cell_primitive)[i].density;
          double mach = sqrt ( (*cell_primitive)[i].velocity.square() /
                                sonic_square );
          vtk << mach << endl;
