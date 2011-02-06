@@ -9,7 +9,9 @@
 
 using namespace std;
 
+//------------------------------------------------------------------------------
 // Set initial condition
+//------------------------------------------------------------------------------
 void FiniteVolume::initialize ()
 {
    primitive.resize (grid.n_cell);
@@ -33,8 +35,10 @@ void FiniteVolume::interpolate_vertex ()
          primitive_vertex[grid.cell[i].vertex[j]] += primitive[i] * grid.cell[i].weight[j];
 }
 
+//------------------------------------------------------------------------------
 // Reconstruct left and right states
 // CURRENTLY FIRST ORDER
+//------------------------------------------------------------------------------
 void FiniteVolume::reconstruct (const unsigned int vl,
                                 const unsigned int cl,
                                 const unsigned int vr,
@@ -45,8 +49,10 @@ void FiniteVolume::reconstruct (const unsigned int vl,
    state[1] = primitive[cr];
 }
 
+//------------------------------------------------------------------------------
 // Reconstruct left state for a boundary face
 // CURRENTLY FIRST ORDER
+//------------------------------------------------------------------------------
 void FiniteVolume::reconstruct (const unsigned int vl,
                                 const unsigned int cl,
                                 PrimVar&           state) const
@@ -54,7 +60,9 @@ void FiniteVolume::reconstruct (const unsigned int vl,
    state = primitive[cl];
 }
 
+//------------------------------------------------------------------------------
 // Compute residual for each cell
+//------------------------------------------------------------------------------
 void FiniteVolume::compute_residual ()
 {
    // Interpolate solution from cell to vertex
@@ -105,7 +113,9 @@ void FiniteVolume::compute_residual ()
    }
 }
 
+//------------------------------------------------------------------------------
 // Compute time step
+//------------------------------------------------------------------------------
 void FiniteVolume::compute_dt ()
 {
    for(unsigned int i=0; i<grid.n_cell; ++i)
@@ -142,14 +152,18 @@ void FiniteVolume::compute_dt ()
 
 }
 
+//------------------------------------------------------------------------------
 // Store old conserved variables for multi-stage RK
+//------------------------------------------------------------------------------
 void FiniteVolume::store_conserved_old ()
 {
    for(unsigned int i=0; i<grid.n_cell; ++i)
       conserved_old[i] = material.prim2con (primitive[i]);
 }
 
+//------------------------------------------------------------------------------
 // Update solution by RK scheme
+//------------------------------------------------------------------------------
 void FiniteVolume::update_solution (const unsigned int r)
 {
    double factor;
@@ -165,7 +179,9 @@ void FiniteVolume::update_solution (const unsigned int r)
    }
 }
 
+//------------------------------------------------------------------------------
 // Compute L2 norm of mass, momentum and energy residuals
+//------------------------------------------------------------------------------
 void FiniteVolume::compute_residual_norm (const unsigned int iter)
 {
    residual_norm.mass_flux     = 0.0;
@@ -212,7 +228,9 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
    residual_norm_total /= residual_norm_total0;
 }
 
+//------------------------------------------------------------------------------
 // Save solution to file
+//------------------------------------------------------------------------------
 void FiniteVolume::output (const unsigned int iter)
 {
    Writer writer (grid);
@@ -221,7 +239,9 @@ void FiniteVolume::output (const unsigned int iter)
    writer.output_vtk ("out.vtk");
 }
 
+//------------------------------------------------------------------------------
 // Perform time marching iterations
+//------------------------------------------------------------------------------
 void FiniteVolume::solve ()
 {
    unsigned int iter = 0;
@@ -259,7 +279,9 @@ void FiniteVolume::solve ()
    output (iter);
 }
 
+//------------------------------------------------------------------------------
 // This is where the real work starts
+//------------------------------------------------------------------------------
 void FiniteVolume::run ()
 {
    param.read ();
