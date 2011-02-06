@@ -1,11 +1,13 @@
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
+#include <cassert>
 #include "fv.h"
 
 using namespace std;
 
 int main(int argc, char* argv[])
 {
-   FiniteVolume problem;
+   assert (argc==2);
+   FiniteVolume problem (argv[1]);
    problem.run ();
 }

@@ -26,11 +26,12 @@ void Grid::read (const Parameter& param)
 // Print some grid information to screen
 void Grid::info ()
 {
-   cout << "Number of vertices = " << n_vertex << endl;
-   cout << "Number of cells    = " << n_cell << endl;
-   cout << "Number of faces    = " << n_face << endl;
-   cout << "Minimum cell volume= " << min_cell_volume << endl;
-   cout << "Maximum cell volume= " << max_cell_volume << endl;
+   cout << "Grid information:\n";
+   cout << "  Number of vertices = " << n_vertex << endl;
+   cout << "  Number of cells    = " << n_cell << endl;
+   cout << "  Number of faces    = " << n_face << endl;
+   cout << "  Minimum cell volume= " << min_cell_volume << endl;
+   cout << "  Maximum cell volume= " << max_cell_volume << endl;
 }
 
 // Check that all boundary faces have been assigned a bc type

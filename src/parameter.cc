@@ -1,41 +1,315 @@
+#include <iostream>
 #include <cmath>
 #include <map>
+#include <cassert>
 #include "parameter.h"
 
 using namespace std;
+
+ifstream& skipComment (ifstream &strm);
+
+//------------------------------------------------------------------------------
+// Check that two strings match
+//------------------------------------------------------------------------------
+void checkString (const string& str1, const string& str2)
+{
+   if(str1 != str2)
+   {
+      cout << "   Expecting " << str2 << " but found " << str1 << endl;
+      abort ();
+   }
+}
 
 //------------------------------------------------------------------------------
 // Read parameters from file TODO
 //------------------------------------------------------------------------------
 void Parameter::read ()
 {
-   grid_type = gmsh;
-   grid_file = "bump.msh";
+   cout << "Reading input file " << file << endl;
+   fin.open (file);
+   assert (fin.is_open());
 
-   cfl = 0.8;
-   max_iter = 10000;
-   final_time = 1.0e20;
-   min_residue = 1.0e-6;
-   mach_inf = 0.6;
-   velocity_inf.x = 1.0;
-   velocity_inf.y = 0.0;
-   velocity_inf.z = 0.0;
+   read_grid ();
+   read_numeric ();
+   read_material ();
+   read_initial_condition ();
+   read_boundary ();
+   read_integrals ();
+   read_output ();
 
-   prim_inf.density  = 1.0;
-   prim_inf.velocity = velocity_inf;
-   prim_inf.pressure  = 1.0/(GAMMA * pow(mach_inf,2));
+   fin.close ();
+}
 
-   bc_type.insert(pair<int,BCType>(100001, farfield));
+//------------------------------------------------------------------------------
+// Read grid section
+//------------------------------------------------------------------------------
+void Parameter::read_grid ()
+{
+   cout << "  Reading grid section\n";
 
-   bc_type.insert(pair<int,BCType>(100002, slip));
+   string input;
 
-   bc_type.insert(pair<int,BCType>(100003, slip));
-   bc_type.insert(pair<int,BCType>(100004, slip));
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "grid");
 
-   bc_type.insert(pair<int,BCType>(100005, slip));
-   bc_type.insert(pair<int,BCType>(100006, slip));
-   bc_type.insert(pair<int,BCType>(100007, slip));
-   bc_type.insert(pair<int,BCType>(100008, farfield));
+   fin >> input;
+   checkString (input, "{");
 
-   write_frequency = 100;
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "type");
+   fin >> input;
+   if(input=="gmsh")
+      grid_type = gmsh;
+   else
+   {
+      cout << "   Unknown file type " << input << endl;
+      abort ();
+   }
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "file");
+   fin >> grid_file;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "}");
+}
+
+//------------------------------------------------------------------------------
+// Read numeric section
+//------------------------------------------------------------------------------
+void Parameter::read_numeric ()
+{
+   cout << "  Reading numeric section\n";
+
+   string input;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "numeric");
+
+   fin >> input;
+   checkString (input, "{");
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "time_mode");
+   fin >> time_mode;
+   assert (time_mode == "steady" || time_mode == "unsteady");
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "time_scheme");
+   fin >> time_scheme;
+   assert (time_scheme == "rk1" || time_scheme == "rk3");
+   if(time_scheme=="rk1") n_rks = 1;
+   if(time_scheme=="rk3") n_rks = 3;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "cfl");
+   fin >> cfl;
+   assert (cfl > 0.0);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "max_iter");
+   fin >> max_iter;
+   assert (max_iter > 0);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "final_time");
+   fin >> final_time;
+   assert (final_time > 0.0);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "min_residue");
+   fin >> min_residue;
+   assert (min_residue > 0.0);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "}");
+}
+
+//------------------------------------------------------------------------------
+// Read material section
+//------------------------------------------------------------------------------
+void Parameter::read_material ()
+{
+   cout << "  Reading material section\n";
+
+   string input;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "material");
+
+   fin >> input;
+   checkString (input, "{");
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "gamma");
+   fin >> material.gamma;
+   assert (material.gamma > 0.0);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "gas_const");
+   fin >> material.gas_const;
+   assert (material.gas_const > 0.0);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "model");
+   fin >> material.model;
+   assert (material.model == "euler");
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "flux");
+   fin >> material.flux;
+   assert (material.flux == "roe");
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "}");
+}
+
+//------------------------------------------------------------------------------
+// Read initial condition
+//------------------------------------------------------------------------------
+void Parameter::read_initial_condition ()
+{
+   cout << "  Reading initial condition section\n";
+
+   string input;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "initial_condition");
+
+   fin >> input;
+   checkString (input, "{");
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "density");
+   fin >> prim_inf.density;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "velocity");
+   fin >> prim_inf.velocity.x;
+   fin >> prim_inf.velocity.y;
+   fin >> prim_inf.velocity.z;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "pressure");
+   fin >> prim_inf.pressure;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "}");
+}
+
+//------------------------------------------------------------------------------
+// Read boundary conditions
+//------------------------------------------------------------------------------
+void Parameter::read_boundary ()
+{
+   cout << "  Reading boundary section\n";
+
+   string input;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "boundary");
+
+   fin >> input;
+   checkString (input, "{");
+
+   while (input!="}")
+   {
+      unsigned int b_type;
+      fin >> b_type >> input;
+
+      skipComment (fin);
+
+      if(input=="farfield")
+         bc_type.insert (pair<int,BCType>(b_type, farfield));
+      else if(input=="slip")
+         bc_type.insert (pair<int,BCType>(b_type, slip));
+      else
+      {
+         cout << "   Unknown boundary type " << input << endl;
+         abort ();
+      }
+
+      streampos curr_pos = fin.tellg ();
+      fin >> input;
+      if(input != "}")
+         fin.seekg(curr_pos);
+   }
+
+}
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void Parameter::read_integrals ()
+{
+   cout << "  Reading integrals section\n";
+
+   string input;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "integrals");
+
+   fin >> input;
+   checkString (input, "{");
+
+   while (input != "}")
+   {
+      fin >> input;
+   }
+}
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void Parameter::read_output ()
+{
+   cout << "  Reading output section\n";
+
+   string input;
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "output");
+
+   fin >> input;
+   checkString (input, "{");
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "format");
+   fin >> write_format;
+   assert (write_format == "vtk");
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "frequency");
+   fin >> write_frequency;
+   assert (write_frequency > 0);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "}");
 }

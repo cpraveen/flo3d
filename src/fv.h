@@ -10,7 +10,11 @@
 class FiniteVolume
 {
    public:
-      FiniteVolume () {};
+      FiniteVolume (char* file) 
+      { 
+         param.file = file;
+         param.read ();
+      }
       ~FiniteVolume () {};
       void run ();
 
@@ -29,15 +33,9 @@ class FiniteVolume
       std::vector<double>  dt;
       double               dt_global;
 
-      void reconstruct (const unsigned int,
-                        const unsigned int,
-                        const unsigned int,
-                        const unsigned int,
-                        std::vector<PrimVar>&) const;
-
-      void reconstruct (const unsigned int vl,
-                        const unsigned int cl,
-                        PrimVar&           state) const;
+      void reconstruct (const unsigned int&      f,
+                        bool                     has_right,
+                        std::vector<PrimVar>&    state) const;
 
       void initialize ();
       void interpolate_vertex ();
