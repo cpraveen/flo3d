@@ -39,25 +39,30 @@ void FiniteVolume::interpolate_vertex ()
 // Reconstruct left and right states
 // CURRENTLY FIRST ORDER
 //------------------------------------------------------------------------------
-void FiniteVolume::reconstruct (const unsigned int vl,
-                                const unsigned int cl,
-                                const unsigned int vr,
-                                const unsigned int cr,
-                                vector<PrimVar>&   state) const
+void FiniteVolume::reconstruct (const unsigned int& f,
+                                bool                has_right,
+                                vector<PrimVar>&    state) const
 {
-   state[0] = primitive[cl];
-   state[1] = primitive[cr];
-}
+   // Average on face
+   PrimVar face_avg;
+   face_avg.zero ();
 
-//------------------------------------------------------------------------------
-// Reconstruct left state for a boundary face
-// CURRENTLY FIRST ORDER
-//------------------------------------------------------------------------------
-void FiniteVolume::reconstruct (const unsigned int vl,
-                                const unsigned int cl,
-                                PrimVar&           state) const
-{
-   state = primitive[cl];
+   for(unsigned int i=0; i<3; ++i)
+      face_avg += primitive_vertex[ grid.face[f].vertex[i] ];
+   face_avg *= (1.0/3.0);
+
+   // Left state
+   unsigned int vl = grid.face[f].lvertex;
+   unsigned int cl = grid.face[f].lcell;
+   state[0] = primitive[cl] + ( face_avg - primitive_vertex[vl] ) * 0.25;
+
+   // Right state
+   if(has_right)
+   {
+      unsigned int vr = grid.face[f].rvertex;
+      unsigned int cr = grid.face[f].rcell;
+      state[1] = primitive[cr] + ( face_avg - primitive_vertex[vr] ) * 0.25;
+   }
 }
 
 //------------------------------------------------------------------------------
@@ -84,7 +89,7 @@ void FiniteVolume::compute_residual ()
          vr = grid.face[i].rvertex;
          cl = grid.face[i].lcell;
          cr = grid.face[i].rcell;
-         reconstruct ( vl, cl, vr, cr, state );
+         reconstruct ( i, true, state );
          material.num_flux ( state[0], state[1], grid.face[i].normal, flux );
          residual[cl] += flux;
          residual[cr] -= flux;
@@ -93,7 +98,7 @@ void FiniteVolume::compute_residual ()
       {
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
-         reconstruct ( vl, cl, state[0] );
+         reconstruct ( i, false, state );
          material.slip_flux ( state[0], grid.face[i].normal, flux );
          residual[cl] += flux;
       }
@@ -101,7 +106,7 @@ void FiniteVolume::compute_residual ()
       {
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
-         reconstruct ( vl, cl, state[0] );
+         reconstruct ( i, false, state );
          material.num_flux ( state[0], param.prim_inf, grid.face[i].normal, flux );
          residual[cl] += flux;
       }
@@ -149,6 +154,11 @@ void FiniteVolume::compute_dt ()
       dt[i] = param.cfl * grid.cell[i].volume / dt[i];
       dt_global = min( dt_global, dt[i] );
    }
+
+   // For unsteady simulation, use global time step
+   if(param.time_mode == "unsteady")
+      for(unsigned int i=0; i<grid.n_cell; ++i)
+         dt[i] = dt_global;
 
 }
 
@@ -228,10 +238,11 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
    residual_norm_total /= residual_norm_total0;
 
    // Screen output
-   cout << setw(6) << iter << "  " 
+   cout << setw(8) << iter << "  " 
         << scientific
         << setprecision (4) 
         << dt_global << "  " 
+        << residual_norm_total << "  "
         << residual_norm.mass_flux << "  "
         << residual_norm.momentum_flux.x << "  "
         << residual_norm.momentum_flux.y << "  "
@@ -248,7 +259,9 @@ void FiniteVolume::output (const unsigned int iter)
    Writer writer (grid);
    writer.attach_cell_data (primitive);
    writer.attach_cell_mach ();
-   writer.output_vtk ("out.vtk");
+
+   if(param.write_format == "vtk")
+      writer.output_vtk ("out.vtk");
 }
 
 //------------------------------------------------------------------------------
@@ -266,7 +279,7 @@ void FiniteVolume::solve ()
    {
       store_conserved_old ();
       compute_dt ();
-      for(unsigned int r=0; r<3; ++r)
+      for(unsigned int r=0; r<param.n_rks; ++r)
       {
          compute_residual ();
          update_solution (r);
@@ -288,8 +301,6 @@ void FiniteVolume::solve ()
 //------------------------------------------------------------------------------
 void FiniteVolume::run ()
 {
-   param.read ();
-   
    // Read grid from file
    grid.read (param);
 

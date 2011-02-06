@@ -137,7 +137,7 @@ void Grid::weight_average ()
        }
 
 
-         cout << " The minimum weight calculate on vertex for averageing is "<< min_weight << endl ;
-         cout << " The maximum weight calculate on vertex for averageing is "<< max_weight << endl ;
+         cout << "  minimum vertex weight                  : "<< min_weight << endl ;
+         cout << "  maximum vertex weight                  : "<< max_weight << endl ;
 
 }

@@ -1,6 +1,7 @@
 #ifndef __MATERIAL_H__
 #define __MATERIAL_H__
 
+#include <string>
 #include "vec.h"
 
 const double GAMMA = 1.4;
@@ -12,7 +13,10 @@ class PrimVar
       double density, pressure;
       Vector velocity;
 
-      PrimVar  operator*  (const double  scalar) const;
+      PrimVar  operator+  (const PrimVar& prim_var) const;
+      PrimVar  operator-  (const PrimVar& prim_var) const;
+      PrimVar  operator*  (const double& scalar) const;
+      PrimVar& operator*= (const double& scalar);
       PrimVar& operator+= (const PrimVar& prim_var);
       void zero ();
 };
@@ -56,6 +60,10 @@ class ConVar
 class Material
 {
    public:
+      double gamma;
+      double gas_const;
+      std::string model;
+      std::string flux;
 
       ConVar  prim2con (const PrimVar& prim_var);
       PrimVar con2prim (const ConVar&  con_var);

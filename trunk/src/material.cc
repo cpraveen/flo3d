@@ -66,7 +66,32 @@ ConVar ConVar::operator* (const double scalar) const
    return result;
 }
 
-PrimVar PrimVar::operator* (const double scalar) const
+// Add two primitive variables
+PrimVar PrimVar::operator+ (const PrimVar& prim_var) const
+{
+   PrimVar result;
+
+   result.density  = density  + prim_var.density;
+   result.velocity = velocity + prim_var.velocity;
+   result.pressure = pressure + prim_var.pressure;
+
+   return result;
+}
+
+// Subtract two primitive variables
+PrimVar PrimVar::operator- (const PrimVar& prim_var) const
+{
+   PrimVar result;
+
+   result.density  = density  - prim_var.density;
+   result.velocity = velocity - prim_var.velocity;
+   result.pressure = pressure - prim_var.pressure;
+
+   return result;
+}
+
+// Multiply primitive by scalar and return result
+PrimVar PrimVar::operator* (const double& scalar) const
 {
    PrimVar result;
 
@@ -77,6 +102,17 @@ PrimVar PrimVar::operator* (const double scalar) const
    return result;
 }
 
+// Multiply given primitive by scalar
+PrimVar& PrimVar::operator*= (const double& scalar)
+{
+   density  *= scalar;
+   velocity *= scalar; 
+   pressure *= scalar;
+
+   return *this;
+}
+
+// Add primitive variable to given primitive variable
 PrimVar& PrimVar::operator+= (const PrimVar& prim_var)
 {
    density  += prim_var.density;
@@ -99,6 +135,7 @@ double ConVar::pressure () const
    return (GAMMA - 1.0) * (energy - 0.5 * momentum.square() / density);
 }
 
+// Set all flux components to zero
 void Flux::zero ()
 {
    mass_flux     = 0.0;
@@ -106,6 +143,7 @@ void Flux::zero ()
    energy_flux   = 0.0;
 }
 
+// Add flux to given flux
 Flux& Flux::operator+= (const Flux& flux)
 {
    mass_flux     += flux.mass_flux;
@@ -115,6 +153,7 @@ Flux& Flux::operator+= (const Flux& flux)
    return *this;
 }
 
+// Subtract flux from given flux
 Flux& Flux::operator-= (const Flux& flux)
 {
    mass_flux     -= flux.mass_flux;
@@ -124,7 +163,7 @@ Flux& Flux::operator-= (const Flux& flux)
    return *this;
 }
 
-// Multiply flux by a scalar
+// Multiply given flux by a scalar
 Flux& Flux::operator*= (const double& scalar)
 {
    mass_flux     *= scalar;
