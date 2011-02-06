@@ -9,9 +9,18 @@
 class Writer
 {
    public:
-      Writer (const Grid& grid) 
+      Writer (const Grid&     grid)
          : 
          grid (&grid),
+         has_vertex_primitive (false),
+         has_cell_primitive (false),
+         has_cell_mach (false)
+         {};
+      Writer (const Grid&     grid,
+              const Material& material) 
+         : 
+         grid (&grid),
+         material (&material),
          has_vertex_primitive (false),
          has_cell_primitive (false),
          has_cell_mach (false)
@@ -24,7 +33,8 @@ class Writer
 
    private:
 
-      const Grid* grid;
+      const Grid*     grid;
+      const Material* material;
 
       std::vector< std::vector<double>* > vertex_data;
       std::vector<std::string> vertex_data_name;

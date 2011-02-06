@@ -90,7 +90,7 @@ void FiniteVolume::compute_residual ()
          cl = grid.face[i].lcell;
          cr = grid.face[i].rcell;
          reconstruct ( i, true, state );
-         material.num_flux ( state[0], state[1], grid.face[i].normal, flux );
+         param.material.num_flux ( state[0], state[1], grid.face[i].normal, flux );
          residual[cl] += flux;
          residual[cr] -= flux;
       }
@@ -99,7 +99,7 @@ void FiniteVolume::compute_residual ()
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
-         material.slip_flux ( state[0], grid.face[i].normal, flux );
+         param.material.slip_flux ( state[0], grid.face[i].normal, flux );
          residual[cl] += flux;
       }
       else if(param.bc_type[grid.face[i].type] == farfield)
@@ -107,7 +107,7 @@ void FiniteVolume::compute_residual ()
          vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
-         material.num_flux ( state[0], param.prim_inf, grid.face[i].normal, flux );
+         param.material.num_flux ( state[0], param.prim_inf, grid.face[i].normal, flux );
          residual[cl] += flux;
       }
       else
@@ -126,6 +126,7 @@ void FiniteVolume::compute_dt ()
    for(unsigned int i=0; i<grid.n_cell; ++i)
       dt[i] = 0.0;
 
+   double gamma = param.material.gamma;
    for(unsigned int i=0; i<grid.n_face; ++i)
    {
       double area = grid.face[i].normal.norm();
@@ -133,7 +134,7 @@ void FiniteVolume::compute_dt ()
       unsigned int cl = grid.face[i].lcell;
 
       double vel_normal_left = primitive[cl].velocity * grid.face[i].normal;
-      double c_left = sqrt( GAMMA * primitive[cl].pressure / primitive[cl].density );
+      double c_left = sqrt( gamma * primitive[cl].pressure / primitive[cl].density );
 
       dt[cl] += fabs(vel_normal_left) + c_left * area;
 
@@ -141,7 +142,7 @@ void FiniteVolume::compute_dt ()
       {
          unsigned int cr = grid.face[i].rcell;
          double vel_normal_right = primitive[cr].velocity * grid.face[i].normal;
-         double c_right = sqrt( GAMMA * primitive[cr].pressure / primitive[cr].density );
+         double c_right = sqrt( gamma * primitive[cr].pressure / primitive[cr].density );
 
          dt[cr] += fabs(vel_normal_right) + c_right * area;
       }
@@ -168,7 +169,7 @@ void FiniteVolume::compute_dt ()
 void FiniteVolume::store_conserved_old ()
 {
    for(unsigned int i=0; i<grid.n_cell; ++i)
-      conserved_old[i] = material.prim2con (primitive[i]);
+      conserved_old[i] = param.material.prim2con (primitive[i]);
 }
 
 //------------------------------------------------------------------------------
@@ -182,10 +183,10 @@ void FiniteVolume::update_solution (const unsigned int r)
    for(unsigned int i=0; i<grid.n_cell; ++i)
    {
       factor      = dt[i] / grid.cell[i].volume;
-      conserved   = material.prim2con (primitive[i]);
+      conserved   = param.material.prim2con (primitive[i]);
       conserved   = conserved_old[i] * a_rk[r] +
                     (conserved - residual[i] * factor) * b_rk[r];
-      primitive[i]= material.con2prim (conserved);
+      primitive[i]= param.material.con2prim (conserved);
    }
 }
 
@@ -256,7 +257,7 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
 //------------------------------------------------------------------------------
 void FiniteVolume::output (const unsigned int iter)
 {
-   Writer writer (grid);
+   Writer writer (grid, param.material);
    writer.attach_cell_data (primitive);
    writer.attach_cell_mach ();
 

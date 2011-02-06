@@ -4,8 +4,6 @@
 #include <string>
 #include "vec.h"
 
-const double GAMMA = 1.4;
-
 // Primitive variable
 class PrimVar
 {
@@ -52,8 +50,6 @@ class ConVar
 
       double density, energy;
       Vector momentum;
-
-      double pressure () const;
 
 };
 

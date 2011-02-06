@@ -21,7 +21,6 @@ class FiniteVolume
    private:
       Parameter param;
       Grid      grid;
-      Material  material;
 
       std::vector<PrimVar> primitive;
       std::vector<ConVar>  conserved_old;
