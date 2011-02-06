@@ -14,7 +14,10 @@ class Writer
          grid (&grid),
          has_vertex_primitive (false),
          has_cell_primitive (false),
-         has_cell_mach (false)
+         write_cell_density (false),
+         write_cell_velocity (false),
+         write_cell_pressure (false),
+         write_cell_mach (false)
          {};
       Writer (const Grid&     grid,
               const Material& material) 
@@ -23,12 +26,15 @@ class Writer
          material (&material),
          has_vertex_primitive (false),
          has_cell_primitive (false),
-         has_cell_mach (false)
+         write_cell_density (false),
+         write_cell_velocity (false),
+         write_cell_pressure (false),
+         write_cell_mach (false)
          {};
       void attach_vertex_data (std::vector<double>& data, std::string name);
       void attach_vertex_data (std::vector<PrimVar>& data);
       void attach_cell_data (std::vector<PrimVar>& data);
-      void attach_cell_mach ();
+      void attach_cell_variables (const std::vector<std::string>& variables);
       void output_vtk (std::string filename);
 
    private:
@@ -44,7 +50,10 @@ class Writer
       std::vector<PrimVar>* cell_primitive;
       bool has_cell_primitive;
 
-      bool has_cell_mach;
+      bool write_cell_density;
+      bool write_cell_velocity;
+      bool write_cell_pressure;
+      bool write_cell_mach;
 
 };
 

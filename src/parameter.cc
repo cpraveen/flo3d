@@ -319,5 +319,22 @@ void Parameter::read_output ()
 
    skipComment (fin);
    fin >> input;
-   checkString (input, "}");
+   checkString (input, "variables");
+
+   fin >> input;
+   checkString (input, "{");
+
+   while (input!="}")
+   {
+      fin >> input;
+      assert (input=="density" || input=="velocity" || input=="pressure" ||
+              input=="mach");
+      write_variables.push_back (input);
+
+      // Check if end of section is reached
+      streampos curr_pos = fin.tellg ();
+      fin >> input;
+      if(input != "}")
+         fin.seekg(curr_pos);
+   }
 }

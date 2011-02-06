@@ -38,13 +38,27 @@ void Writer::attach_cell_data (vector<PrimVar>& data)
 }
 
 //------------------------------------------------------------------------------
-// Add mach number at cell centers
+// Specify which variables to write
 //------------------------------------------------------------------------------
-void Writer::attach_cell_mach ()
+void Writer::attach_cell_variables (const vector<string>& variables)
 {
-   assert (!has_cell_mach);
-   assert ( has_cell_primitive);
-   has_cell_mach = true;
+   if(variables.size() > 0)
+      assert (has_cell_primitive);
+
+   for(unsigned int i=0; i<variables.size(); ++i)
+      if(variables[i]=="density")
+         write_cell_density = true;
+      else if(variables[i]=="velocity")
+         write_cell_velocity = true;
+      else if(variables[i]=="pressure")
+         write_cell_pressure = true;
+      else if(variables[i]=="mach")
+         write_cell_mach = true;
+      else
+      {
+         cout << "Writer: unknown variable " << variables[i] << endl;
+         abort ();
+      }
 }
 
 //------------------------------------------------------------------------------
@@ -112,44 +126,51 @@ void Writer::output_vtk (string filename)
              << endl;
    }
 
-   // Write cell data
-   if(has_cell_primitive || has_cell_mach)
-      vtk << "CELL_DATA  " << grid->n_cell << endl;
-
    // If cell primitive data is available, write to file
    if (has_cell_primitive)
    {
-      vtk << "SCALARS density float 1" << endl;
-      vtk << "LOOKUP_TABLE default" << endl;
-      for(unsigned int i=0; i<grid->n_cell; ++i)
-         vtk << (*cell_primitive)[i].density << endl;
+      vtk << "CELL_DATA  " << grid->n_cell << endl;
 
-      vtk << "SCALARS pressure float 1" << endl;
-      vtk << "LOOKUP_TABLE default" << endl;
-      for(unsigned int i=0; i<grid->n_cell; ++i)
-         vtk << (*cell_primitive)[i].pressure << endl;
-
-      vtk << "VECTORS velocity float" << endl;
-      for(unsigned int i=0; i<grid->n_cell; ++i)
-         vtk << (*cell_primitive)[i].velocity.x << "  "
-             << (*cell_primitive)[i].velocity.y << "  "
-             << (*cell_primitive)[i].velocity.z
-             << endl;
-   }
-
-   // Write mach number at vertices
-   if(has_cell_mach)
-   {
-      vtk << "SCALARS mach float 1" << endl;
-      vtk << "LOOKUP_TABLE default" << endl;
-      for(unsigned int i=0; i<grid->n_cell; ++i)
+      if(write_cell_density)
       {
-         double sonic_square = material->gamma * 
-                               (*cell_primitive)[i].pressure /
-                               (*cell_primitive)[i].density;
-         double mach = sqrt ( (*cell_primitive)[i].velocity.square() /
-                               sonic_square );
-         vtk << mach << endl;
+         vtk << "SCALARS density float 1" << endl;
+         vtk << "LOOKUP_TABLE default" << endl;
+         for(unsigned int i=0; i<grid->n_cell; ++i)
+            vtk << (*cell_primitive)[i].density << endl;
+      }
+
+      if(write_cell_pressure)
+      {
+         vtk << "SCALARS pressure float 1" << endl;
+         vtk << "LOOKUP_TABLE default" << endl;
+         for(unsigned int i=0; i<grid->n_cell; ++i)
+            vtk << (*cell_primitive)[i].pressure << endl;
+      }
+
+      if(write_cell_velocity)
+      {
+         vtk << "VECTORS velocity float" << endl;
+         for(unsigned int i=0; i<grid->n_cell; ++i)
+            vtk << (*cell_primitive)[i].velocity.x << "  "
+               << (*cell_primitive)[i].velocity.y << "  "
+               << (*cell_primitive)[i].velocity.z
+               << endl;
+      }
+
+      // Write mach number at cells
+      if(write_cell_mach)
+      {
+         vtk << "SCALARS mach float 1" << endl;
+         vtk << "LOOKUP_TABLE default" << endl;
+         for(unsigned int i=0; i<grid->n_cell; ++i)
+         {
+            double sonic_square = material->gamma * 
+                                 (*cell_primitive)[i].pressure /
+                                 (*cell_primitive)[i].density;
+            double mach = sqrt ( (*cell_primitive)[i].velocity.square() /
+                                 sonic_square );
+            vtk << mach << endl;
+         }
       }
    }
 
