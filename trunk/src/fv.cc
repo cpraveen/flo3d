@@ -259,7 +259,7 @@ void FiniteVolume::output (const unsigned int iter)
 {
    Writer writer (grid, param.material);
    writer.attach_cell_data (primitive);
-   writer.attach_cell_mach ();
+   writer.attach_cell_variables (param.write_variables);
 
    if(param.write_format == "vtk")
       writer.output_vtk ("out.vtk");

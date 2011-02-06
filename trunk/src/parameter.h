@@ -43,6 +43,7 @@ class Parameter
 
       std::string  write_format;
       unsigned int write_frequency;
+      std::vector<std::string> write_variables;
 
       void read ();
 

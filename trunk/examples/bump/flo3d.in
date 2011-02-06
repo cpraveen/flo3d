@@ -50,4 +50,8 @@ output
 {
    format    vtk
    frequency 1000
+   variables
+   {
+      density velocity pressure mach
+   }
 }
