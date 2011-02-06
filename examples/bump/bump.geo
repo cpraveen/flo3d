@@ -1,3 +1,7 @@
+// Run from terminal as follows:
+//   gmsh -3 -optimize bump.geo
+// This creates file bump.msh
+
 L = 0.5; // extrusion in third direction
 R = 2.0; // radius of arc
 h1 = 0.01; // point density on bump
