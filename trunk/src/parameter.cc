@@ -2,10 +2,12 @@
 #include <cmath>
 #include <map>
 #include <cassert>
-#include "parameter.h"
 #include <cstdlib>
+#include "parameter.h"
+
 using namespace std;
 
+// Function declaration
 ifstream& skipComment (ifstream &strm);
 
 //------------------------------------------------------------------------------
@@ -202,6 +204,7 @@ void Parameter::read_initial_condition ()
    fin >> input;
    checkString (input, "density");
    fin >> prim_inf.density;
+   assert (prim_inf.density > 0.0);
 
    skipComment (fin);
    fin >> input;
@@ -214,6 +217,7 @@ void Parameter::read_initial_condition ()
    fin >> input;
    checkString (input, "pressure");
    fin >> prim_inf.pressure;
+   assert (prim_inf.pressure > 0.0);
 
    skipComment (fin);
    fin >> input;
@@ -238,8 +242,9 @@ void Parameter::read_boundary ()
 
    while (input!="}")
    {
-      unsigned int b_type;
+      int b_type;
       fin >> b_type >> input;
+      assert (b_type != -1); // -1 used for interior faces
 
       skipComment (fin);
 
@@ -253,6 +258,7 @@ void Parameter::read_boundary ()
          abort ();
       }
 
+      // Check if end of section is reached
       streampos curr_pos = fin.tellg ();
       fin >> input;
       if(input != "}")
@@ -262,6 +268,7 @@ void Parameter::read_boundary ()
 }
 
 //------------------------------------------------------------------------------
+// Read integrals section
 //------------------------------------------------------------------------------
 void Parameter::read_integrals ()
 {
@@ -283,6 +290,7 @@ void Parameter::read_integrals ()
 }
 
 //------------------------------------------------------------------------------
+// Read output section
 //------------------------------------------------------------------------------
 void Parameter::read_output ()
 {
