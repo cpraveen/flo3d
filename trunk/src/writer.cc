@@ -4,6 +4,7 @@
 #include <string>
 #include <cmath>
 #include <cassert>
+#include <cstdlib>
 #include "writer.h"
 
 using namespace std;
