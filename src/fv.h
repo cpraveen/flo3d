@@ -1,6 +1,7 @@
 #ifndef __FV_H__
 #define __FV_H__
 
+#include <fstream>
 #include <vector>
 #include "parameter.h"
 #include "material.h"
@@ -19,6 +20,7 @@ class FiniteVolume
       void run ();
 
    private:
+      std::ofstream res;
       Parameter param;
       Grid      grid;
 
