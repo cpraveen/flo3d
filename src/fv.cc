@@ -98,7 +98,7 @@ void FiniteVolume::compute_residual ()
    for(unsigned int i=0; i<grid.n_cell; ++i)
       residual[i].zero ();
 
-   unsigned int vl, vr, cl, cr;
+   unsigned int cl, cr;
    vector<PrimVar> state(2);
    Flux flux;
 
@@ -107,8 +107,6 @@ void FiniteVolume::compute_residual ()
    {
       if(grid.face[i].type == -1)
       {
-         vl = grid.face[i].lvertex;
-         vr = grid.face[i].rvertex;
          cl = grid.face[i].lcell;
          cr = grid.face[i].rcell;
          reconstruct ( i, true, state );
@@ -118,7 +116,6 @@ void FiniteVolume::compute_residual ()
       }
       else if(param.bc_type[grid.face[i].type] == slip)
       {
-         vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
          param.material.slip_flux ( state[0], grid.face[i].normal, flux );
@@ -126,7 +123,6 @@ void FiniteVolume::compute_residual ()
       }
       else if(param.bc_type[grid.face[i].type] == farfield)
       {
-         vl = grid.face[i].lvertex;
          cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
          param.material.num_flux ( state[0], param.prim_inf, grid.face[i].normal, flux );
