@@ -47,6 +47,7 @@ class FiniteVolume
       void update_solution (const unsigned int r);
       void solve ();
       void output (const unsigned int iter);
+      void output_restart ();
 };
 
 #endif

@@ -49,4 +49,5 @@ output
    {
       density velocity pressure mach
    }
+   restart   true
 }

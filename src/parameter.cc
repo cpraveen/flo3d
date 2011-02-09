@@ -324,9 +324,9 @@ void Parameter::read_output ()
    fin >> input;
    checkString (input, "{");
 
+   fin >> input;
    while (input!="}")
    {
-      fin >> input;
       assert (input=="density" || input=="velocity" || input=="pressure" ||
               input=="mach");
       write_variables.push_back (input);
@@ -335,6 +335,27 @@ void Parameter::read_output ()
       streampos curr_pos = fin.tellg ();
       fin >> input;
       if(input != "}")
+      {
          fin.seekg(curr_pos);
+         fin >> input;
+      }
    }
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "restart");
+   fin >> input;
+   if(input=="false")
+      write_restart = false;
+   else if(input=="true")
+      write_restart = true;
+   else
+   {
+      cout << "   Unknown input: " << input << endl;
+      abort ();
+   }
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "}");
 }
