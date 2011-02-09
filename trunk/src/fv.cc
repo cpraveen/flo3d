@@ -238,6 +238,19 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
 
    residual_norm_total /= residual_norm_total0;
 
+   // File output
+   res  << setw(8) << iter << "  " 
+        << scientific
+        << setprecision (4) 
+        << dt_global << "  " 
+        << residual_norm_total << "  "
+        << residual_norm.mass_flux << "  "
+        << residual_norm.momentum_flux.x << "  "
+        << residual_norm.momentum_flux.y << "  "
+        << residual_norm.momentum_flux.z << "  "
+        << residual_norm.energy_flux
+        << endl;
+
    // Screen output
    cout << setw(8) << iter << "  " 
         << scientific
@@ -273,6 +286,7 @@ void FiniteVolume::solve ()
    unsigned int iter = 0;
    double time = 0.0;
    residual_norm_total = 1.0e20;
+   res.open ("residue.dat");
 
    while (residual_norm_total > param.min_residue &&
           iter < param.max_iter && 
@@ -292,6 +306,7 @@ void FiniteVolume::solve ()
       compute_residual_norm (iter);
       if(iter % param.write_frequency == 0) output (iter);
    }
+   res.close ();
 
    // Save final solution
    output (iter);
