@@ -293,7 +293,7 @@ void FiniteVolume::output (const unsigned int iter)
    writer.attach_cell_variables (param.write_variables);
 
    if(param.write_format == "vtk")
-      writer.output_vtk ("out.vtk");
+      writer.output_vtk ("flo3d.vtk");
 }
 
 //------------------------------------------------------------------------------
@@ -313,7 +313,7 @@ void FiniteVolume::solve ()
    unsigned int iter = 0;
    double time = 0.0;
    residual_norm_total = 1.0e20;
-   res.open ("residue.dat");
+   res.open ("flo3d.res");
 
    while (residual_norm_total > param.min_residue &&
           iter < param.max_iter && 
