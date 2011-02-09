@@ -7,6 +7,8 @@
 #include "fv.h"
 #include "writer.h"
 
+extern bool restart;
+
 using namespace std;
 
 //------------------------------------------------------------------------------
@@ -20,11 +22,31 @@ void FiniteVolume::initialize ()
    residual.resize (grid.n_cell);
    dt.resize (grid.n_cell);
 
-   for(unsigned int i=0; i<grid.n_cell; ++i)
-      primitive[i] = param.prim_inf;
+   if(restart)
+   {
+      cout << "Reading restart file flo3d.sol ...\n";
+      ifstream fi;
+      fi.open ("flo3d.sol");
+      assert (fi.is_open());
+      for(unsigned int i=0; i<grid.n_cell; ++i)
+         fi >> primitive[i].density
+            >> primitive[i].velocity.x
+            >> primitive[i].velocity.y
+            >> primitive[i].velocity.z
+            >> primitive[i].pressure;
+      fi.close ();
+   }
+   else
+   {
+      cout << "Setting initial condition to freestream values\n";
+      for(unsigned int i=0; i<grid.n_cell; ++i)
+         primitive[i] = param.prim_inf;
+   }
 }
 
+//------------------------------------------------------------------------------
 // Interpolate solution from cell center to vertices
+//------------------------------------------------------------------------------
 void FiniteVolume::interpolate_vertex ()
 {
    for(unsigned int i=0; i<grid.n_vertex; ++i)
