@@ -19,6 +19,7 @@ class PrimVar
       void zero ();
 };
 
+// Flux variable
 class Flux
 {
    public:
@@ -53,6 +54,7 @@ class ConVar
 
 };
 
+// Material class
 class Material
 {
    public:
@@ -66,5 +68,33 @@ class Material
       void    num_flux (const PrimVar& left, const PrimVar& right, const Vector& normal, Flux& flux);
       void    slip_flux (const PrimVar& state, const Vector& normal, Flux& flux);
 };
+
+// Convert primitive to conserved
+inline
+ConVar Material::prim2con(const PrimVar& prim_var)
+{
+   ConVar con_var;
+
+   con_var.density  = prim_var.density;
+   con_var.momentum = prim_var.velocity * prim_var.density;
+   con_var.energy   = prim_var.pressure/(gamma - 1.0) +
+                        0.5 * prim_var.velocity.square() * prim_var.density;
+
+   return con_var;
+}
+
+// Convert conserved to primitive
+inline
+PrimVar Material::con2prim (const ConVar& con_var)
+{
+   PrimVar prim_var;
+
+   prim_var.density  = con_var.density;
+   prim_var.velocity = con_var.momentum / con_var.density;
+   prim_var.pressure = (gamma - 1.0) * 
+        ( con_var.energy - 0.5 * con_var.momentum.square() / con_var.density );
+
+   return prim_var;
+}
 
 #endif
