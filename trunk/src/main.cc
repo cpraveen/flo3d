@@ -4,6 +4,7 @@
 #include "fv.h"
 
 bool debug;
+bool restart;
 
 using namespace std;
 
