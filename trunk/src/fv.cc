@@ -279,6 +279,15 @@ void FiniteVolume::output (const unsigned int iter)
 }
 
 //------------------------------------------------------------------------------
+// Save solution to file for restart
+//------------------------------------------------------------------------------
+void FiniteVolume::output_restart ()
+{
+   Writer writer (grid);
+   writer.attach_cell_data (primitive);
+   writer.output_restart ();
+}
+//------------------------------------------------------------------------------
 // Perform time marching iterations
 //------------------------------------------------------------------------------
 void FiniteVolume::solve ()
@@ -310,6 +319,8 @@ void FiniteVolume::solve ()
 
    // Save final solution
    output (iter);
+
+   if(param.write_restart) output_restart ();
 }
 
 //------------------------------------------------------------------------------

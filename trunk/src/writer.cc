@@ -177,3 +177,27 @@ void Writer::output_vtk (string filename)
 
    vtk.close ();
 }
+
+//------------------------------------------------------------------------------
+// Write solution for restarting
+//------------------------------------------------------------------------------
+void Writer::output_restart ()
+{
+   assert (has_cell_primitive);
+
+   cout << "Saving restart file flo3d.sol\n";
+
+   ofstream fo;
+   fo.open ("flo3d.sol");
+   assert (fo.is_open());
+
+   for(unsigned int i=0; i<grid->n_cell; ++i)
+      fo << scientific
+         << (*cell_primitive)[i].density << "  "
+         << (*cell_primitive)[i].velocity.x << "  "
+         << (*cell_primitive)[i].velocity.y << "  "
+         << (*cell_primitive)[i].velocity.z << "  "
+         << (*cell_primitive)[i].pressure   << endl;
+
+   fo.close ();
+}

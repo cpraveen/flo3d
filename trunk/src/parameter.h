@@ -45,6 +45,8 @@ class Parameter
       unsigned int write_frequency;
       std::vector<std::string> write_variables;
 
+      bool write_restart;
+
       void read ();
 
    private:

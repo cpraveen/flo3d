@@ -36,6 +36,7 @@ class Writer
       void attach_cell_data (std::vector<PrimVar>& data);
       void attach_cell_variables (const std::vector<std::string>& variables);
       void output_vtk (std::string filename);
+      void output_restart ();
 
    private:
 
