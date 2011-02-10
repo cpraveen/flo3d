@@ -16,7 +16,7 @@ void show_options ();
 void process_command_line (int   argc,
                            char* argv[],
                            int& ifile)
-{
+{ 
    if(argc < 3)
       show_options ();
 
