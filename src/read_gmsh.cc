@@ -50,15 +50,16 @@ void Grid::read_gmsh (const string grid_file)
            >> elem_type
            >> ntags;
 
-      //assert( ntags==2 );
+      // Some gmsh files have 2 and some have 3 tags
+      assert( ntags==2 || ntags==3 );
 
       if(elem_type == 2) // Triangular face
       {
          face.resize (n_face+1);
-         file >> face[n_face].type;
-	 for( unsigned int p = 1; p<ntags ; p++ )
-         file >> tag;
-	 // Dummy tag
+         file >> face[n_face].type; // First tag is face type
+	      // Dummy tags
+	      for(unsigned int p=1; p<ntags; ++p)
+            file >> tag;
          file >> face[n_face].vertex[0] 
               >> face[n_face].vertex[1] 
               >> face[n_face].vertex[2];
@@ -67,8 +68,8 @@ void Grid::read_gmsh (const string grid_file)
       else if(elem_type == 4) // Tetrahedral cell
       {
          cell.resize (n_cell+1);
-	 for( unsigned int p = 0; p<ntags ; p++ )
-         file >> tag ; // Dummy tags
+	      for(unsigned int p = 0; p<ntags; ++p)
+               file >> tag ; // Dummy tags
 
          file >> cell[n_cell].vertex[0] 
               >> cell[n_cell].vertex[1] 
@@ -86,7 +87,7 @@ void Grid::read_gmsh (const string grid_file)
    file.close ();
 
    // Node number must start from 0
-   // but gmsh starts from 1
+   // but gmsh starts from 1. So we reduce count by one
    // Vertices forming the cell
    for(i=0; i<n_cell; ++i)
       for(j=0; j<4; ++j)
