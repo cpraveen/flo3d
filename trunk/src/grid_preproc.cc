@@ -266,10 +266,12 @@ void Grid::renumbering_cell()
            cell[k]=cell[val];
            cell[val]=renum;
 	   renumbering_tag[val]=k;
+	   cell[i].neighbour[j]=k;
            k=k+1;
          }
          j=j+1;
-     } 
+     }
+
    }
    int lval,rval;
 
