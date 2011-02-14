@@ -258,7 +258,7 @@ void Grid::renumbering_cell()
    k=1;
    for(i=0; i<n_cell; ++i)
    { j=0;
-     while(cell[i].neighbour[j] != -1)
+     while(cell[i].neighbour[j] != -1 && j<4)
      {   val=cell[i].neighbour[j];
          if(val>=k)
 	 {
