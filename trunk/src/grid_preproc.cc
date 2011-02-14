@@ -216,7 +216,8 @@ void Grid::find_cell_surr_cell ()
 {
    cout << "TODO: cell surrounding cell" << endl;
 
-   unsigned int i;
+   unsigned int i,j;
+   int lval,rval;
 
    // First put all neighbours to -1
    for(i=0; i<n_cell; ++i)
@@ -226,7 +227,66 @@ void Grid::find_cell_surr_cell ()
       cell[i].neighbour[2] = -1;
       cell[i].neighbour[3] = -1;
    }
+   for(i=0; i<n_face; ++i)
+   {
+      lval=face[i].lcell ;
+      rval=face[i].rcell ;
+      if( rval!= -1)
+      { j=0;
+        while(cell[lval].neighbour[j] != -1)
+        j=j+1;
+        cell[lval].neighbour[j]= rval;
+        j=0;
+        while(cell[rval].neighbour[j] != -1)
+        j=j+1;
+        cell[rval].neighbour[j]= lval;
+      }
+    }
+
 }
+
+//------------------------------------------------------------------------------
+// Renumbering according to cuthill-mckee algorithm
+//------------------------------------------------------------------------------
+void Grid::renumbering_cell()
+{
+   unsigned int i,j,val,k;
+
+   vector<int > renumbering_tag;
+   renumbering_tag.resize(n_cell,0);
+   Cell renum;
+   k=1;
+   for(i=0; i<n_cell; ++i)
+   { j=0;
+     while(cell[i].neighbour[j] != -1)
+     {   val=cell[i].neighbour[j];
+         if(val>=k)
+	 {
+	   renum=cell[k];         
+           cell[k]=cell[val];
+           cell[val]=renum;
+	   renumbering_tag[val]=k;
+           k=k+1;
+         }
+         j=j+1;
+     } 
+   }
+   int lval,rval;
+
+   for(i=0; i<n_face; ++i)
+   {
+      lval=face[i].lcell ;
+      rval=face[i].rcell ;
+      face[i].lcell=renumbering_tag[lval];
+      if(rval !=-1)
+      face[i].rcell=renumbering_tag[rval];
+   }
+}   
+
+
+         
+
+
 
 //------------------------------------------------------------------------------
 // Preprocess the grid
@@ -236,6 +296,7 @@ void Grid::preproc ()
    make_faces ();
    find_cell_surr_cell ();
    compute_cell_volume ();
+   renumbering_cell();
    compute_face_normal ();
    weight_average ();
    vertex_weight_check ();
