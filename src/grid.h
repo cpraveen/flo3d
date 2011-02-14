@@ -53,6 +53,7 @@ class Grid
       void vertex_weight_check () ;
       void find_cell_surr_cell ();
       void info ();
+      void renumbering_cell();
 
       std::vector< std::vector<unsigned int> > node_face;
 
