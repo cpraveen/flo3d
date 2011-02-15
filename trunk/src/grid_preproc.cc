@@ -2,7 +2,7 @@
 #include <cmath>
 #include <cassert>
 #include "grid.h"
-
+#include<cstdlib>
 using namespace std;
 
 //------------------------------------------------------------------------------
@@ -250,44 +250,40 @@ void Grid::find_cell_surr_cell ()
 //------------------------------------------------------------------------------
 void Grid::renumbering_cell()
 {
-   unsigned int i,j,val,k;
-
-   vector<int > renumbering_tag;
-   renumbering_tag.resize(n_cell,0);
-   Cell renum;
+   unsigned int i,j,val,val_1,k;
+   vector< unsigned int > direct,indirect;
+   direct.resize(n_cell,0);
+   indirect.resize(n_cell,0);
    k=1;
    for(i=0; i<n_cell; ++i)
    { j=0;
-     while(cell[i].neighbour[j] != -1 && j<4)
-     {   val=cell[i].neighbour[j];
-         if(val>=k)
-	 {
-	   renum=cell[k];         
-           cell[k]=cell[val];
-           cell[val]=renum;
-	   renumbering_tag[val]=k;
-	   cell[i].neighbour[j]=k;
-           k=k+1;
+     val=indirect[i] ;
+     while(cell[val].neighbour[j] != -1 && j<=3)
+     {   
+         val_1=cell[val].neighbour[j];
+         if ( direct[val_1] ==0 && val_1!=0)
+         {
+	    indirect[k]=val_1;
+	    direct[val_1]=k;
+	    cell[val].neighbour[j]=k;
+	    k=k+1;
          }
-         j=j+1;
+	 j=j+1;
      }
 
-   }
-   int lval,rval;
+		
+   }	
 
+   int lval,rval;
    for(i=0; i<n_face; ++i)
    {
       lval=face[i].lcell ;
       rval=face[i].rcell ;
-      face[i].lcell=renumbering_tag[lval];
+      face[i].lcell=direct[lval];
       if(rval !=-1)
-      face[i].rcell=renumbering_tag[rval];
-   }
-}   
-
-
-         
-
+      face[i].rcell=direct[rval];
+   }         
+}
 
 
 //------------------------------------------------------------------------------
