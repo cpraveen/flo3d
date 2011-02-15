@@ -268,15 +268,65 @@ void Grid::renumbering_cell()
          {
 	    indirect[k]=val_1;
 	    direct[val_1]=k;
-	    cell[val].neighbour[j]=k;
 	    k=k+1;
          }
 	 j=j+1;
      }
+    }
 
-		
-   }	
+   for(i=0;i<n_cell;i++)
+   {
+       val=indirect[i];
+       renumbering[i]=cell[val];
+   }
 
+   for(i=0;i<n_cell;i++)
+   {
+       cell[i]=renumbering[i];
+   }
+
+   for(i=0; i<n_cell; ++i)
+   { j=0;
+     while(cell[i].neighbour[j] != -1 && j<=3)
+     {
+          val=cell[i].neighbour[j];
+	  cell[i].neighbour[j]=direct[val];
+          j=j+1;
+     }
+   } 
+
+
+
+   // some checking case to check algorithm is working fine
+   // case 1 " to check nothing has left untouched "
+   for(i=1;i<n_cell;i++)
+   if(indirect[i]==0)
+   {cout<<" some error";
+   abort();
+   }
+
+   // case 2  " to check all distinct renumbering "
+   k=0;
+   for(i=0;i<n_cell;i++)
+   for(j=i+1;j<n_cell;j++)
+   if(direct[i]==direct[j] || indirect[i]==indirect[j])
+   k=k+1;
+   cout<<"the value of k is "<<k<<endl;
+
+   // case 3 
+   j=0;
+   k=0;
+   for(i=0;i<n_cell;i++)
+   {
+   j=j+direct[i];
+   k=k+indirect[i];
+   }
+   // this check is to check the sum of all distict natural numbers
+   cout<<" the sume of direct i are "<<j<<endl;
+   cout<<" the sum of indirect i are" <<k<<endl;
+   cout<<" total cells are "<<n_cell-1<<endl ;
+
+   // changed cell numbers in faces left and right part
    int lval,rval;
    for(i=0; i<n_face; ++i)
    {
@@ -287,17 +337,13 @@ void Grid::renumbering_cell()
       face[i].rcell=direct[rval];
    }         
 
-   for(i=0;i<n_cell;i++)
+   // A demo of first twenty cases  ( remove abort to run on input file for cfd solution )
+   for (i=0;i<n_cell;i++)
    {
-      val=indirect[i];
-      renumbering[i]=cell[val];
+   cout<<" cell "<<i<<"neighbour are "<<cell[i].neighbour[0]<<" "<<cell[i].neighbour[1]<<" "<<cell[i].neighbour[2]<<" "<<cell[i].neighbour[3]<<" "<<endl;
+   if(i>20)
+   abort();  // removable abort
    }
-
-   for(i=0;i<n_cell;i++)
-   {
-     cell[i]=renumbering[i];
-   }
-
 }
 
 
