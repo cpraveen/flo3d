@@ -251,9 +251,12 @@ void Grid::find_cell_surr_cell ()
 void Grid::renumbering_cell()
 {
    unsigned int i,j,val,val_1,k;
+   vector<Cell> renumbering;
    vector< unsigned int > direct,indirect;
    direct.resize(n_cell,0);
    indirect.resize(n_cell,0);
+   renumbering.resize(n_cell);
+
    k=1;
    for(i=0; i<n_cell; ++i)
    { j=0;
@@ -283,6 +286,18 @@ void Grid::renumbering_cell()
       if(rval !=-1)
       face[i].rcell=direct[rval];
    }         
+
+   for(i=0;i<n_cell;i++)
+   {
+      val=indirect[i];
+      renumbering[i]=cell[val];
+   }
+
+   for(i=0;i<n_cell;i++)
+   {
+     cell[i]=renumbering[i];
+   }
+
 }
 
 
