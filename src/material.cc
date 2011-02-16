@@ -180,6 +180,15 @@ Flux Flux::operator+ (const Flux& flux)
    return result;
 }
 
+Flux Flux::operator- (const Flux& flux)
+{
+   Flux result;
+   result.mass_flux     = mass_flux - flux.mass_flux;
+   result.momentum_flux = momentum_flux - flux.momentum_flux;
+   result.energy_flux   = energy_flux - flux.energy_flux;
+   return result;
+}   
+
 Flux Flux::operator* (const double scalar)
 {
    Flux result;
