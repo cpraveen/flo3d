@@ -23,6 +23,26 @@ void checkString (const string& str1, const string& str2)
 }
 
 //------------------------------------------------------------------------------
+// Return true if end of section string "}" is encountered
+// otherwise, put undo read and return false
+//------------------------------------------------------------------------------
+bool eos (ifstream& f)
+{
+   streampos curr_pos = f.tellg ();
+
+   string input;
+   f >> input;
+
+   if(input != "}")
+   {
+      f.seekg (curr_pos);
+      return false;
+   }
+   else
+      return true;
+}
+
+//------------------------------------------------------------------------------
 // Read parameters from file TODO
 //------------------------------------------------------------------------------
 void Parameter::read ()
@@ -240,7 +260,7 @@ void Parameter::read_boundary ()
    fin >> input;
    checkString (input, "{");
 
-   while (input!="}")
+   while (!eos(fin))
    {
       int b_type;
       fin >> b_type >> input;
@@ -258,11 +278,6 @@ void Parameter::read_boundary ()
          abort ();
       }
 
-      // Check if end of section is reached
-      streampos curr_pos = fin.tellg ();
-      fin >> input;
-      if(input != "}")
-         fin.seekg(curr_pos);
    }
 
 }
@@ -283,10 +298,29 @@ void Parameter::read_integrals ()
    fin >> input;
    checkString (input, "{");
 
-   while (input != "}")
+   while (!eos(fin))
    {
       fin >> input;
+      if(input=="force") // integral type is force
+      {
+         fin >> input;
+         checkString (input, "{");
+
+         force.resize( force.size() + 1 );
+         fin >> force.back().name; // name to identify force
+
+         while (!eos(fin))
+         {
+            int face_type;
+            fin >> face_type;
+            force.back().face_type.push_back(face_type);
+         }
+
+         // Check that there was atleast one face type given
+         assert (force.back().face_type.size() > 0);
+      }
    }
+
 }
 
 //------------------------------------------------------------------------------
@@ -324,21 +358,12 @@ void Parameter::read_output ()
    fin >> input;
    checkString (input, "{");
 
-   fin >> input;
-   while (input!="}")
+   while (!eos(fin))
    {
+      fin >> input;
       assert (input=="density" || input=="velocity" || input=="pressure" ||
               input=="mach");
       write_variables.push_back (input);
-
-      // Check if end of section is reached
-      streampos curr_pos = fin.tellg ();
-      fin >> input;
-      if(input != "}")
-      {
-         fin.seekg(curr_pos);
-         fin >> input;
-      }
    }
 
    skipComment (fin);

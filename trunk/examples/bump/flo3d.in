@@ -1,7 +1,7 @@
 grid
 {
    type   gmsh 
-   file   bump_fine.msh
+   file   bump.msh
 }
 
 numeric
@@ -44,6 +44,10 @@ boundary
 
 integrals
 {
+   force
+   {
+      bump 100003
+   }
 }
 
 output

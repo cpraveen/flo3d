@@ -15,6 +15,12 @@ enum GridType {gmsh};
 
 enum BCType { interior, slip, noslip, farfield };
 
+struct Force
+{
+   std::string name;
+   std::vector<int> face_type;
+};
+
 class Parameter
 {
    public:
@@ -44,8 +50,9 @@ class Parameter
       std::string  write_format;
       unsigned int write_frequency;
       std::vector<std::string> write_variables;
-
       bool write_restart;
+
+      std::vector<Force> force;
 
       void read ();
 
