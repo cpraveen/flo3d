@@ -10,7 +10,7 @@ class Cell
    public:
       unsigned int vertex[4];
       int          neighbour[4];
-      int          face_val[4];
+      int          face[4];
       double       volume;
       double       weight[4];
 };

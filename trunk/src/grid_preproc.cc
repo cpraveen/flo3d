@@ -217,7 +217,7 @@ void Grid::find_cell_surr_cell ()
    cout << "cell surrounding cell and faces" << endl;
 
    unsigned int i,j;
-   int lval,rval;
+   int lcell,rcell;
 
    // First put all neighbours to -1
    for(i=0; i<n_cell; ++i)
@@ -226,33 +226,33 @@ void Grid::find_cell_surr_cell ()
       cell[i].neighbour[1] = -1;
       cell[i].neighbour[2] = -1;
       cell[i].neighbour[3] = -1;
-      cell[i].face_val[0]  = -1;
-      cell[i].face_val[1]  = -1;
-      cell[i].face_val[2]  = -1;
-      cell[i].face_val[3]  = -1;
+      cell[i].face[0]      = -1;
+      cell[i].face[1]      = -1;
+      cell[i].face[2]  	   = -1;
+      cell[i].face[3]      = -1;
    }
    for(i=0; i<n_face; ++i)
    {
-      lval=face[i].lcell ;
-      rval=face[i].rcell ;
+      lcell=face[i].lcell ;
+      rcell=face[i].rcell ;
       j=0;
-      while(cell[lval].face_val[j] != -1)
+      while(cell[lcell].face[j] != -1)
       j=j+1;
-      cell[lval].face_val[j]= i;
+      cell[lcell].face[j]= i;
       
-      if( rval!= -1)
+      if( rcell!= -1)
       { j=0;
-        while(cell[lval].neighbour[j] != -1)
+        while(cell[lcell].neighbour[j] != -1)
         j=j+1;
-        cell[lval].neighbour[j]= rval;
+        cell[lcell].neighbour[j]= rcell;
         j=0;
-        while(cell[rval].neighbour[j] != -1)
+        while(cell[rcell].neighbour[j] != -1)
         j=j+1;
-        cell[rval].neighbour[j]= lval;
+        cell[rcell].neighbour[j]= lcell;
 	j=0;
-	while(cell[rval].face_val[j] != -1)
+	while(cell[rcell].face[j] != -1)
 	j=j+1;
-	cell[rval].face_val[j]= i;
+	cell[rcell].face[j]= i;
       }
     }
 
@@ -263,7 +263,7 @@ void Grid::find_cell_surr_cell ()
 //------------------------------------------------------------------------------
 void Grid::renumbering_cell()
 {
-   unsigned int i,j,val,val_1,k;
+   unsigned int i,j,neighbour_cell,old_cell,k;
    vector<Cell> renumbering;
    vector< unsigned int > direct,indirect;
    // direct vector says directly the value of renumbering tag for a old cell number
@@ -276,14 +276,14 @@ void Grid::renumbering_cell()
    k=1; // k is the renumbering tag according to the algorithm
    for(i=0; i<n_cell; ++i)
    { j=0;
-     val=indirect[i] ;
-     while(cell[val].neighbour[j] != -1 && j<=3)
+     neighbour_cell=indirect[i] ;
+     while(cell[neighbour_cell].neighbour[j] != -1 && j<=3)
      {   
-         val_1=cell[val].neighbour[j];
-         if ( direct[val_1] ==0 && val_1!=0)
+         old_cell=cell[neighbour_cell].neighbour[j];
+         if ( direct[old_cell] ==0 && old_cell!=0)
          {
-	    indirect[k]=val_1;
-	    direct[val_1]=k;
+	    indirect[k]=old_cell;
+	    direct[old_cell]=k;
 	    k=k+1;
          }
 	 j=j+1;
@@ -292,8 +292,8 @@ void Grid::renumbering_cell()
    // here coping old cells according to new numbers
    for(i=0;i<n_cell;i++)
    {
-       val=indirect[i];
-       renumbering[i]=cell[val];
+       old_cell=indirect[i];
+       renumbering[i]=cell[old_cell];
    }
    // shifting all renumbered values back to cell
    for(i=0;i<n_cell;i++)
@@ -305,21 +305,21 @@ void Grid::renumbering_cell()
    { j=0;
      while(cell[i].neighbour[j] != -1 && j<=3)
      {
-          val=cell[i].neighbour[j];
-	  cell[i].neighbour[j]=direct[val];
+          old_cell=cell[i].neighbour[j];
+	  cell[i].neighbour[j]=direct[old_cell];
           j=j+1;
      }
    } 
 
    // changed cell numbers in faces left and right part
-   int lval,rval;
+   int lcell,rcell;
    for(i=0; i<n_face; ++i)
    {
-      lval=face[i].lcell ;
-      rval=face[i].rcell ;
-      face[i].lcell=direct[lval];
-      if(rval !=-1)
-      face[i].rcell=direct[rval];
+      lcell=face[i].lcell ;
+      rcell=face[i].rcell ;
+      face[i].lcell=direct[lcell];
+      if(rcell !=-1)
+      face[i].rcell=direct[rcell];
    }         
 
 }

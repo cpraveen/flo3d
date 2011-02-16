@@ -32,7 +32,7 @@ class Flux
       Flux& operator*= (const double& scalar);
       Flux  operator+  (const Flux& flux);
       Flux  operator*  (const double scalar);
-
+      Flux  operator-  (const Flux& flux);
       void zero ();
 };
 

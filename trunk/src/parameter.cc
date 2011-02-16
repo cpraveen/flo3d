@@ -126,9 +126,10 @@ void Parameter::read_numeric ()
    fin >> input;
    checkString (input, "time_scheme");
    fin >> time_scheme;
-   assert (time_scheme == "rk1" || time_scheme == "rk3");
+   assert (time_scheme == "rk1" || time_scheme == "rk3" || time_scheme == "lusgs");
    if(time_scheme=="rk1") n_rks = 1;
    if(time_scheme=="rk3") n_rks = 3;
+   if(time_scheme=="lusgs") n_rks=10; 
 
    skipComment (fin);
    fin >> input;
