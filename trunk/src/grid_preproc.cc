@@ -2,7 +2,7 @@
 #include <cmath>
 #include <cassert>
 #include "grid.h"
-#include<cstdlib>
+
 using namespace std;
 
 //------------------------------------------------------------------------------
@@ -214,7 +214,7 @@ void Grid::make_faces ()
 //------------------------------------------------------------------------------
 void Grid::find_cell_surr_cell ()
 {
-   cout << "TODO: cell surrounding cell" << endl;
+   cout << "cell surrounding cell and faces" << endl;
 
    unsigned int i,j;
    int lval,rval;
@@ -226,11 +226,20 @@ void Grid::find_cell_surr_cell ()
       cell[i].neighbour[1] = -1;
       cell[i].neighbour[2] = -1;
       cell[i].neighbour[3] = -1;
+      cell[i].face_val[0]  = -1;
+      cell[i].face_val[1]  = -1;
+      cell[i].face_val[2]  = -1;
+      cell[i].face_val[3]  = -1;
    }
    for(i=0; i<n_face; ++i)
    {
       lval=face[i].lcell ;
       rval=face[i].rcell ;
+      j=0;
+      while(cell[lval].face_val[j] != -1)
+      j=j+1;
+      cell[lval].face_val[j]= i;
+      
       if( rval!= -1)
       { j=0;
         while(cell[lval].neighbour[j] != -1)
@@ -240,6 +249,10 @@ void Grid::find_cell_surr_cell ()
         while(cell[rval].neighbour[j] != -1)
         j=j+1;
         cell[rval].neighbour[j]= lval;
+	j=0;
+	while(cell[rval].face_val[j] != -1)
+	j=j+1;
+	cell[rval].face_val[j]= i;
       }
     }
 
@@ -253,11 +266,14 @@ void Grid::renumbering_cell()
    unsigned int i,j,val,val_1,k;
    vector<Cell> renumbering;
    vector< unsigned int > direct,indirect;
+   // direct vector says directly the value of renumbering tag for a old cell number
+   // indirect vector says what is the value of old cell number for a given renumbering tag
+   // renumbering cell vector is a dummy vector to reshuffle all old cell according to new numbering 
    direct.resize(n_cell,0);
    indirect.resize(n_cell,0);
    renumbering.resize(n_cell);
 
-   k=1;
+   k=1; // k is the renumbering tag according to the algorithm
    for(i=0; i<n_cell; ++i)
    { j=0;
      val=indirect[i] ;
@@ -273,18 +289,18 @@ void Grid::renumbering_cell()
 	 j=j+1;
      }
     }
-
+   // here coping old cells according to new numbers
    for(i=0;i<n_cell;i++)
    {
        val=indirect[i];
        renumbering[i]=cell[val];
    }
-
+   // shifting all renumbered values back to cell
    for(i=0;i<n_cell;i++)
    {
        cell[i]=renumbering[i];
    }
-
+   // changing cell's neighbour values according to new number
    for(i=0; i<n_cell; ++i)
    { j=0;
      while(cell[i].neighbour[j] != -1 && j<=3)
@@ -294,37 +310,6 @@ void Grid::renumbering_cell()
           j=j+1;
      }
    } 
-
-
-
-   // some checking case to check algorithm is working fine
-   // case 1 " to check nothing has left untouched "
-   for(i=1;i<n_cell;i++)
-   if(indirect[i]==0)
-   {cout<<" some error";
-   abort();
-   }
-
-   // case 2  " to check all distinct renumbering "
-   k=0;
-   for(i=0;i<n_cell;i++)
-   for(j=i+1;j<n_cell;j++)
-   if(direct[i]==direct[j] || indirect[i]==indirect[j])
-   k=k+1;
-   cout<<"the value of k is "<<k<<endl;
-
-   // case 3 
-   j=0;
-   k=0;
-   for(i=0;i<n_cell;i++)
-   {
-   j=j+direct[i];
-   k=k+indirect[i];
-   }
-   // this check is to check the sum of all distict natural numbers
-   cout<<" the sume of direct i are "<<j<<endl;
-   cout<<" the sum of indirect i are" <<k<<endl;
-   cout<<" total cells are "<<n_cell-1<<endl ;
 
    // changed cell numbers in faces left and right part
    int lval,rval;
@@ -337,13 +322,6 @@ void Grid::renumbering_cell()
       face[i].rcell=direct[rval];
    }         
 
-   // A demo of first twenty cases  ( remove abort to run on input file for cfd solution )
-   for (i=0;i<n_cell;i++)
-   {
-   cout<<" cell "<<i<<"neighbour are "<<cell[i].neighbour[0]<<" "<<cell[i].neighbour[1]<<" "<<cell[i].neighbour[2]<<" "<<cell[i].neighbour[3]<<" "<<endl;
-   if(i>20)
-   abort();  // removable abort
-   }
 }
 
 
