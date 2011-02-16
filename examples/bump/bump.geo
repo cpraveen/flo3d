@@ -49,7 +49,7 @@ Physical Volume(100000) = {out[1]};  // volume
 Physical Surface(100001) = {25}; //outflow surface
 
 Physical Surface(100002) = {37}; //lower surface
-Physical Surface(100003) = {17}; //lower surface
+Physical Surface(100003) = {17}; //lower surface, bump
 
 Physical Surface(100004) = {38}; //side surface
 
