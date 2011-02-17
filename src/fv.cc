@@ -165,9 +165,7 @@ void FiniteVolume::compute_dt ()
          dt[cr] += fabs(vel_normal_right) + c_right * area;
       }
    }
-   
-   if (param.n_rks != 10 ) // n_rks =10 is for lusgs scheme
-   {
+
    // Compute global time step
    dt_global = 1.0e20;
    for(unsigned int i=0; i<grid.n_cell; ++i)
@@ -180,10 +178,12 @@ void FiniteVolume::compute_dt ()
    if(param.time_mode == "unsteady")
       for(unsigned int i=0; i<grid.n_cell; ++i)
          dt[i] = dt_global;
-   }
 }
 
-void FiniteVolume::implicit_lusgs (vector<Flux>& update_cell_change,unsigned int & sweep)
+//------------------------------------------------------------------------------
+// Matrix-free LUSGS scheme
+//------------------------------------------------------------------------------
+void FiniteVolume::lusgs (vector<Flux>& update_cell_change,unsigned int & sweep)
 {  
    unsigned int j;
    int f;
@@ -191,7 +191,7 @@ void FiniteVolume::implicit_lusgs (vector<Flux>& update_cell_change,unsigned int
    vector<PrimVar> primitive_copy(2);
    unsigned int cl, cr;
    vector<PrimVar> state(2);
-   Flux flux,flux1,summation_face;
+   Flux flux, flux1, summation_face;
   
    // Forward sweep and backward sweep without interpolation and reconstruction
    // sweep =0 means forward and sweep=1 means backward
@@ -277,13 +277,20 @@ void FiniteVolume::update_solution (const unsigned int r)
    double factor;
    ConVar conserved;
 
-   for(unsigned int i=0; i<grid.n_cell; ++i)
+   if(param.time_scheme == "rk1" || param.time_scheme == "rk3")
    {
-      factor      = dt[i] / grid.cell[i].volume;
-      conserved   = param.material.prim2con (primitive[i]);
-      conserved   = conserved_old[i] * a_rk[r] +
-                    (conserved - residual[i] * factor) * b_rk[r];
-      primitive[i]= param.material.con2prim (conserved);
+      for(unsigned int i=0; i<grid.n_cell; ++i)
+      {
+         factor      = dt[i] / grid.cell[i].volume;
+         conserved   = param.material.prim2con (primitive[i]);
+         conserved   = conserved_old[i] * a_rk[r] +
+                       (conserved - residual[i] * factor) * b_rk[r];
+         primitive[i]= param.material.con2prim (conserved);
+      }
+   }
+   else if(param.time_scheme == "lusgs")
+   {
+      // TBD
    }
 }
 
@@ -393,8 +400,7 @@ void FiniteVolume::solve ()
    double time = 0.0;
    residual_norm_total = 1.0e20;
    res.open ("flo3d.res");
-   if (param.n_rks != 10 ) // n_rks =10 is for lusgs scheme
-   {
+
    while (residual_norm_total > param.min_residue &&
           iter < param.max_iter && 
           time < param.final_time)
@@ -420,45 +426,6 @@ void FiniteVolume::solve ()
    output (iter);
 
    if(param.write_restart) output_restart ();
-   }
-
-   else if(param.n_rks==10)
-   {
-   dt_global=1;
-   vector<Flux> update_cell_change;
-   update_cell_change.resize(grid.n_cell);
-   for ( unsigned int i=0;i<grid.n_cell ;i++)
-   { update_cell_change[i].mass_flux=0.0;
-     update_cell_change[i].energy_flux=0.0;
-     update_cell_change[i].momentum_flux.x=0.0;
-     update_cell_change[i].momentum_flux.y=0.0;
-     update_cell_change[i].momentum_flux.z=0.0;
-   }
-
-
-   while (iter < param.max_iter &&
-	     time < param.final_time)  // have to add delta values convergence here.
-   { 
-     // Forward Sweep
-     store_conserved_old();
-     compute_residual();
-     compute_dt ();
-     unsigned int sweep =0;
-     implicit_lusgs (update_cell_change,sweep);
-    
-    // Backward Sweep
-    store_conserved_old();
-    compute_residual();
-    compute_dt ();
-    sweep =1;		   
-    implicit_lusgs (update_cell_change,sweep);
-    
-    ++iter;
-    time += dt_global;
-
-   }
-
-   }
 
    
 }

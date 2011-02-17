@@ -261,9 +261,9 @@ void Grid::find_cell_surr_cell ()
 //------------------------------------------------------------------------------
 // Renumbering according to cuthill-mckee algorithm
 //------------------------------------------------------------------------------
-void Grid::renumbering_cell()
+void Grid::renumber_cell()
 {
-   unsigned int i,j,neighbour_cell,old_cell,k;
+   unsigned int i, j, neighbour_cell, old_cell, k;
    vector<Cell> renumbering;
    vector< unsigned int > direct,indirect;
    // direct vector says directly the value of renumbering tag for a old cell number
@@ -272,56 +272,58 @@ void Grid::renumbering_cell()
    direct.resize(n_cell,0);
    indirect.resize(n_cell,0);
    renumbering.resize(n_cell);
-
+   
    k=1; // k is the renumbering tag according to the algorithm
    for(i=0; i<n_cell; ++i)
-   { j=0;
-     neighbour_cell=indirect[i] ;
-     while(cell[neighbour_cell].neighbour[j] != -1 && j<=3)
-     {   
+   { 
+      j=0;
+      neighbour_cell=indirect[i] ;
+      while(cell[neighbour_cell].neighbour[j] != -1 && j<=3)
+      {   
          old_cell=cell[neighbour_cell].neighbour[j];
          if ( direct[old_cell] ==0 && old_cell!=0)
          {
-	    indirect[k]=old_cell;
-	    direct[old_cell]=k;
-	    k=k+1;
+            indirect[k]=old_cell;
+            direct[old_cell]=k;
+            k=k+1;
          }
-	 j=j+1;
-     }
-    }
+         j=j+1;
+      }
+   }
    // here coping old cells according to new numbers
    for(i=0;i<n_cell;i++)
    {
-       old_cell=indirect[i];
-       renumbering[i]=cell[old_cell];
+      old_cell=indirect[i];
+      renumbering[i]=cell[old_cell];
    }
    // shifting all renumbered values back to cell
    for(i=0;i<n_cell;i++)
    {
-       cell[i]=renumbering[i];
+      cell[i]=renumbering[i];
    }
    // changing cell's neighbour values according to new number
    for(i=0; i<n_cell; ++i)
-   { j=0;
-     while(cell[i].neighbour[j] != -1 && j<=3)
-     {
-          old_cell=cell[i].neighbour[j];
-	  cell[i].neighbour[j]=direct[old_cell];
-          j=j+1;
-     }
+   { 
+      j=0;
+      while(cell[i].neighbour[j] != -1 && j<=3)
+      {
+         old_cell=cell[i].neighbour[j];
+         cell[i].neighbour[j]=direct[old_cell];
+         j=j+1;
+      }
    } 
-
+   
    // changed cell numbers in faces left and right part
-   int lcell,rcell;
+   int lcell, rcell;
    for(i=0; i<n_face; ++i)
    {
       lcell=face[i].lcell ;
       rcell=face[i].rcell ;
       face[i].lcell=direct[lcell];
       if(rcell !=-1)
-      face[i].rcell=direct[rcell];
+         face[i].rcell=direct[rcell];
    }         
-
+   
 }
 
 
@@ -333,7 +335,7 @@ void Grid::preproc ()
    make_faces ();
    find_cell_surr_cell ();
    compute_cell_volume ();
-   renumbering_cell();
+   renumber_cell();
    compute_face_normal ();
    weight_average ();
    vertex_weight_check ();
