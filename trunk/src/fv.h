@@ -48,7 +48,7 @@ class FiniteVolume
       void solve ();
       void output (const unsigned int iter);
       void output_restart ();
-      void implicit_lusgs (std:: vector<Flux>& update_cell_change,unsigned int & sweep);
+      void lusgs (std::vector<Flux>& update_cell_change, unsigned int& sweep);
 
 };
 
