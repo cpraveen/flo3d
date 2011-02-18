@@ -9,7 +9,6 @@ class Cell
 {
    public:
       unsigned int vertex[4];
-      int          neighbour[4];
       int          face[4];
       double       volume;
       double       weight[4];
@@ -52,7 +51,8 @@ class Grid
       void make_faces ();
       void weight_average () ;
       void vertex_weight_check () ;
-      void find_cell_surr_cell ();
+      void find_cell_surr_face ();
+      void find_cell_neighbour(unsigned int  f, unsigned int current_cell, int & neighbour);
       void info ();
       void renumber_cell();
 
