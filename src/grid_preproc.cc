@@ -1,7 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
-#include "grid.h"
+#include<fstream>
+#include"grid.h"
 
 using namespace std;
 
@@ -212,20 +213,16 @@ void Grid::make_faces ()
 //------------------------------------------------------------------------------
 // Find cells surrounding a cell
 //------------------------------------------------------------------------------
-void Grid::find_cell_surr_cell ()
+void Grid::find_cell_surr_face ()
 {
-   cout << "cell surrounding cell and faces" << endl;
+   cout << "cell surrounding faces" << endl;
 
    unsigned int i,j;
    int lcell,rcell;
 
-   // First put all neighbours to -1
+   // First put all faces to -1
    for(i=0; i<n_cell; ++i)
    {
-      cell[i].neighbour[0] = -1;
-      cell[i].neighbour[1] = -1;
-      cell[i].neighbour[2] = -1;
-      cell[i].neighbour[3] = -1;
       cell[i].face[0]      = -1;
       cell[i].face[1]      = -1;
       cell[i].face[2]  	   = -1;
@@ -242,14 +239,6 @@ void Grid::find_cell_surr_cell ()
       
       if( rcell!= -1)
       { j=0;
-        while(cell[lcell].neighbour[j] != -1)
-        j=j+1;
-        cell[lcell].neighbour[j]= rcell;
-        j=0;
-        while(cell[rcell].neighbour[j] != -1)
-        j=j+1;
-        cell[rcell].neighbour[j]= lcell;
-	j=0;
 	while(cell[rcell].face[j] != -1)
 	j=j+1;
 	cell[rcell].face[j]= i;
@@ -258,12 +247,27 @@ void Grid::find_cell_surr_cell ()
 
 }
 
+void Grid::find_cell_neighbour(unsigned int f, unsigned int current_cell, int& neighbour)
+{
+  
+   if (face[f].lcell == current_cell)
+   neighbour = face[f].rcell;
+   else if ( face[f].rcell != -1 )
+   neighbour = face[f].lcell;
+   else
+   neighbour = -1;
+}   
+
+
+
 //------------------------------------------------------------------------------
 // Renumbering according to cuthill-mckee algorithm
 //------------------------------------------------------------------------------
 void Grid::renumber_cell()
-{
-   unsigned int i, j, neighbour_cell, old_cell, k;
+{  
+  
+   unsigned int i, j, neighbour_cell, old_cell, f, k;
+   int neighbour =-1;
    vector<Cell> renumbering;
    vector< unsigned int > direct,indirect;
    // direct vector says directly the value of renumbering tag for a old cell number
@@ -272,24 +276,52 @@ void Grid::renumber_cell()
    direct.resize(n_cell,0);
    indirect.resize(n_cell,0);
    renumbering.resize(n_cell);
-   
+   ofstream out("cell_number_before.dat"); // opening a file having old cell number structure
+   if(!out)
+   cout<<" error in opening cell_number_before.dat file ";
+
+   for( i=0;i<n_cell;i++)
+   { 
+      out<<i<<" "<<i;
+      out<<endl;
+      j=0;
+   while(j<4)
+   {    f=cell[i].face[j];
+        find_cell_neighbour(f,i,neighbour);
+	if (neighbour !=-1)
+        {
+	out<<i<<" "<<neighbour;
+        out<<endl;
+	}
+        j=j+1;
+   }
+   }
+   out.close();
+
    k=1; // k is the renumbering tag according to the algorithm
    for(i=0; i<n_cell; ++i)
    { 
       j=0;
       neighbour_cell=indirect[i] ;
-      while(cell[neighbour_cell].neighbour[j] != -1 && j<=3)
-      {   
-         old_cell=cell[neighbour_cell].neighbour[j];
-         if ( direct[old_cell] ==0 && old_cell!=0)
+      while(cell[neighbour_cell].face[j] != -1 && j<=3 )
+      {  
+         f=cell[neighbour_cell].face[j];
+         find_cell_neighbour(f,neighbour_cell,neighbour);
+	 old_cell=neighbour;
+         if (old_cell !=-1)
+	 {
+         if ( direct[old_cell] ==0 && old_cell!=0 )
          {
             indirect[k]=old_cell;
             direct[old_cell]=k;
             k=k+1;
          }
+	 }
+
          j=j+1;
       }
    }
+
    // here coping old cells according to new numbers
    for(i=0;i<n_cell;i++)
    {
@@ -301,17 +333,6 @@ void Grid::renumber_cell()
    {
       cell[i]=renumbering[i];
    }
-   // changing cell's neighbour values according to new number
-   for(i=0; i<n_cell; ++i)
-   { 
-      j=0;
-      while(cell[i].neighbour[j] != -1 && j<=3)
-      {
-         old_cell=cell[i].neighbour[j];
-         cell[i].neighbour[j]=direct[old_cell];
-         j=j+1;
-      }
-   } 
    
    // changed cell numbers in faces left and right part
    int lcell, rcell;
@@ -324,7 +345,28 @@ void Grid::renumber_cell()
          face[i].rcell=direct[rcell];
    }         
    
-}
+   ofstream out1("cell_numbered_after.dat"); // opening a file having renumbered cell structure
+   if(!out1)
+   cout<<" error in opening cell_numbered_after.dat  file";
+   for( i=0;i<n_cell;i++)
+   {
+      out1<<i<<" "<<i;
+      out1<<endl;
+      j=0;
+      while(j<4)
+      {    f=cell[i].face[j];
+           find_cell_neighbour(f,i,neighbour);
+	   if (neighbour !=-1)
+           {
+	   out1<<i<<" "<<neighbour;
+	   out1<<endl;
+	   }
+	   j=j+1;
+      }
+
+   }
+   out1.close();
+}   
 
 
 //------------------------------------------------------------------------------
@@ -333,7 +375,7 @@ void Grid::renumber_cell()
 void Grid::preproc ()
 {
    make_faces ();
-   find_cell_surr_cell ();
+   find_cell_surr_face ();
    compute_cell_volume ();
    renumber_cell();
    compute_face_normal ();
