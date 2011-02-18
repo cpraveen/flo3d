@@ -51,8 +51,10 @@ class Grid
       void make_faces ();
       void weight_average () ;
       void vertex_weight_check () ;
-      void find_cell_surr_face ();
-      void find_cell_neighbour(unsigned int  f, unsigned int current_cell, int & neighbour);
+      void find_cell_faces ();
+      void find_cell_neighbour(const unsigned int& face_no, 
+                               const unsigned int& cell_no, 
+                               int&                neighbour_cell_no);
       void info ();
       void renumber_cell();
 
