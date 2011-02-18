@@ -260,10 +260,13 @@ void Grid::find_cell_neighbour( const unsigned int& face_no,
 {
    if (face[face_no].lcell == cell_no)
       neighbour_cell_no = face[face_no].rcell;
-   else if ( face[face_no].rcell != -1 )
+   else if (face[face_no].rcell == cell_no)
       neighbour_cell_no = face[face_no].lcell;
    else
-      neighbour_cell_no = -1;
+   {
+      cout << "find_cell_neighbour: Fatal error !!!\n";
+      abort ();
+   }
 }   
 
 
