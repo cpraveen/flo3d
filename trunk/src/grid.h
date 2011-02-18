@@ -40,6 +40,10 @@ class Grid
       std::vector<Face>   face;
 
       void read (const Parameter& param);
+      void find_cell_neighbour(const unsigned int& face_no,
+                               const unsigned int& cell_no,
+			       int&                neighbour_cell_no);
+
 
    private:
       void read_gmsh (std::string grid_file);
@@ -52,9 +56,6 @@ class Grid
       void weight_average () ;
       void vertex_weight_check () ;
       void find_cell_faces ();
-      void find_cell_neighbour(const unsigned int& face_no, 
-                               const unsigned int& cell_no, 
-                               int&                neighbour_cell_no);
       void info ();
       void renumber_cell();
 

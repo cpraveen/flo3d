@@ -254,8 +254,8 @@ void Grid::find_cell_faces ()
 //------------------------------------------------------------------------------
 // Find cell on other side of given face f
 //------------------------------------------------------------------------------
-void Grid::find_cell_neighbour(const unsigned int& face_no, 
-                               const unsigned int& cell_no, 
+void Grid::find_cell_neighbour( const unsigned int& face_no, 
+                                const unsigned int& cell_no, 
                                int&                neighbour_cell_no)
 {
    if (face[face_no].lcell == cell_no)
@@ -273,15 +273,15 @@ void Grid::find_cell_neighbour(const unsigned int& face_no,
 //------------------------------------------------------------------------------
 void Grid::renumber_cell()
 {  
-	unsigned int i, j, neighbour_cell, old_cell, k;
+	unsigned int i, j, current_cell, old_cell, k;
 	int neighbour =-1;
 	vector<Cell> renumbering;
-	vector< unsigned int > direct,indirect;
-	// direct vector says directly the value of renumbering tag for a old cell number
-	// indirect vector says what is the value of old cell number for a given renumbering tag
+	vector< unsigned int > new_num, old_num;
+	// new_num vector says directly the value of renumbering tag for a old cell number
+	// old_num vector says what is the value of old cell number for a given renumbering tag
 	// renumbering cell vector is a dummy vector to reshuffle all old cell according to new numbering 
-	direct.resize(n_cell,0);
-	indirect.resize(n_cell,0);
+	new_num.resize(n_cell,0);
+	old_num.resize(n_cell,0);
 	renumbering.resize(n_cell);
 	
 	// Write initial cell numbering to file
@@ -306,17 +306,17 @@ void Grid::renumber_cell()
 	for(i=0; i<n_cell; ++i)
 	{ 
 		j = 0;
-		neighbour_cell = indirect[i] ;
-		while(cell[neighbour_cell].face[j] != -1 && j <= 3)
-		{  
-			find_cell_neighbour (cell[i].face[j], neighbour_cell, neighbour);
+		current_cell = old_num[i] ;
+		while(cell[current_cell].face[j] != -1 && j <= 3)
+		{     
+			find_cell_neighbour (cell[current_cell].face[j], current_cell, neighbour);
 			old_cell = neighbour;
 			if (old_cell != -1)
 			{
-				if (direct[old_cell] == 0 && old_cell != 0)
+				if (new_num[old_cell] == 0 && old_cell != 0)
 				{
-					indirect[k] = old_cell;
-					direct[old_cell] = k;
+					old_num[k] = old_cell;
+					new_num[old_cell] = k;
 					++k;
 				}
 			}
@@ -327,7 +327,7 @@ void Grid::renumber_cell()
 	// here coping old cells according to new numbers
 	for(i=0; i<n_cell; ++i)
 	{
-		old_cell = indirect[i];
+		old_cell = old_num[i];
 		renumbering[i] = cell[old_cell];
 	}
    
@@ -343,9 +343,9 @@ void Grid::renumber_cell()
 	{
 		lcell = face[i].lcell ;
 		rcell = face[i].rcell ;
-		face[i].lcell = direct[lcell];
+		face[i].lcell = new_num[lcell];
 		if(rcell != -1)
-			face[i].rcell = direct[rcell];
+			face[i].rcell = new_num[rcell];
 	}         
 	
 	// Save new cell numbering to file

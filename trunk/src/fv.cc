@@ -168,11 +168,17 @@ void FiniteVolume::compute_dt ()
 
    // Compute global time step
    dt_global = 1.0e20;
-   for(unsigned int i=0; i<grid.n_cell; ++i)
+
+   if( param.time_scheme != "lusgs") 
    {
-      dt[i] = param.cfl * grid.cell[i].volume / dt[i];
-      dt_global = min( dt_global, dt[i] );
+      for(unsigned int i=0; i<grid.n_cell; ++i)
+      {
+         dt[i] = param.cfl * grid.cell[i].volume / dt[i];
+         dt_global = min( dt_global, dt[i] );
+      }
    }
+   else
+   dt_global =1.0;
 
    // For unsteady simulation, use global time step
    if(param.time_mode == "unsteady")
@@ -180,82 +186,117 @@ void FiniteVolume::compute_dt ()
          dt[i] = dt_global;
 }
 
+//---------------------------------------------------------------------------
+//Calculation of Euler Flux
+//--------------------------------------------------------------------------
+
+void FiniteVolume::euler_flux (PrimVar prim, Flux& flux, unsigned int f, unsigned int& i , double& lamda)
+{
+
+   double gamma = param.material.gamma;
+   double area = grid.face[f].normal.norm();
+   Vector unit_normal = grid.face[f].normal / area;
+   if( grid.face[f].lcell != i)
+   unit_normal *= -1;
+
+   double vel_normal  = prim.velocity * unit_normal * area;
+   double c  = sqrt( gamma * prim.pressure / prim.density );
+   lamda  = fabs(vel_normal) + c* area; 
+   double h  = gamma * prim.pressure / (prim.density * (gamma-1.0)) + 0.5 * prim.velocity.square();
+   flux.mass_flux = prim.density * (prim.velocity* unit_normal);					
+   flux.momentum_flux = unit_normal *prim.pressure + prim.velocity * prim.density * (prim.velocity* unit_normal);			
+   flux.energy_flux = h * flux.mass_flux;				
+   flux *=area;
+}
+
+
 //------------------------------------------------------------------------------
 // Matrix-free LUSGS scheme
 //------------------------------------------------------------------------------
 void FiniteVolume::lusgs (vector<Flux>& update_cell_change,unsigned int & sweep)
 {  
    unsigned int j;
-   int f;
+   unsigned int f = 0;
    ConVar conserved  ;
-   vector<PrimVar> primitive_copy(2);
-   unsigned int cl, cr;
-   vector<PrimVar> state(2);
-   Flux flux, flux1, summation_face;
-  
+   PrimVar prim;
+   int neighbour_cell;
+   Flux flux,flux1, summation_face; 
+
    // Forward sweep and backward sweep without interpolation and reconstruction
    // sweep =0 means forward and sweep=1 means backward
-  
-   if (sweep ==1)
-   sweep=grid.n_cell;
-   
+   unsigned int i = 0;
 
-   for(unsigned int i=sweep; i<grid.n_cell-sweep; ++i)
+   if (sweep ==1)
+   {
+   sweep = grid.n_cell;
+   i = grid.n_cell-1;
+   }
+   bool loop_sweep = true;
+   int condition = 0;
+   double lamda, lamda_fix;
+   while ( loop_sweep == true )
    {  
       // initially summation over all faces initialized to zero.
-      summation_face.mass_flux=0.0;      
-      summation_face.energy_flux=0.0;
-      summation_face.momentum_flux.x=0.0;      
-      summation_face.momentum_flux.y=0.0;		  
-      summation_face.momentum_flux.z=0.0;
-
-      dt[i]= (grid.cell[i].volume / dt_global) + 0.5*dt[i];
-      j=0;
-      while(grid.cell[i].face[j] !=-1 && j<4) 
-      {  f= grid.cell[i].face[j];
-         if(grid.face[f].type == -1)
-	 {
-         cr = grid.face[f].rcell;
-	 cl = grid.face[f].lcell;
-         primitive_copy[0]=primitive[i];
-	 
-
-	 //conserved_old[i] = param.material.prim2con (primitive[i]);
-	 //reconstruct ( f, true, state );
-	 state[0]=primitive[cl];
-	 state[1]=primitive[cr];
-	 param.material.num_flux ( state[0], state[1], grid.face[f].normal, flux );
-	 flux1=flux;
-         conserved   = param.material.prim2con (primitive[cl]);
-         primitive[cl] = param.material.con2prim(conserved-update_cell_change[cl]*-1);
-	 conserved   = param.material.prim2con (primitive[cr]);
-	 primitive[cr] = param.material.con2prim(conserved-update_cell_change[cr]*-1);
-	 state[0]=primitive[cl];
-	 state[1]=primitive[cr];
-	 param.material.num_flux ( state[0], state[1], grid.face[f].normal, flux );
-	 double gamma = param.material.gamma;
-	 double area = grid.face[f].normal.norm();
-	 double vel_normal = primitive_copy[0].velocity * grid.face[i].normal;
-	 double c  = sqrt( gamma * primitive_copy[0].pressure / primitive_copy[0].density );
-         double lamda  = fabs(vel_normal) + c* area;
-	
-	 summation_face += (update_cell_change[cr]*lamda-(flux-flux1))*(-0.5);
-         }
-         j=j+1;
-	   
-     }
-      if (sweep ==0) 
-      update_cell_change[i] =(residual[i] + summation_face)*(-1/dt[i]);
+      summation_face.mass_flux = 0.0;      
+      summation_face.energy_flux = 0.0;
+      summation_face.momentum_flux.x = 0.0;      
+      summation_face.momentum_flux.y = 0.0;		  
+      summation_face.momentum_flux.z = 0.0;
       
+      if( sweep == 0)
+      dt[i] = dt[i] / param.cfl + 0.5*dt[i];  // Diagonal scalar value for LUSGS
+      j = 0;
+      while ( j < 4 )
+      {
+      f = grid.cell[i].face[j] ;
+      grid.find_cell_neighbour(f , i, neighbour_cell);
+
+      if( neighbour_cell !=-1 )
+      {
+      if ( sweep ==0 && neighbour_cell<i)
+      condition = 1;
+      else if ( sweep == grid.n_cell && neighbour_cell > i )
+      condition = 1;
+     
+
+      while(condition == 1 && grid.face[f].type == -1)
+      {
+	 prim = primitive[neighbour_cell];
+         euler_flux( prim,flux, f, i, lamda);
+	 flux1 = flux;
+	 lamda_fix = lamda;
+	 conserved  = param.material.prim2con (prim);
+         prim = param.material.con2prim(conserved-(update_cell_change[neighbour_cell]*-1));
+         euler_flux(prim,flux,f,i,lamda);
+
+         summation_face += (update_cell_change[neighbour_cell]*lamda_fix-(flux-flux1))*(-0.5);
+	 condition = 0;
+	 
+	 }
+       condition = 0; 
+      }
+      ++j;
+
+      	   
+     } 
+         
+      if (sweep == 0) 
+      {
+         update_cell_change[i] = (residual[i] + summation_face)*(-1.0/dt[i]);
+	 ++i;
+	 if(i == grid.n_cell)
+	 loop_sweep = false;
+      }	 
       else if (sweep == grid.n_cell)
-      update_cell_change[i]= update_cell_change[i] - summation_face*(0.5/dt[i]);
+      {
+      update_cell_change[i] = update_cell_change[i] - (summation_face*(1.0/dt[i]));
+	 if(i == 0)
+	 loop_sweep=false;
+	 --i;
+      }
+     
      }
-     for (unsigned int i=0;i<grid.n_cell;i++)
-     {
-        conserved=conserved_old[i]- (update_cell_change[i])*-1;
-        primitive[i]= param.material.con2prim (conserved);
-     }
-   
+     
 }
 
 
@@ -289,8 +330,32 @@ void FiniteVolume::update_solution (const unsigned int r)
       }
    }
    else if(param.time_scheme == "lusgs")
-   {
-      // TBD
+   {  
+      vector<Flux> update_cell_change;
+      update_cell_change.resize(grid.n_cell);
+      for ( unsigned int i=0; i<grid.n_cell; i++)
+      {
+          update_cell_change[i].mass_flux = 0.0;
+	  update_cell_change[i].energy_flux = 0.0;
+	  update_cell_change[i].momentum_flux.x = 0.0;
+	  update_cell_change[i].momentum_flux.y = 0.0;
+	  update_cell_change[i].momentum_flux.z = 0.0;
+      }
+
+      
+
+      // Forward Sweep
+      unsigned int sweep = 0;
+      lusgs(update_cell_change,sweep);
+    
+      // Backward Sweep
+      sweep = 1;
+      lusgs(update_cell_change,sweep);
+      for (unsigned int i = 0; i<grid.n_cell; i++)
+      {
+          conserved=conserved_old[i]- (update_cell_change[i])*-1;
+	  primitive[i] = param.material.con2prim (conserved);
+      }
    }
 }
 
@@ -411,6 +476,7 @@ void FiniteVolume::solve ()
       {
          compute_residual ();
          update_solution (r);
+
       }
 
       ++iter;

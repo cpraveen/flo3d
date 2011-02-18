@@ -49,7 +49,7 @@ class FiniteVolume
       void output (const unsigned int iter);
       void output_restart ();
       void lusgs (std::vector<Flux>& update_cell_change, unsigned int& sweep);
-
+      void euler_flux (PrimVar prim, Flux& flux, unsigned int f, unsigned int& i, double& lamda );
 };
 
 #endif
