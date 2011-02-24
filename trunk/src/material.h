@@ -67,6 +67,8 @@ class Material
       PrimVar con2prim (const ConVar&  con_var);
       void    num_flux (const PrimVar& left, const PrimVar& right, const Vector& normal, Flux& flux);
       void    slip_flux (const PrimVar& state, const Vector& normal, Flux& flux);
+      void    euler_flux (PrimVar prim, Flux& flux, const Vector& normal );
+
 };
 
 // Convert primitive to conserved

@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cassert>
 #include<fstream>
+#include<cstdlib>
 #include"grid.h"
 
 extern bool debug;
