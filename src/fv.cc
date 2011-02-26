@@ -195,9 +195,8 @@ void FiniteVolume::lusgs ()
    PrimVar prim;
    int neighbour_cell;
    Flux flux_new, flux_old, summation_face; 
-   double lamda;
    Vector face_normal;
-   double gamma = param.material.gamma;
+   const double gamma = param.material.gamma;
    
    // Forward sweep
    for (unsigned int i=0; i< grid.n_cell; ++i)
@@ -216,15 +215,16 @@ void FiniteVolume::lusgs ()
             face_normal = grid.face[f].normal;
 	         if ( grid.face[f].rcell == i)
 	            face_normal *= -1.0;
-            	         
+            
             param.material.euler_flux(primitive[neighbour_cell], flux_old, 
                                       face_normal);
             
             double area = grid.face[f].normal.norm();
-	         double vel_normal  = prim.velocity * face_normal;
-	         double c  = sqrt( gamma * prim.pressure / prim.density );
             
-	         lamda  = fabs(vel_normal) + c * area; 
+            PrimVar prim_avg = (primitive[i] + primitive[neighbour_cell])*0.5;
+	         double vel_normal  = prim_avg.velocity * face_normal;
+	         double c  = sqrt( gamma * prim_avg.pressure / prim_avg.density );
+	         double lamda  = fabs(vel_normal) + c * area; 
 	         
             prim = param.material.con2prim(conserved_old[neighbour_cell]
                                            - (residual[neighbour_cell]*-1));
@@ -257,21 +257,23 @@ void FiniteVolume::lusgs ()
                face_normal *= -1.0;
             	         
             param.material.euler_flux(primitive[neighbour_cell], flux_old, 
-                                      face_normal);			
+                                      face_normal);
             
             double area = grid.face[f].normal.norm();
-            double vel_normal  = prim.velocity * face_normal;
-            double c  = sqrt( gamma * prim.pressure / prim.density );
-            lamda  = fabs(vel_normal) + c * area;
+            
+            PrimVar prim_avg = (primitive[i] + primitive[neighbour_cell])*0.5;
+            double vel_normal  = prim_avg.velocity * face_normal;
+            double c  = sqrt( gamma * prim_avg.pressure / prim_avg.density );
+            double lamda  = fabs(vel_normal) + c * area;
+            
             prim = param.material.con2prim(conserved_old[neighbour_cell] 
-                                           - (residual[neighbour_cell]*-1));										      
+                                           - (residual[neighbour_cell]*-1));
             param.material.euler_flux(prim, flux_new, face_normal);
             summation_face += (residual[neighbour_cell]*lamda -
                                (flux_new - flux_old))*(-0.5);																														 
          }
       }
-      residual[i] -= summation_face;
-      residual[i] *= (1.0/dt[i]);
+      residual[i] -= summation_face * (1.0/dt[i]);
    } 
    
 }
