@@ -463,6 +463,8 @@ void FiniteVolume::solve ()
       for(unsigned int r=0; r<param.n_rks; ++r)
       {
          compute_residual ();
+         if(r == param.n_rks)
+            compute_residual_norm (iter);
          update_solution (r);
 
       }
@@ -470,7 +472,6 @@ void FiniteVolume::solve ()
       ++iter;
       time += dt_global;
 
-      compute_residual_norm (iter);
       if(iter % param.write_frequency == 0) output (iter);
    }
 
