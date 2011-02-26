@@ -191,92 +191,88 @@ void FiniteVolume::compute_dt ()
 //------------------------------------------------------------------------------
 void FiniteVolume::lusgs ()
 {  
-   unsigned int j;
    unsigned int f = 0;
-   ConVar conserved  ;
    PrimVar prim;
    int neighbour_cell;
-   Flux flux,flux1, summation_face; 
-
-   // Forward sweep and backward sweep without interpolation and reconstruction
+   Flux flux_new, flux_old, summation_face; 
    double lamda;
    Vector face_normal;
-   // Forward sweep
-   for ( unsigned int i=0; i< grid.n_cell; ++i)
-   {   // initially summation over all faces initialized to zero.
+   double gamma = param.material.gamma;
    
+   // Forward sweep
+   for (unsigned int i=0; i< grid.n_cell; ++i)
+   {   
+      // initially summation over all faces initialized to zero.
       summation_face.zero ();
-     
-      dt[i] = dt[i] / param.cfl + 0.5*dt[i];  // Diagonal scalar value for LUSGS
-      for ( j=0; j < 4; ++j )
+      
+      dt[i] = dt[i] / param.cfl + 0.5 * dt[i];  // Diagonal scalar value for LUSGS
+      for (unsigned int j=0; j<4; ++j)
       {
-            f = grid.cell[i].face[j] ;
-            grid.find_cell_neighbour(f , i, neighbour_cell);
-
-            if ( neighbour_cell !=-1 && neighbour_cell<i && grid.face[f].type == -1)
-            {
-	         prim = primitive[neighbour_cell];
-	         if ( grid.face[f].rcell == i)
-	            face_normal = grid.face[f].normal*-1;
-	         else
-	           face_normal = grid.face[f].normal;
-
-                 param.material.euler_flux( prim,flux, face_normal );
-                 double gamma = param.material.gamma;
-                 double area = grid.face[f].normal.norm();
-                 Vector unit_normal = grid.face[f].normal / area;
-	         double vel_normal  = prim.velocity * unit_normal * area;
-	         double c  = sqrt( gamma * prim.pressure / prim.density );
-	         lamda  = fabs(vel_normal) + c* area; 
-		 flux1 = flux;
-	         conserved  = param.material.prim2con (prim);
-                 prim = param.material.con2prim(conserved-(residual[neighbour_cell]*-1));
-                 param.material.euler_flux(prim,flux,face_normal);
-		 summation_face += (residual[neighbour_cell]*lamda-(flux-flux1))*(-0.5);
-	 
-	     }
-             
-     } 
+         f = grid.cell[i].face[j] ;
+         grid.find_cell_neighbour(f, i, neighbour_cell);
          
-       
-     residual[i] = (residual[i] + summation_face)*(-1.0/dt[i]);
+         if (neighbour_cell !=-1 && neighbour_cell<i && grid.face[f].type == -1)
+         {               
+            face_normal = grid.face[f].normal;
+	         if ( grid.face[f].rcell == i)
+	            face_normal *= -1.0;
+            	         
+            param.material.euler_flux(primitive[neighbour_cell], flux_old, 
+                                      face_normal);
+            
+            double area = grid.face[f].normal.norm();
+	         double vel_normal  = prim.velocity * face_normal;
+	         double c  = sqrt( gamma * prim.pressure / prim.density );
+            
+	         lamda  = fabs(vel_normal) + c * area; 
+	         
+            prim = param.material.con2prim(conserved_old[neighbour_cell]
+                                           - (residual[neighbour_cell]*-1));
+            param.material.euler_flux(prim, flux_new, face_normal);
+            summation_face += (residual[neighbour_cell]*lamda
+                               - (flux_new - flux_old))*(-0.5);
+            
+         }
+         
+      } 
+            
+      residual[i] += summation_face;
+      residual[i] *= (-1.0/dt[i]);
+      // Now residual contains increment of conserved variable
    }
-  
+   
    // Backward Sweep
-   int backward_loop = 1;
-   unsigned int i=grid.n_cell-1;
-   while(backward_loop == 1 )
-   {   // initially summation over all faces initialized to zero.
-
-       summation_face.zero ();
-       for( j=0; j < 4; ++j )
-       {  
-       
-       
-            f = grid.cell[i].face[j] ;
-            grid.find_cell_neighbour(f , i, neighbour_cell);
-            if ( neighbour_cell !=-1 && neighbour_cell>i  && grid.face[f].type == -1)										          {	 
-	         prim = primitive[neighbour_cell];								
-		 if ( grid.face[f].rcell == i)
-		    face_normal = grid.face[f].normal*-1;
-		 else
-		    face_normal = grid.face[f].normal;
-		 param.material.euler_flux( prim,flux, face_normal );			
-		 double gamma = param.material.gamma;									
-		 double area = grid.face[f].normal.norm();	   							
-		 Vector unit_normal = grid.face[f].normal / area;											                      double vel_normal  = prim.velocity * unit_normal * area;
-		 double c  = sqrt( gamma * prim.pressure / prim.density );
-		 lamda  = fabs(vel_normal) + c* area;														              flux1 = flux;												
-		 conserved  = param.material.prim2con (prim);											
-		 prim = param.material.con2prim(conserved-(residual[neighbour_cell]*-1));										      param.material.euler_flux(prim,flux,face_normal);        												           summation_face += (residual[neighbour_cell]*lamda-(flux-flux1))*(-0.5);																														 }
-																				    }
-       residual[i] = residual[i] - (summation_face*(1.0/dt[i]));
-       if ( i==0)
-       backward_loop = 0;
-       else
-       i--;
-     
-    } 
+   for(unsigned int i=grid.n_cell-1; i>=0; --i)
+   {   
+      // initially summation over all faces initialized to zero.
+      summation_face.zero ();
+      for(unsigned int j=0; j<4; ++j)
+      {  
+         f = grid.cell[i].face[j] ;
+         grid.find_cell_neighbour(f , i, neighbour_cell);
+         if (neighbour_cell != -1 && neighbour_cell > i  && grid.face[f].type == -1)										          
+         {	                
+            face_normal = grid.face[f].normal;
+            if ( grid.face[f].rcell == i)
+               face_normal *= -1.0;
+            	         
+            param.material.euler_flux(primitive[neighbour_cell], flux_old, 
+                                      face_normal);			
+            
+            double area = grid.face[f].normal.norm();
+            double vel_normal  = prim.velocity * face_normal;
+            double c  = sqrt( gamma * prim.pressure / prim.density );
+            lamda  = fabs(vel_normal) + c * area;
+            prim = param.material.con2prim(conserved_old[neighbour_cell] 
+                                           - (residual[neighbour_cell]*-1));										      
+            param.material.euler_flux(prim, flux_new, face_normal);
+            summation_face += (residual[neighbour_cell]*lamda -
+                               (flux_new - flux_old))*(-0.5);																														 
+         }
+      }
+      residual[i] -= summation_face;
+      residual[i] *= (1.0/dt[i]);
+   } 
    
 }
 
@@ -314,14 +310,14 @@ void FiniteVolume::update_solution (const unsigned int r)
    { 
       // Forward Sweep and backward sweep
       lusgs();
-     
+      
       for (unsigned int i = 0; i<grid.n_cell; i++)
       {
-          conserved=conserved_old[i]- (residual[i])*-1;
-	  primitive[i] = param.material.con2prim (conserved);
+         conserved = conserved_old[i] - (residual[i])*-1;
+         primitive[i] = param.material.con2prim (conserved);
       }
-
-   
+      
+      
    }
 }
 
@@ -359,7 +355,7 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
    residual_norm_total = sqrt (residual_norm_total);
 
    // Copy residual in first iteration for normalization
-   if(iter == 1)
+   if(iter == 0)
    {
       residual_norm_total0 = residual_norm_total;
       cout << "  Initial residual = " << residual_norm_total0 << endl;
