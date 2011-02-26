@@ -199,28 +199,21 @@ void FiniteVolume::lusgs ()
    Flux flux,flux1, summation_face; 
 
    // Forward sweep and backward sweep without interpolation and reconstruction
-   unsigned int condition = 0;
    double lamda;
    Vector face_normal;
    // Forward sweep
    for ( unsigned int i=0; i< grid.n_cell; ++i)
    {   // initially summation over all faces initialized to zero.
-      summation_face.mass_flux = 0.0;      
-      summation_face.energy_flux = 0.0;
-      summation_face.momentum_flux.x = 0.0;      
-      summation_face.momentum_flux.y = 0.0;		  
-      summation_face.momentum_flux.z = 0.0;
+   
+      summation_face.zero ();
+     
       dt[i] = dt[i] / param.cfl + 0.5*dt[i];  // Diagonal scalar value for LUSGS
-      j = 0;
-      while ( j < 4 )
+      for ( j=0; j < 4; ++j )
       {
             f = grid.cell[i].face[j] ;
             grid.find_cell_neighbour(f , i, neighbour_cell);
 
-            if( neighbour_cell !=-1 && neighbour_cell<i )
-            condition = 1;
-
-            while(condition == 1 && grid.face[f].type == -1)
+            if ( neighbour_cell !=-1 && neighbour_cell<i && grid.face[f].type == -1)
             {
 	         prim = primitive[neighbour_cell];
 	         if ( grid.face[f].rcell == i)
@@ -240,41 +233,29 @@ void FiniteVolume::lusgs ()
                  prim = param.material.con2prim(conserved-(residual[neighbour_cell]*-1));
                  param.material.euler_flux(prim,flux,face_normal);
 		 summation_face += (residual[neighbour_cell]*lamda-(flux-flux1))*(-0.5);
-	         condition = 0;
 	 
 	     }
-             condition = 0; 
-	     ++j;	   
+             
      } 
          
        
      residual[i] = (residual[i] + summation_face)*(-1.0/dt[i]);
    }
   
-  
-  
    // Backward Sweep
-   condition=0;
    int backward_loop = 1;
    unsigned int i=grid.n_cell-1;
    while(backward_loop == 1 )
    {   // initially summation over all faces initialized to zero.
 
-       summation_face.mass_flux = 0;
-       summation_face.energy_flux = 0.0;
-       summation_face.momentum_flux.x = 0.0;
-       summation_face.momentum_flux.y = 0.0;
-       summation_face.momentum_flux.z = 0.0;
-       j = 0;
-       while( j < 4 )
+       summation_face.zero ();
+       for( j=0; j < 4; ++j )
        {  
        
        
             f = grid.cell[i].face[j] ;
             grid.find_cell_neighbour(f , i, neighbour_cell);
-            if( neighbour_cell !=-1 && neighbour_cell>i )
-            condition = 1;
-            while(condition == 1 && grid.face[f].type == -1)														 {	
+            if ( neighbour_cell !=-1 && neighbour_cell>i  && grid.face[f].type == -1)										          {	 
 	         prim = primitive[neighbour_cell];								
 		 if ( grid.face[f].rcell == i)
 		    face_normal = grid.face[f].normal*-1;
@@ -287,9 +268,7 @@ void FiniteVolume::lusgs ()
 		 double c  = sqrt( gamma * prim.pressure / prim.density );
 		 lamda  = fabs(vel_normal) + c* area;														              flux1 = flux;												
 		 conserved  = param.material.prim2con (prim);											
-		 prim = param.material.con2prim(conserved-(residual[neighbour_cell]*-1));										      param.material.euler_flux(prim,flux,face_normal);        												           summation_face += (residual[neighbour_cell]*lamda-(flux-flux1))*(-0.5);
-	         condition = 0;																																					      }
-				   														                        condition = 0;																		     ++j;																	
+		 prim = param.material.con2prim(conserved-(residual[neighbour_cell]*-1));										      param.material.euler_flux(prim,flux,face_normal);        												           summation_face += (residual[neighbour_cell]*lamda-(flux-flux1))*(-0.5);																														 }
 																				    }
        residual[i] = residual[i] - (summation_face*(1.0/dt[i]));
        if ( i==0)
@@ -298,7 +277,7 @@ void FiniteVolume::lusgs ()
        i--;
      
     } 
-    
+   
 }
 
 
@@ -333,7 +312,6 @@ void FiniteVolume::update_solution (const unsigned int r)
    }
    else if(param.time_scheme == "lusgs")
    { 
-   
       // Forward Sweep and backward sweep
       lusgs();
      
@@ -463,7 +441,8 @@ void FiniteVolume::solve ()
       for(unsigned int r=0; r<param.n_rks; ++r)
       {
          compute_residual ();
-         if(r == param.n_rks)
+
+         if(r == param.n_rks-1)
             compute_residual_norm (iter);
          update_solution (r);
 
