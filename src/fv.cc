@@ -242,8 +242,8 @@ void FiniteVolume::lusgs ()
    }
    
    // Backward Sweep
-   for(unsigned int i=grid.n_cell-1; i>=0; --i)
-   {   
+   for(int i=grid.n_cell-1; i>=0; --i)
+   {  
       // initially summation over all faces initialized to zero.
       summation_face.zero ();
       for(unsigned int j=0; j<4; ++j)
