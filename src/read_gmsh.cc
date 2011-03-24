@@ -7,6 +7,9 @@
 
 using namespace std;
 
+//------------------------------------------------------------------------------
+// Read a grid in gmsh format
+//------------------------------------------------------------------------------
 void Grid::read_gmsh (const string grid_file)
 {
    unsigned int i, j, count, elem_type, ntags, tag, n_elem;

@@ -59,7 +59,6 @@ void FiniteVolume::interpolate_vertex ()
 
 //------------------------------------------------------------------------------
 // Reconstruct left and right states
-// CURRENTLY FIRST ORDER
 //------------------------------------------------------------------------------
 void FiniteVolume::reconstruct (const unsigned int& f,
                                 bool                has_right,
@@ -92,9 +91,10 @@ void FiniteVolume::reconstruct (const unsigned int& f,
 //------------------------------------------------------------------------------
 void FiniteVolume::compute_residual ()
 {
-   // Interpolate solution from cell to vertex
+   // Interpolate solution from cell-center to vertex
    interpolate_vertex ();
 
+   // Set residual vector to zero
    for(unsigned int i=0; i<grid.n_cell; ++i)
       residual[i].zero ();
 
@@ -105,7 +105,7 @@ void FiniteVolume::compute_residual ()
    // Loop over faces and accumulate flux
    for(unsigned int i=0; i<grid.n_face; ++i)
    {
-      if(grid.face[i].type == -1)
+      if(grid.face[i].type == -1) // interior face
       {
          cl = grid.face[i].lcell;
          cr = grid.face[i].rcell;
@@ -178,7 +178,7 @@ void FiniteVolume::compute_dt ()
       }
    }
    else
-   dt_global =1.0;
+      dt_global =1.0;
 
    // For unsteady simulation, use global time step
    if(param.time_mode == "unsteady")
@@ -210,7 +210,7 @@ void FiniteVolume::lusgs ()
          f = grid.cell[i].face[j] ;
          grid.find_cell_neighbour(f, i, neighbour_cell);
          
-         if (neighbour_cell !=-1 && neighbour_cell<i && grid.face[f].type == -1)
+         if (neighbour_cell != -1 && neighbour_cell < i && grid.face[f].type == -1)
          {               
             face_normal = grid.face[f].normal;
 	         if ( grid.face[f].rcell == i)
@@ -250,7 +250,7 @@ void FiniteVolume::lusgs ()
       {  
          f = grid.cell[i].face[j] ;
          grid.find_cell_neighbour(f , i, neighbour_cell);
-         if (neighbour_cell != -1 && neighbour_cell > i  && grid.face[f].type == -1)										          
+         if (neighbour_cell != -1 && neighbour_cell > i  && grid.face[f].type == -1)
          {	                
             face_normal = grid.face[f].normal;
             if ( grid.face[f].rcell == i)
@@ -270,7 +270,7 @@ void FiniteVolume::lusgs ()
                                            - (residual[neighbour_cell]*-1));
             param.material.euler_flux(prim, flux_new, face_normal);
             summation_face += (residual[neighbour_cell]*lamda -
-                               (flux_new - flux_old))*(-0.5);																														 
+                               (flux_new - flux_old))*(-0.5);								 
          }
       }
       residual[i] -= summation_face * (1.0/dt[i]);
@@ -290,7 +290,7 @@ void FiniteVolume::store_conserved_old ()
 }
 
 //------------------------------------------------------------------------------
-// Update solution by RK scheme
+// Update solution to new time level
 //------------------------------------------------------------------------------
 void FiniteVolume::update_solution (const unsigned int r)
 {
@@ -318,8 +318,6 @@ void FiniteVolume::update_solution (const unsigned int r)
          conserved = conserved_old[i] - (residual[i])*-1;
          primitive[i] = param.material.con2prim (conserved);
       }
-      
-      
    }
 }
 
@@ -399,7 +397,7 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
 }
 
 //------------------------------------------------------------------------------
-// Save solution to file
+// Save solution to file for visualization
 //------------------------------------------------------------------------------
 void FiniteVolume::output (const unsigned int iter)
 {
@@ -443,7 +441,6 @@ void FiniteVolume::solve ()
          if(r == param.n_rks-1)
             compute_residual_norm (iter);
          update_solution (r);
-
       }
 
       ++iter;
