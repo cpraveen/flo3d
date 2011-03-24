@@ -4,7 +4,9 @@
 #include <string>
 #include "vec.h"
 
+//------------------------------------------------------------------------------
 // Primitive variable
+//------------------------------------------------------------------------------
 class PrimVar
 {
    public:
@@ -19,7 +21,9 @@ class PrimVar
       void zero ();
 };
 
+//------------------------------------------------------------------------------
 // Flux variable
+//------------------------------------------------------------------------------
 class Flux
 {
    public:
@@ -36,7 +40,9 @@ class Flux
       void zero ();
 };
 
+//------------------------------------------------------------------------------
 // Conserved variable
+//------------------------------------------------------------------------------
 class ConVar
 {
    public:
@@ -54,7 +60,9 @@ class ConVar
 
 };
 
+//------------------------------------------------------------------------------
 // Material class
+//------------------------------------------------------------------------------
 class Material
 {
    public:
@@ -65,13 +73,22 @@ class Material
 
       ConVar  prim2con (const PrimVar& prim_var);
       PrimVar con2prim (const ConVar&  con_var);
-      void    num_flux (const PrimVar& left, const PrimVar& right, const Vector& normal, Flux& flux);
-      void    slip_flux (const PrimVar& state, const Vector& normal, Flux& flux);
-      void    euler_flux (PrimVar prim, Flux& flux, const Vector& normal );
+      void    num_flux (const PrimVar& left, 
+                        const PrimVar& right, 
+                        const Vector& normal, 
+                        Flux& flux);
+      void    slip_flux (const PrimVar& state, 
+                         const Vector& normal, 
+                         Flux& flux);
+      void    euler_flux (const PrimVar& prim, 
+                          Flux& flux, 
+                          const Vector& normal );
 
 };
 
+//------------------------------------------------------------------------------
 // Convert primitive to conserved
+//------------------------------------------------------------------------------
 inline
 ConVar Material::prim2con(const PrimVar& prim_var)
 {
@@ -85,7 +102,9 @@ ConVar Material::prim2con(const PrimVar& prim_var)
    return con_var;
 }
 
+//------------------------------------------------------------------------------
 // Convert conserved to primitive
+//------------------------------------------------------------------------------
 inline
 PrimVar Material::con2prim (const ConVar& con_var)
 {

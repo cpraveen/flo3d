@@ -284,14 +284,16 @@ void Material::slip_flux (const PrimVar& state,
 }
 
 // Euler Flux Calculation
-void Material::euler_flux (PrimVar prim, Flux& flux, const Vector& normal )
+void Material::euler_flux (const PrimVar& prim, Flux& flux, const Vector& normal )
 {
   
    double area = normal.norm();
    Vector unit_normal = normal / area;
-   double h  = gamma * prim.pressure / (prim.density * (gamma-1.0)) + 0.5 * prim.velocity.square();
+   double h  = gamma * prim.pressure / (prim.density * (gamma-1.0)) + 
+               0.5 * prim.velocity.square();
    flux.mass_flux = prim.density * (prim.velocity* unit_normal);
-   flux.momentum_flux = unit_normal *prim.pressure + prim.velocity * prim.density * (prim.velocity* unit_normal);
+   flux.momentum_flux = unit_normal *prim.pressure + 
+                        prim.velocity * prim.density * (prim.velocity* unit_normal);
    flux.energy_flux = h * flux.mass_flux;
    flux *=area;
 }

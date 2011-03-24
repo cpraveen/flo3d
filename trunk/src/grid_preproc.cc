@@ -257,7 +257,7 @@ void Grid::find_cell_faces ()
 //------------------------------------------------------------------------------
 void Grid::find_cell_neighbour( const unsigned int& face_no, 
                                 const unsigned int& cell_no, 
-                               int&                neighbour_cell_no)
+                                int&                neighbour_cell_no)
 {
    if (face[face_no].lcell == cell_no)
       neighbour_cell_no = face[face_no].rcell;

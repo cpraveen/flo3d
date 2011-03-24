@@ -68,18 +68,26 @@ void Grid::weight_average ()
    for (unsigned int i=0; i< n_vertex ; i++)
    {
       
-      Det = Ixx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) -  Ixy[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) +  Izx[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]) ;
+      Det = Ixx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) -  
+            Ixy[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) +  
+            Izx[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]);
       
       if (Det == 0.0 )
       {
-         cout << " System may have no solution or many solution depending on the Dx , Dy , Dz ";
+         cout << "weight_avg: no solution or many solution";
          abort();
       }  
       else
       {
-         lambda_x = -Rx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) + Ry[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) -  Rz[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]);
-         lambda_y =  Rx[i]*(Ixy[i]*Izz[i] - Izx[i]*Iyz[i]) - Ry[i]*(Ixx[i]*Izz[i] - Izx[i]*Izx[i]) +  Rz[i]*(Ixx[i]*Iyz[i] - Ixy[i]*Izx[i]);
-         lambda_z = -Rx[i]*(Ixy[i]*Iyz[i] - Izx[i]*Iyy[i]) + Ry[i]*(Ixx[i]*Iyz[i] - Izx[i]*Ixy[i]) -  Rz[i]*(Ixx[i]*Iyy[i] - Ixy[i]*Ixy[i]);
+         lambda_x = -Rx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) + 
+                     Ry[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) -  
+                     Rz[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]);
+         lambda_y =  Rx[i]*(Ixy[i]*Izz[i] - Izx[i]*Iyz[i]) - 
+                     Ry[i]*(Ixx[i]*Izz[i] - Izx[i]*Izx[i]) +  
+                     Rz[i]*(Ixx[i]*Iyz[i] - Ixy[i]*Izx[i]);
+         lambda_z = -Rx[i]*(Ixy[i]*Iyz[i] - Izx[i]*Iyy[i]) + 
+                     Ry[i]*(Ixx[i]*Iyz[i] - Izx[i]*Ixy[i]) -  
+                     Rz[i]*(Ixx[i]*Iyy[i] - Ixy[i]*Ixy[i]);
          
          Rx[i] = lambda_x / Det;
          Ry[i] = lambda_y / Det;
