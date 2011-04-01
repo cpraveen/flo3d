@@ -204,7 +204,10 @@ void FiniteVolume::lusgs ()
       // initially summation over all faces initialized to zero.
       summation_face.zero ();
       
-      dt[i] = dt[i] / param.cfl + 0.5 * dt[i];  // Diagonal scalar value for LUSGS
+      // Diagonal scalar value for LUSGS
+      dt[i] = dt[i] / param.cfl + 0.5 * dt[i];
+      
+      // Loop over neighboring cells
       for (unsigned int j=0; j<4; ++j)
       {
          f = grid.cell[i].face[j] ;
@@ -246,6 +249,8 @@ void FiniteVolume::lusgs ()
    {  
       // initially summation over all faces initialized to zero.
       summation_face.zero ();
+
+      // Loop over neighboring cells
       for(unsigned int j=0; j<4; ++j)
       {  
          f = grid.cell[i].face[j] ;
@@ -313,7 +318,7 @@ void FiniteVolume::update_solution (const unsigned int r)
       // Forward Sweep and backward sweep
       lusgs();
       
-      for (unsigned int i = 0; i<grid.n_cell; i++)
+      for (unsigned int i=0; i<grid.n_cell; ++i)
       {
          conserved = conserved_old[i] - (residual[i])*-1;
          primitive[i] = param.material.con2prim (conserved);
@@ -418,6 +423,7 @@ void FiniteVolume::output_restart ()
    writer.attach_cell_data (primitive);
    writer.output_restart ();
 }
+
 //------------------------------------------------------------------------------
 // Perform time marching iterations
 //------------------------------------------------------------------------------

@@ -42,7 +42,7 @@ class Grid
       void read (const Parameter& param);
       void find_cell_neighbour(const unsigned int& face_no,
                                const unsigned int& cell_no,
-			       int&                neighbour_cell_no);
+                               int&                neighbour_cell_no);
 
 
    private:
