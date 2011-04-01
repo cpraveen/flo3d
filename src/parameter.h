@@ -45,8 +45,8 @@ class Parameter
       std::string grid_file;
       GridType    grid_type;
 
-      std::map<int,BCType> bc_type;
-      std::map< int,std::vector<double> > bc_state;
+      std::map<int,BCType>  bc_type;
+      std::map<int,PrimVar> bc_state;
 
       std::string  write_format;
       unsigned int write_frequency;

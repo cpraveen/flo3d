@@ -32,9 +32,9 @@ initial_condition
 
 boundary
 {
-   100001      farfield
-   100002      farfield
-   100003      slip
+   100001      farfield  1.0  1.0  0.0  0.0  1.98412698412698412696
+   100002      farfield  1.0  1.0  0.0  0.0  1.98412698412698412696
+   100003      slip      0.0  0.0  0.0  0.0  0.0
 }
 
 integrals
