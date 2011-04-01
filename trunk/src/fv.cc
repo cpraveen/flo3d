@@ -105,7 +105,10 @@ void FiniteVolume::compute_residual ()
    // Loop over faces and accumulate flux
    for(unsigned int i=0; i<grid.n_face; ++i)
    {
-      if(grid.face[i].type == -1) // interior face
+      int face_type = grid.face[i].type;
+      BCType bc_type = param.bc_type[grid.face[i].type];
+      
+      if(face_type == -1) // interior face
       {
          cl = grid.face[i].lcell;
          cr = grid.face[i].rcell;
@@ -114,18 +117,21 @@ void FiniteVolume::compute_residual ()
          residual[cl] += flux;
          residual[cr] -= flux;
       }
-      else if(param.bc_type[grid.face[i].type] == slip)
+      else if(bc_type == slip)
       {
          cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
          param.material.slip_flux ( state[0], grid.face[i].normal, flux );
          residual[cl] += flux;
       }
-      else if(param.bc_type[grid.face[i].type] == farfield)
+      else if(bc_type == farfield)
       {
          cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
-         param.material.num_flux ( state[0], param.prim_inf, grid.face[i].normal, flux );
+         param.material.num_flux (state[0], 
+                                  param.bc_state[face_type], 
+                                  grid.face[i].normal, 
+                                  flux);
          residual[cl] += flux;
       }
       else
@@ -199,7 +205,7 @@ void FiniteVolume::lusgs ()
    const double gamma = param.material.gamma;
    
    // Forward sweep
-   for (unsigned int i=0; i< grid.n_cell; ++i)
+   for (int i=0; i < grid.n_cell; ++i)
    {   
       // initially summation over all faces initialized to zero.
       summation_face.zero ();
