@@ -46,6 +46,15 @@ Vector& Vector::operator*= (const double scalar){
    return *this;
 }
 
+// Divide vector by scalar and copy result to same vector
+Vector& Vector::operator/= (const double scalar){
+   x /= scalar;
+   y /= scalar;
+   z /= scalar;
+
+   return *this;
+}
+
 // Add two vectors
 Vector Vector::operator+  (const Vector vec) const
 {

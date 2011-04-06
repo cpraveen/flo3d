@@ -12,6 +12,11 @@ ifeq ($(CXX),g++)
 	CFLAGS = -O3 -Wall
 endif
 
+# LLVM compiler
+ifeq ($(CXX),llvm-g++)
+	CFLAGS = -O3 -Wall
+endif
+
 # Intel compiler
 ifeq ($(CXX),icpc)
 	CFLAGS = -fast

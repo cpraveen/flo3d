@@ -2,6 +2,7 @@
 #define __MATERIAL_H__
 
 #include <string>
+#include <cmath>
 #include "vec.h"
 
 //------------------------------------------------------------------------------
@@ -68,9 +69,13 @@ class Material
    public:
       double gamma;
       double gas_const;
+      double prandtl; // TODO
+      double Cp; // TODO
+      double T_0, T_ref, mu_ref; // constants for sutherland law
       std::string model;
       std::string flux;
 
+      void initialize ();
       ConVar  prim2con (const PrimVar& prim_var);
       PrimVar con2prim (const ConVar&  con_var);
       void    num_flux (const PrimVar& left, 
@@ -81,8 +86,17 @@ class Material
                          const Vector& normal, 
                          Flux& flux);
       void    euler_flux (const PrimVar& prim, 
-                          Flux& flux, 
-                          const Vector& normal );
+                          const Vector&  normal,
+                          Flux& flux);
+      void viscous_flux (const PrimVar& state, 
+                         const Vector&  dU, 
+                         const Vector&  dV, 
+                         const Vector&  dW, 
+                         const Vector&  dT, 
+                         const Vector&  normal, 
+                         Flux&          flux);
+      double viscosity (const double T);
+      double temperature (const PrimVar& state);
 
 };
 
@@ -116,6 +130,24 @@ PrimVar Material::con2prim (const ConVar& con_var)
         ( con_var.energy - 0.5 * con_var.momentum.square() / con_var.density );
 
    return prim_var;
+}
+
+//------------------------------------------------------------------------------
+// Viscosity coefficient according to sutherland law
+//------------------------------------------------------------------------------
+inline
+double Material::viscosity (const double T)
+{
+   return std::pow(T/T_ref, 1.5) * (T_ref + T_0) / (T + T_0);
+}
+
+//------------------------------------------------------------------------------
+//  Compute temperature given primitive state
+//------------------------------------------------------------------------------
+inline
+double Material::temperature (const PrimVar& state)
+{
+   return state.pressure / (gas_const * state.density);
 }
 
 #endif

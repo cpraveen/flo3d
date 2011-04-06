@@ -22,6 +22,22 @@ void FiniteVolume::initialize ()
    residual.resize (grid.n_cell);
    dt.resize (grid.n_cell);
 
+   // For navier stokes, we need gradient of velocity and temperature
+   if(param.material.model == "ns")
+   {
+      dU.resize (grid.n_vertex);
+      dV.resize (grid.n_vertex);
+      dW.resize (grid.n_vertex);
+      dT.resize (grid.n_vertex);
+      grid.vertex_volume.resize (grid.n_vertex, 0.0);
+
+      // Compute volume associated with each vertex
+      for(unsigned int i=0; i<grid.n_cell; ++i)
+         for(unsigned int j=0; j<4; ++j)
+            grid.vertex_volume[grid.cell[i].vertex[j]] += grid.cell[i].volume; // TODO missing constant
+   }
+
+   // If restart option specified, read previous solution from file
    if(restart)
    {
       cout << "Reading restart file flo3d.sol ...\n";
@@ -55,6 +71,69 @@ void FiniteVolume::interpolate_vertex ()
    for(unsigned int i=0; i<grid.n_cell; ++i)
       for(unsigned int j=0; j<4; ++j)
          primitive_vertex[grid.cell[i].vertex[j]] += primitive[i] * grid.cell[i].weight[j];
+
+   // For viscous flow, make velocity on noslip faces to be zero
+   if(param.material.model == "ns")
+      for(unsigned int i=0; i<grid.n_face; ++i)
+      {
+         int face_type = grid.face[i].type;
+         BCType bc_type = param.bc_type[grid.face[i].type];
+         if(bc_type == noslip)
+            for(unsigned int j=0; j<3; ++j)
+               primitive_vertex[grid.face[i].vertex[j]].velocity = 0.0;
+      }
+}
+
+//------------------------------------------------------------------------------
+// Compute derivatives of velocity and temperature at grid vertices
+//------------------------------------------------------------------------------
+void FiniteVolume::compute_vertex_gradients ()
+{
+   for(unsigned int i=0; i<grid.n_vertex; ++i)
+   {
+      dU[i] = 0.0;
+      dV[i] = 0.0;
+      dW[i] = 0.0;
+      dT[i] = 0.0;
+   }
+
+   for(unsigned int i=0; i<grid.n_face; ++i)
+   {
+      unsigned int vl = grid.face[i].lvertex;
+      unsigned int cl = grid.face[i].lcell;
+      double Tl = param.material.temperature (primitive[cl]);
+
+      dU[vl] += grid.face[i].normal * primitive[cl].velocity.x;
+      dV[vl] += grid.face[i].normal * primitive[cl].velocity.y;
+      dW[vl] += grid.face[i].normal * primitive[cl].velocity.z;
+      dT[vl] += grid.face[i].normal * Tl;
+
+      if(grid.face[i].type == -1)
+      {
+         unsigned int vr = grid.face[i].rvertex;
+         unsigned int cr = grid.face[i].rcell;
+         double Tr = param.material.temperature (primitive[cr]);
+
+         dU[vr] -= grid.face[i].normal * primitive[cr].velocity.x;
+         dV[vr] -= grid.face[i].normal * primitive[cr].velocity.y;
+         dW[vr] -= grid.face[i].normal * primitive[cr].velocity.z;
+         dT[vr] -= grid.face[i].normal * Tr;
+      }
+      else
+      {
+         // TODO
+      }
+   }
+
+   // Divide by vertex volume
+   for(unsigned int i=0; i<grid.n_vertex; ++i)
+   {
+      dU[i] /= grid.vertex_volume[i]; // TODO missing constant
+      dV[i] /= grid.vertex_volume[i];
+      dW[i] /= grid.vertex_volume[i];
+      dT[i] /= grid.vertex_volume[i];
+   }
+
 }
 
 //------------------------------------------------------------------------------
@@ -117,7 +196,7 @@ void FiniteVolume::compute_residual ()
          residual[cl] += flux;
          residual[cr] -= flux;
       }
-      else if(bc_type == slip)
+      else if(bc_type == slip || bc_type == noslip)
       {
          cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
@@ -138,6 +217,57 @@ void FiniteVolume::compute_residual ()
       {
          cout << "Unknown face type !!!" << endl;
          abort ();
+      }
+
+   }
+
+   // Viscous fluxes
+   if(param.material.model == "ns")
+   {
+      compute_vertex_gradients ();
+
+      for(unsigned int i=0; i<grid.n_face; ++i)
+      {
+         int face_type = grid.face[i].type;
+         BCType bc_type = param.bc_type[grid.face[i].type];
+
+         unsigned int n0, n1, n2;
+         n0 = grid.face[i].vertex[0];
+         n1 = grid.face[i].vertex[1];
+         n2 = grid.face[i].vertex[2];
+
+         // Average derivatives on face
+         Vector dUf, dVf, dWf, dTf;
+
+         dUf = (dU[n0] + dU[n1] + dU[n2]) / 3.0;
+         dVf = (dV[n0] + dV[n1] + dV[n2]) / 3.0;
+         dWf = (dW[n0] + dW[n1] + dW[n2]) / 3.0;
+         dTf = (dT[n0] + dT[n1] + dT[n2]) / 3.0;
+
+         PrimVar state = primitive_vertex[n0] + 
+                         primitive_vertex[n1] + 
+                         primitive_vertex[n2];
+         state *= (1.0/3.0);
+
+         // Compute viscous flux
+         Flux flux;
+         param.material.viscous_flux (state, 
+                                      dUf, 
+                                      dVf, 
+                                      dWf, 
+                                      dTf, 
+                                      grid.face[i].normal, 
+                                      flux);
+
+         // Add flux to residual
+         unsigned int cl = grid.face[i].lcell;
+         residual[cl] += flux;
+
+         if(face_type == -1)
+         {
+            unsigned int cr = grid.face[i].rcell;
+            residual[cr] -= flux;
+         }
       }
    }
 }
@@ -225,8 +355,9 @@ void FiniteVolume::lusgs ()
 	         if ( grid.face[f].rcell == i)
 	            face_normal *= -1.0;
             
-            param.material.euler_flux(primitive[neighbour_cell], flux_old, 
-                                      face_normal);
+            param.material.euler_flux(primitive[neighbour_cell], 
+                                      face_normal,
+                                      flux_old);
             
             double area = grid.face[f].normal.norm();
             
@@ -237,7 +368,7 @@ void FiniteVolume::lusgs ()
 	         
             prim = param.material.con2prim(conserved_old[neighbour_cell]
                                            - (residual[neighbour_cell]*-1));
-            param.material.euler_flux(prim, flux_new, face_normal);
+            param.material.euler_flux(prim, face_normal, flux_new);
             summation_face += (residual[neighbour_cell]*lamda
                                - (flux_new - flux_old))*(-0.5);
             
@@ -267,8 +398,9 @@ void FiniteVolume::lusgs ()
             if ( grid.face[f].rcell == i)
                face_normal *= -1.0;
             	         
-            param.material.euler_flux(primitive[neighbour_cell], flux_old, 
-                                      face_normal);
+            param.material.euler_flux(primitive[neighbour_cell], 
+                                      face_normal,
+                                      flux_old);
             
             double area = grid.face[f].normal.norm();
             
@@ -279,7 +411,7 @@ void FiniteVolume::lusgs ()
             
             prim = param.material.con2prim(conserved_old[neighbour_cell] 
                                            - (residual[neighbour_cell]*-1));
-            param.material.euler_flux(prim, flux_new, face_normal);
+            param.material.euler_flux(prim, face_normal, flux_new);
             summation_face += (residual[neighbour_cell]*lamda -
                                (flux_new - flux_old))*(-0.5);								 
          }
