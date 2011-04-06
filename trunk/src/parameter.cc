@@ -192,7 +192,7 @@ void Parameter::read_material ()
    fin >> input;
    checkString (input, "model");
    fin >> material.model;
-   assert (material.model == "euler");
+   assert (material.model == "euler" || material.model == "ns");
 
    skipComment (fin);
    fin >> input;
@@ -203,6 +203,8 @@ void Parameter::read_material ()
    skipComment (fin);
    fin >> input;
    checkString (input, "}");
+
+   material.initialize ();
 }
 
 //------------------------------------------------------------------------------

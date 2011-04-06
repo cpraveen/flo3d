@@ -11,6 +11,7 @@ class Vector
       Vector& operator+= (const Vector rhs);
       Vector& operator-= (const Vector rhs);
       Vector& operator*= (const double scalar);
+      Vector& operator/= (const double scalar);
       Vector  operator/  (const double scalar) const;
       Vector  operator*  (const double scalar) const;
       double  operator*  (const Vector vec) const; // Dot product of two vectors

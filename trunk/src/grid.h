@@ -38,6 +38,7 @@ class Grid
       std::vector<Vector> vertex;
       std::vector<Cell>   cell;
       std::vector<Face>   face;
+      std::vector<double> vertex_volume;
 
       void read (const Parameter& param);
       void find_cell_neighbour(const unsigned int& face_no,
