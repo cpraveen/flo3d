@@ -76,7 +76,6 @@ void FiniteVolume::interpolate_vertex ()
    if(param.material.model == "ns")
       for(unsigned int i=0; i<grid.n_face; ++i)
       {
-         int face_type = grid.face[i].type;
          BCType bc_type = param.bc_type[grid.face[i].type];
          if(bc_type == noslip)
             for(unsigned int j=0; j<3; ++j)
@@ -103,7 +102,7 @@ void FiniteVolume::compute_vertex_gradients ()
       unsigned int cl = grid.face[i].lcell;
       double Tl = param.material.temperature (primitive[cl]);
 
-      dU[vl] += grid.face[i].normal * primitive[cl].velocity.x;
+      dU[vl] += grid.face[i].normal * primitive[cl].velocity.x; // TODO correct factor
       dV[vl] += grid.face[i].normal * primitive[cl].velocity.y;
       dW[vl] += grid.face[i].normal * primitive[cl].velocity.z;
       dT[vl] += grid.face[i].normal * Tl;
@@ -114,7 +113,7 @@ void FiniteVolume::compute_vertex_gradients ()
          unsigned int cr = grid.face[i].rcell;
          double Tr = param.material.temperature (primitive[cr]);
 
-         dU[vr] -= grid.face[i].normal * primitive[cr].velocity.x;
+         dU[vr] -= grid.face[i].normal * primitive[cr].velocity.x; // TODO correct factor
          dV[vr] -= grid.face[i].normal * primitive[cr].velocity.y;
          dW[vr] -= grid.face[i].normal * primitive[cr].velocity.z;
          dT[vr] -= grid.face[i].normal * Tr;
@@ -122,6 +121,32 @@ void FiniteVolume::compute_vertex_gradients ()
       else
       {
          // TODO
+         unsigned int n0 = grid.face[i].vertex[0];
+         unsigned int n1 = grid.face[i].vertex[1];
+         unsigned int n2 = grid.face[i].vertex[2];
+
+         // Average state on face
+         PrimVar state = primitive_vertex[n0] +
+                         primitive_vertex[n1] +
+                         primitive_vertex[n2];
+         state *= (1.0/3.0);
+         double T = param.material.temperature (state);
+
+         // Add contribution to three vertices of face
+         dU[n0] += grid.face[i].normal * state.velocity.x; // TODO correct factor
+         dV[n0] += grid.face[i].normal * state.velocity.y; // TODO correct factor
+         dW[n0] += grid.face[i].normal * state.velocity.z; // TODO correct factor
+         dT[n0] += grid.face[i].normal * T; // TODO correct factor
+
+         dU[n1] += grid.face[i].normal * state.velocity.x; // TODO correct factor
+         dV[n1] += grid.face[i].normal * state.velocity.y; // TODO correct factor
+         dW[n1] += grid.face[i].normal * state.velocity.z; // TODO correct factor
+         dT[n1] += grid.face[i].normal * T; // TODO correct factor
+
+         dU[n2] += grid.face[i].normal * state.velocity.x; // TODO correct factor
+         dV[n2] += grid.face[i].normal * state.velocity.y; // TODO correct factor
+         dW[n2] += grid.face[i].normal * state.velocity.z; // TODO correct factor
+         dT[n2] += grid.face[i].normal * T; // TODO correct factor
       }
    }
 
@@ -229,21 +254,18 @@ void FiniteVolume::compute_residual ()
       for(unsigned int i=0; i<grid.n_face; ++i)
       {
          int face_type = grid.face[i].type;
-         BCType bc_type = param.bc_type[grid.face[i].type];
 
-         unsigned int n0, n1, n2;
-         n0 = grid.face[i].vertex[0];
-         n1 = grid.face[i].vertex[1];
-         n2 = grid.face[i].vertex[2];
+         unsigned int n0 = grid.face[i].vertex[0];
+         unsigned int n1 = grid.face[i].vertex[1];
+         unsigned int n2 = grid.face[i].vertex[2];
 
          // Average derivatives on face
-         Vector dUf, dVf, dWf, dTf;
+         Vector dUf = (dU[n0] + dU[n1] + dU[n2]) / 3.0;
+         Vector dVf = (dV[n0] + dV[n1] + dV[n2]) / 3.0;
+         Vector dWf = (dW[n0] + dW[n1] + dW[n2]) / 3.0;
+         Vector dTf = (dT[n0] + dT[n1] + dT[n2]) / 3.0;
 
-         dUf = (dU[n0] + dU[n1] + dU[n2]) / 3.0;
-         dVf = (dV[n0] + dV[n1] + dV[n2]) / 3.0;
-         dWf = (dW[n0] + dW[n1] + dW[n2]) / 3.0;
-         dTf = (dT[n0] + dT[n1] + dT[n2]) / 3.0;
-
+         // Average state on face
          PrimVar state = primitive_vertex[n0] + 
                          primitive_vertex[n1] + 
                          primitive_vertex[n2];
