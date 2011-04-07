@@ -237,6 +237,15 @@ void FiniteVolume::compute_residual ()
                                   flux);
          residual[cl] += flux;
       }
+      else if(bc_type == outlet)
+      {
+         cl = grid.face[i].lcell;
+         reconstruct ( i, false, state );
+         param.material.euler_flux(state[0],
+                                   grid.face[i].normal,
+                                   flux);
+         residual[cl] += flux;
+      }
       else
       {
          cout << "Unknown face type !!!" << endl;
