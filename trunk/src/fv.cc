@@ -274,7 +274,10 @@ void FiniteVolume::compute_residual ()
 
          // On solid walls, adiabatic condition
          if(bc_type == noslip)
-            dTf -= grid.face[i].normal * (dTf * grid.face[i].normal);
+         {
+            Vector unit_normal = grid.face[i].normal / grid.face[i].normal.norm();
+            dTf -= unit_normal * (dTf * unit_normal);
+         }
 
          // Average state on face
          PrimVar state = primitive_vertex[n0] + 
