@@ -18,6 +18,7 @@ material
 {
    gamma       1.4
    gas_const   1.0
+   prandtl     1.0
    model       euler
    flux        roe
 }
