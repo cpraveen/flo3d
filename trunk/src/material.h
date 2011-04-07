@@ -138,7 +138,7 @@ PrimVar Material::con2prim (const ConVar& con_var)
 inline
 double Material::viscosity (const double T)
 {
-   return std::pow(T/T_ref, 1.5) * (T_ref + T_0) / (T + T_0);
+   return mu_ref * std::pow(T/T_ref, 1.5) * (T_ref + T_0) / (T + T_0);
 }
 
 //------------------------------------------------------------------------------

@@ -209,7 +209,7 @@ void Material::initialize ()
 
    // TODO: Check these values
    T_ref = 300.0;
-   mu_ref = 1.0e-5;
+   mu_ref = 1.8e-5;
    T_0 = 110.0;
 }
 
