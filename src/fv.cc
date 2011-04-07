@@ -34,7 +34,7 @@ void FiniteVolume::initialize ()
       // Compute volume associated with each vertex
       for(unsigned int i=0; i<grid.n_cell; ++i)
          for(unsigned int j=0; j<4; ++j)
-            grid.vertex_volume[grid.cell[i].vertex[j]] += grid.cell[i].volume; // TODO missing constant
+            grid.vertex_volume[grid.cell[i].vertex[j]] += (27.0/64.0) * grid.cell[i].volume;
    }
 
    // If restart option specified, read previous solution from file
@@ -102,25 +102,24 @@ void FiniteVolume::compute_vertex_gradients ()
       unsigned int cl = grid.face[i].lcell;
       double Tl = param.material.temperature (primitive[cl]);
 
-      dU[vl] += grid.face[i].normal * primitive[cl].velocity.x; // TODO correct factor
+      dU[vl] += grid.face[i].normal * primitive[cl].velocity.x;
       dV[vl] += grid.face[i].normal * primitive[cl].velocity.y;
       dW[vl] += grid.face[i].normal * primitive[cl].velocity.z;
       dT[vl] += grid.face[i].normal * Tl;
 
       if(grid.face[i].type == -1)
-      {
+      {  // Interior face
          unsigned int vr = grid.face[i].rvertex;
          unsigned int cr = grid.face[i].rcell;
          double Tr = param.material.temperature (primitive[cr]);
 
-         dU[vr] -= grid.face[i].normal * primitive[cr].velocity.x; // TODO correct factor
+         dU[vr] -= grid.face[i].normal * primitive[cr].velocity.x;
          dV[vr] -= grid.face[i].normal * primitive[cr].velocity.y;
          dW[vr] -= grid.face[i].normal * primitive[cr].velocity.z;
          dT[vr] -= grid.face[i].normal * Tr;
       }
       else
-      {
-         // TODO
+      {  // Boundary face
          unsigned int n0 = grid.face[i].vertex[0];
          unsigned int n1 = grid.face[i].vertex[1];
          unsigned int n2 = grid.face[i].vertex[2];
@@ -133,30 +132,30 @@ void FiniteVolume::compute_vertex_gradients ()
          double T = param.material.temperature (state);
 
          // Add contribution to three vertices of face
-         dU[n0] += grid.face[i].normal * state.velocity.x; // TODO correct factor
-         dV[n0] += grid.face[i].normal * state.velocity.y; // TODO correct factor
-         dW[n0] += grid.face[i].normal * state.velocity.z; // TODO correct factor
-         dT[n0] += grid.face[i].normal * T; // TODO correct factor
+         dU[n0] += grid.face[i].normal * state.velocity.x;
+         dV[n0] += grid.face[i].normal * state.velocity.y;
+         dW[n0] += grid.face[i].normal * state.velocity.z;
+         dT[n0] += grid.face[i].normal * T;
 
-         dU[n1] += grid.face[i].normal * state.velocity.x; // TODO correct factor
-         dV[n1] += grid.face[i].normal * state.velocity.y; // TODO correct factor
-         dW[n1] += grid.face[i].normal * state.velocity.z; // TODO correct factor
-         dT[n1] += grid.face[i].normal * T; // TODO correct factor
+         dU[n1] += grid.face[i].normal * state.velocity.x;
+         dV[n1] += grid.face[i].normal * state.velocity.y;
+         dW[n1] += grid.face[i].normal * state.velocity.z;
+         dT[n1] += grid.face[i].normal * T;
 
-         dU[n2] += grid.face[i].normal * state.velocity.x; // TODO correct factor
-         dV[n2] += grid.face[i].normal * state.velocity.y; // TODO correct factor
-         dW[n2] += grid.face[i].normal * state.velocity.z; // TODO correct factor
-         dT[n2] += grid.face[i].normal * T; // TODO correct factor
+         dU[n2] += grid.face[i].normal * state.velocity.x;
+         dV[n2] += grid.face[i].normal * state.velocity.y;
+         dW[n2] += grid.face[i].normal * state.velocity.z;
+         dT[n2] += grid.face[i].normal * T;
       }
    }
 
    // Divide by vertex volume
    for(unsigned int i=0; i<grid.n_vertex; ++i)
    {
-      dU[i] /= grid.vertex_volume[i]; // TODO missing constant
-      dV[i] /= grid.vertex_volume[i];
-      dW[i] /= grid.vertex_volume[i];
-      dT[i] /= grid.vertex_volume[i];
+      dU[i] *= (9.0/16.0) / grid.vertex_volume[i];
+      dV[i] *= (9.0/16.0) / grid.vertex_volume[i];
+      dW[i] *= (9.0/16.0) / grid.vertex_volume[i];
+      dT[i] *= (9.0/16.0) / grid.vertex_volume[i];
    }
 
 }
