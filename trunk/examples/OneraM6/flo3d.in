@@ -1,0 +1,58 @@
+grid
+{
+   type   gmsh 
+   file   onera_m6_1.msh
+}
+
+numeric
+{
+   time_mode    steady
+   time_scheme  lusgs
+   cfl          1000000
+   max_iter     100000
+   final_time   1.0e20
+   min_residue  1.0e-6
+}
+
+material
+{
+   gamma       1.4
+   gas_const   1.0
+   prandtl     1.0
+   model       euler
+   flux        roe
+}
+
+// Freestream mach = 0.8395
+initial_condition
+{
+   density     1.0
+   velocity    0.998574 0.053381 0.0
+   pressure    1.01351589
+}
+
+boundary
+{
+   200001      slip       0.0  0.0       0.0       0.0  0.0
+   200002      slip       0.0  0.0       0.0       0.0  0.0
+   200003      farfield   1.0  0.998574  0.053381  0.0  1.01351589
+   200004      farfield   1.0  0.998574  0.053381  0.0  1.01351589
+   200005      farfield   1.0  0.998574  0.053381  0.0  1.01351589
+   200006      farfield   1.0  0.998574  0.053381  0.0  1.01351589
+   200007      farfield   1.0  0.998574  0.053381  0.0  1.01351589
+}
+
+integrals
+{
+}
+
+output
+{
+   format    vtk
+   frequency 200
+   variables
+   {
+      density velocity pressure mach
+   }
+   restart   false
+}
