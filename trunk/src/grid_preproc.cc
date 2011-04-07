@@ -277,7 +277,7 @@ void Grid::find_cell_neighbour( const unsigned int& face_no,
 //------------------------------------------------------------------------------
 void Grid::renumber_cell()
 {  
-	unsigned int i, j, current_cell, old_cell, k;
+	int i, j, current_cell, old_cell, k;
 	int neighbour =-1;
 	vector<Cell> renumbering;
 	vector< unsigned int > new_num, old_num;
