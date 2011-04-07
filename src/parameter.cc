@@ -180,13 +180,19 @@ void Parameter::read_material ()
    fin >> input;
    checkString (input, "gamma");
    fin >> material.gamma;
-   assert (material.gamma > 0.0);
+   assert (material.gamma > 1.0);
 
    skipComment (fin);
    fin >> input;
    checkString (input, "gas_const");
    fin >> material.gas_const;
    assert (material.gas_const > 0.0);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "prandtl");
+   fin >> material.prandtl;
+   assert (material.prandtl > 0.0);
 
    skipComment (fin);
    fin >> input;
