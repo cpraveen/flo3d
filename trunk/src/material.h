@@ -69,8 +69,8 @@ class Material
    public:
       double gamma;
       double gas_const;
-      double prandtl; // TODO
-      double Cp; // TODO
+      double prandtl;
+      double Cp;
       double T_0, T_ref, mu_ref; // constants for sutherland law
       std::string model;
       std::string flux;

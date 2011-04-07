@@ -211,9 +211,10 @@ void FiniteVolume::compute_residual ()
       int face_type = grid.face[i].type;
       BCType bc_type = param.bc_type[grid.face[i].type];
       
+      cl = grid.face[i].lcell;
+
       if(face_type == -1) // interior face
       {
-         cl = grid.face[i].lcell;
          cr = grid.face[i].rcell;
          reconstruct ( i, true, state );
          param.material.num_flux ( state[0], state[1], grid.face[i].normal, flux );
@@ -222,14 +223,12 @@ void FiniteVolume::compute_residual ()
       }
       else if(bc_type == slip || bc_type == noslip)
       {
-         cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
          param.material.slip_flux ( state[0], grid.face[i].normal, flux );
          residual[cl] += flux;
       }
       else if(bc_type == farfield)
       {
-         cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
          param.material.num_flux (state[0], 
                                   param.bc_state[face_type], 
@@ -239,7 +238,6 @@ void FiniteVolume::compute_residual ()
       }
       else if(bc_type == outlet)
       {
-         cl = grid.face[i].lcell;
          reconstruct ( i, false, state );
          param.material.euler_flux(state[0],
                                    grid.face[i].normal,
@@ -262,6 +260,7 @@ void FiniteVolume::compute_residual ()
       for(unsigned int i=0; i<grid.n_face; ++i)
       {
          int face_type = grid.face[i].type;
+         BCType bc_type = param.bc_type[grid.face[i].type];
 
          unsigned int n0 = grid.face[i].vertex[0];
          unsigned int n1 = grid.face[i].vertex[1];
@@ -272,6 +271,10 @@ void FiniteVolume::compute_residual ()
          Vector dVf = (dV[n0] + dV[n1] + dV[n2]) / 3.0;
          Vector dWf = (dW[n0] + dW[n1] + dW[n2]) / 3.0;
          Vector dTf = (dT[n0] + dT[n1] + dT[n2]) / 3.0;
+
+         // On solid walls, adiabatic condition
+         if(bc_type == noslip)
+            dTf -= grid.face[i].normal * (dTf * grid.face[i].normal);
 
          // Average state on face
          PrimVar state = primitive_vertex[n0] + 
