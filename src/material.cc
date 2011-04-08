@@ -352,5 +352,5 @@ void Material::viscous_flux (const PrimVar& state,
    flux.momentum_flux.x = -(sxx * normal.x + sxy * normal.y + sxz * normal.z);
    flux.momentum_flux.y = -(sxy * normal.x + syy * normal.y + syz * normal.z);
    flux.momentum_flux.z = -(sxz * normal.x + syz * normal.y + szz * normal.z);
-   flux.energy_flux = flux.momentum_flux * state.velocity - q;
+   flux.energy_flux = flux.momentum_flux * state.velocity + q;
 }
