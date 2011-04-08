@@ -269,13 +269,14 @@ void Parameter::read_boundary ()
    fin >> input;
    checkString (input, "{");
 
+   skipComment (fin);
+
    while (!eos(fin))
    {
       int b_type;
       fin >> b_type >> input;
       assert (b_type != -1); // -1 used for interior faces
 
-      skipComment (fin);
 
       if(input=="farfield")
          bc_type.insert (pair<int,BCType>(b_type, farfield));
@@ -300,6 +301,8 @@ void Parameter::read_boundary ()
       fin >> state.pressure;
       
       bc_state.insert (pair<int,PrimVar>(b_type, state));
+
+      skipComment (fin);
 
    }
 
