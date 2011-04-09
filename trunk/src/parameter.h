@@ -14,7 +14,7 @@ static const double b_rk[] = {1.0, 1.0/4.0, 2.0/3.0};
 
 enum GridType {gmsh};
 
-enum BCType { interior, slip, noslip, farfield, outlet };
+enum BCType { interior, slip, noslip, farfield, inlet, outlet, pressure };
 
 struct Force
 {

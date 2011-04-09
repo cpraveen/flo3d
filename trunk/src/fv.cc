@@ -236,9 +236,25 @@ void FiniteVolume::compute_residual ()
                                   flux);
          residual[cl] += flux;
       }
+      else if(bc_type == inlet)
+      {
+         param.material.euler_flux(param.bc_state[face_type], 
+                                   grid.face[i].normal,
+                                   flux);
+         residual[cl] += flux;
+      }
       else if(bc_type == outlet)
       {
          reconstruct ( i, false, state );
+         param.material.euler_flux(state[0],
+                                   grid.face[i].normal,
+                                   flux);
+         residual[cl] += flux;
+      }
+      else if(bc_type == pressure)
+      {
+         reconstruct ( i, false, state );
+         state[0].pressure = param.bc_state[face_type].pressure;
          param.material.euler_flux(state[0],
                                    grid.face[i].normal,
                                    flux);

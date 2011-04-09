@@ -284,8 +284,12 @@ void Parameter::read_boundary ()
          bc_type.insert (pair<int,BCType>(b_type, slip));
       else if(input=="noslip")
          bc_type.insert (pair<int,BCType>(b_type, noslip));
+      else if(input=="inlet")
+         bc_type.insert (pair<int,BCType>(b_type, inlet));
       else if(input=="outlet")
          bc_type.insert (pair<int,BCType>(b_type, outlet));
+      else if(input=="pressure")
+         bc_type.insert (pair<int,BCType>(b_type, pressure));
       else
       {
          cout << "   Unknown boundary type " << input << endl;
