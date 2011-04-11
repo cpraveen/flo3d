@@ -310,6 +310,9 @@ void Parameter::read_boundary ()
 
    }
 
+   // We added -1 as interior type
+   bc_type.insert (pair<int,BCType>(-1, interior));
+
 }
 
 //------------------------------------------------------------------------------
