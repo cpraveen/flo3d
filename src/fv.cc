@@ -429,7 +429,19 @@ void FiniteVolume::lusgs ()
       {
          f = grid.cell[i].face[j] ;
          grid.find_cell_neighbour(f, i, neighbour_cell);
-         
+         double lamda_viscous = 0.0; 
+         if(neighbour_cell != -1 && param.material.model == "ns")
+         {
+            double T = param.material.temperature (primitive[i]);
+            double mu = param.material.viscosity (T);
+            double area = grid.face[f].normal.norm();
+            double denominator = fabs( grid.face[f].normal * ( grid.cell[i].centroid - grid.cell[neighbour_cell].centroid )) ;
+            denominator *= primitive[i].density / area ;
+            lamda_viscous= 2 * mu * area / denominator ;
+            dt[i] += mu * area / denominator ;
+         } 
+
+
          if (neighbour_cell != -1 && neighbour_cell < i && grid.face[f].type == -1)
          {               
             face_normal = grid.face[f].normal;
@@ -446,6 +458,9 @@ void FiniteVolume::lusgs ()
 	         double vel_normal  = prim_avg.velocity * face_normal;
 	         double c  = sqrt( gamma * prim_avg.pressure / prim_avg.density );
 	         double lamda  = fabs(vel_normal) + c * area; 
+            if(param.material.model == "ns")
+              lamda += lamda_viscous ;
+              
 	         
             prim = param.material.con2prim(conserved_old[neighbour_cell]
                                            - (residual[neighbour_cell]*-1));
@@ -489,6 +504,15 @@ void FiniteVolume::lusgs ()
             double vel_normal  = prim_avg.velocity * face_normal;
             double c  = sqrt( gamma * prim_avg.pressure / prim_avg.density );
             double lamda  = fabs(vel_normal) + c * area;
+            if(param.material.model == "ns")
+            {
+               double T = param.material.temperature (primitive[i]);
+               double mu = param.material.viscosity (T);
+               double denominator = fabs(face_normal * ( grid.cell[i].centroid - grid.cell[neighbour_cell].centroid )) ;
+               denominator *= primitive[i].density / area ;
+               lamda += 2 * mu * area / denominator ;
+            }
+
             
             prim = param.material.con2prim(conserved_old[neighbour_cell] 
                                            - (residual[neighbour_cell]*-1));
