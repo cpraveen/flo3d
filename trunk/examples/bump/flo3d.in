@@ -7,8 +7,8 @@ grid
 numeric
 {
    time_mode    steady
-   time_scheme  rk3
-   cfl          0.8
+   time_scheme  lusgs
+   cfl          1.0e3
    max_iter     70000
    final_time   1.0e20
    min_residue  1.0e-6
