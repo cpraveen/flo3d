@@ -71,16 +71,6 @@ void FiniteVolume::interpolate_vertex ()
    for(unsigned int i=0; i<grid.n_cell; ++i)
       for(unsigned int j=0; j<4; ++j)
          primitive_vertex[grid.cell[i].vertex[j]] += primitive[i] * grid.cell[i].weight[j];
-
-   // For viscous flow, make velocity on noslip faces to be zero
-   if(param.material.model == "ns")
-      for(unsigned int i=0; i<grid.n_face; ++i)
-      {
-         BCType bc_type = param.bc_type[grid.face[i].type];
-         if(bc_type == noslip)
-            for(unsigned int j=0; j<3; ++j)
-               primitive_vertex[grid.face[i].vertex[j]].velocity = 0.0;
-      }
 }
 
 //------------------------------------------------------------------------------
@@ -129,6 +119,29 @@ void FiniteVolume::compute_vertex_gradients ()
                          primitive_vertex[n1] +
                          primitive_vertex[n2];
          state *= (1.0/3.0);
+
+         // Apply bc to average state
+         int face_type = grid.face[i].type;
+         BCType bc_type = param.bc_type[grid.face[i].type];
+
+         if(bc_type == noslip)
+         {
+            state.velocity = 0.0;
+         }
+         else if(bc_type == slip)
+         {
+            Vector unit_normal = grid.face[i].normal / grid.face[i].normal.norm();
+            state.velocity -= unit_normal * (state.velocity * unit_normal);
+         }
+         else if(bc_type == inlet)
+         {
+            state = param.bc_state[face_type];
+         }
+         else if(bc_type == pressure)
+         {
+            state.pressure = param.bc_state[face_type].pressure;
+         }
+
          double T = param.material.temperature (state);
 
          // Add contribution to three vertices of face
@@ -276,7 +289,7 @@ void FiniteVolume::compute_residual ()
       for(unsigned int i=0; i<grid.n_face; ++i)
       {
          int face_type = grid.face[i].type;
-         BCType bc_type = param.bc_type[grid.face[i].type];
+         BCType bc_type = param.bc_type[face_type];
 
          unsigned int n0 = grid.face[i].vertex[0];
          unsigned int n1 = grid.face[i].vertex[1];
@@ -288,18 +301,34 @@ void FiniteVolume::compute_residual ()
          Vector dWf = (dW[n0] + dW[n1] + dW[n2]) / 3.0;
          Vector dTf = (dT[n0] + dT[n1] + dT[n2]) / 3.0;
 
-         // On solid walls, adiabatic condition
-         if(bc_type == noslip)
-         {
-            Vector unit_normal = grid.face[i].normal / grid.face[i].normal.norm();
-            dTf -= unit_normal * (dTf * unit_normal);
-         }
-
          // Average state on face
          PrimVar state = primitive_vertex[n0] + 
                          primitive_vertex[n1] + 
                          primitive_vertex[n2];
          state *= (1.0/3.0);
+
+         // Aply bc
+         // On solid walls, adiabatic condition
+         if(bc_type == noslip)
+         {
+            state.velocity = 0.0;
+
+            Vector unit_normal = grid.face[i].normal / grid.face[i].normal.norm();
+            dTf -= unit_normal * (dTf * unit_normal);
+         }
+         else if(bc_type == slip)
+         {
+            Vector unit_normal = grid.face[i].normal / grid.face[i].normal.norm();
+            state.velocity -= unit_normal * (state.velocity * unit_normal);
+         }
+         else if(bc_type == inlet)
+         {
+            state = param.bc_state[face_type];
+         }
+         else if(bc_type == pressure)
+         {
+            state.pressure = param.bc_state[face_type].pressure;
+         }
 
          // Compute viscous flux
          Flux flux;

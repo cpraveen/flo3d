@@ -29,10 +29,11 @@ class Face
 class Grid
 {
    public:
-      Grid () { n_vertex = n_cell = n_face = 0; };
+      Grid () { n_vertex = n_cell = n_face = n_boundary_face = 0; };
       unsigned int n_vertex;
       unsigned int n_cell;
       unsigned int n_face;
+      unsigned int n_boundary_face;
       double min_cell_volume;
       double max_cell_volume;
       std::vector<Vector> vertex;
