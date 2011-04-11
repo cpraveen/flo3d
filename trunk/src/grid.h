@@ -8,6 +8,7 @@
 class Cell
 {
    public:
+      Vector       centroid;
       unsigned int vertex[4];
       int          face[4];
       double       volume;
@@ -51,6 +52,7 @@ class Grid
       void read_gmsh (std::string grid_file);
       void check_face_type (const std::map<int,BCType>& bc_type);
       void preproc ();
+      void compute_cell_centroid ();
       void compute_cell_volume ();
       void compute_face_normal ();
       void add_face (const Face& new_face);
