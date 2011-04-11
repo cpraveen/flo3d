@@ -20,6 +20,9 @@ void Grid::read (const Parameter& param)
       abort ();
    }
 
+   // At this stage, we have only boundary faces. We save this number.
+   n_boundary_face = n_face;
+
    check_face_type (param.bc_type);
    preproc ();
    info ();
@@ -31,11 +34,12 @@ void Grid::read (const Parameter& param)
 void Grid::info ()
 {
    cout << "Grid information:\n";
-   cout << "  Number of vertices = " << n_vertex << endl;
-   cout << "  Number of cells    = " << n_cell << endl;
-   cout << "  Number of faces    = " << n_face << endl;
-   cout << "  Minimum cell volume= " << min_cell_volume << endl;
-   cout << "  Maximum cell volume= " << max_cell_volume << endl;
+   cout << "  Number of vertices   = " << n_vertex << endl;
+   cout << "  Number of cells      = " << n_cell << endl;
+   cout << "  Number of faces      = " << n_face << endl;
+   cout << "  Number of bdry faces = " << n_boundary_face << endl;
+   cout << "  Minimum cell volume  = " << min_cell_volume << endl;
+   cout << "  Maximum cell volume  = " << max_cell_volume << endl;
 }
 
 //------------------------------------------------------------------------------
