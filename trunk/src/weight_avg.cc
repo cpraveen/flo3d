@@ -12,10 +12,6 @@ void Grid::weight_average ()
    cout << "Computing averaging weights ...\n";
    
    unsigned int v ;
-   unsigned int v0, v1, v2, v3;
-   
-   
-   double Xc,Yc,Zc;
    
    vector<double> Rx  (n_vertex, 0.0);
    vector<double> Ry  (n_vertex, 0.0);
@@ -32,22 +28,15 @@ void Grid::weight_average ()
    // Compute matrix entries and rhs
    for (unsigned int i=0; i< n_cell ; i++)
    {  
-      v0 = cell[i].vertex[0];
-      v1 = cell[i].vertex[1];
-      v2 = cell[i].vertex[2];
-      v3 = cell[i].vertex[3];
-      
-      Xc = ( vertex[v0].x + vertex[v1].x + vertex[v2].x + vertex[v3].x ) / 4.0;
-      Yc = ( vertex[v0].y + vertex[v1].y + vertex[v2].y + vertex[v3].y ) / 4.0;
-      Zc = ( vertex[v0].z + vertex[v1].z + vertex[v2].z + vertex[v3].z ) / 4.0;
+     
       
       for (unsigned int j=0; j<4 ; j++)
       {     
          v =  cell[i].vertex[j];
          
-         dx = Xc - vertex[v].x;
-         dy = Yc - vertex[v].y;
-         dz = Zc - vertex[v].z;
+         dx = cell[i].centroid.x - vertex[v].x;
+         dy = cell[i].centroid.y - vertex[v].y;
+         dz = cell[i].centroid.z - vertex[v].z;
          
          Rx[v] += dx;
          Ry[v] += dy;
@@ -114,21 +103,12 @@ void Grid::weight_average ()
    
    for (unsigned int i=0; i<n_cell; i++)
    {  
-      v0 = cell[i].vertex[0];
-      v1 = cell[i].vertex[1];
-      v2 = cell[i].vertex[2];
-      v3 = cell[i].vertex[3];
-      
-      Xc = ( vertex[v0].x + vertex[v1].x + vertex[v2].x + vertex[v3].x ) / 4.0;
-      Yc = ( vertex[v0].y + vertex[v1].y + vertex[v2].y + vertex[v3].y ) / 4.0;
-      Zc = ( vertex[v0].z + vertex[v1].z + vertex[v2].z + vertex[v3].z ) / 4.0;
-      
       for (unsigned int j=0; j<4 ; j++)
       {     
          v =  cell[i].vertex[j] ;
-         cell[i].weight[j] = 1.0 + Rx[v] * (Xc - vertex[v].x) + 
-                                   Ry[v] * (Yc - vertex[v].y) + 
-                                   Rz[v] * (Zc - vertex[v].z);
+         cell[i].weight[j] = 1.0 + Rx[v] * (cell[i].centroid.x - vertex[v].x) + 
+                                   Ry[v] * (cell[i].centroid.y - vertex[v].y) + 
+                                   Rz[v] * (cell[i].centroid.z - vertex[v].z);
          
          min_weight = min ( min_weight, cell[i].weight[j] );
          max_weight = max ( max_weight, cell[i].weight[j] );

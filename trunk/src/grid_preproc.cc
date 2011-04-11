@@ -10,10 +10,19 @@ extern bool debug;
 using namespace std;
 
 //------------------------------------------------------------------------------
-// Compute cell volumes
+// Compute cell Centroid
 //------------------------------------------------------------------------------
 void Grid::compute_cell_centroid ()
 {
+   for(unsigned int i=0; i<n_cell; ++i)
+   { 
+      unsigned int v0, v1, v2, v3;
+      v0 = cell[i].vertex[0];
+      v1 = cell[i].vertex[1];
+      v2 = cell[i].vertex[2];
+      v3 = cell[i].vertex[3];   
+      cell[i].centroid = ( vertex[v0] + vertex[v1] + vertex[v2] + vertex[v3]) / 4.0;
+   }   
 }
 
 //------------------------------------------------------------------------------
