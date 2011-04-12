@@ -57,7 +57,7 @@ void Grid::compute_cell_volume ()
 //------------------------------------------------------------------------------
 // Compute face normals
 //------------------------------------------------------------------------------
-void Grid::compute_face_normal ()
+void Grid::compute_face_normal_and_area ()
 {
    unsigned int v0, v1, v2 ,lvertex ;
    Vector r01, r12;
@@ -80,6 +80,8 @@ void Grid::compute_face_normal ()
 
       if ( check_normal_l > 0.0 )
       	 face[i].normal *=  -1.0 ;
+
+      face[i].area = face[i].normal.norm();
   }
 }
 
@@ -398,7 +400,7 @@ void Grid::preproc ()
    find_cell_faces ();
    renumber_cell ();
    compute_cell_volume ();
-   compute_face_normal ();
+   compute_face_normal_and_area ();
    weight_average ();
    vertex_weight_check ();
 }
