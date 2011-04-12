@@ -23,6 +23,7 @@ class Face
       int          lvertex, rvertex;
       Vector       normal;
       int          type;
+      double       area;
 
       bool operator== (const Face& face) const;
 };
@@ -54,7 +55,7 @@ class Grid
       void preproc ();
       void compute_cell_centroid ();
       void compute_cell_volume ();
-      void compute_face_normal ();
+      void compute_face_normal_and_area ();
       void add_face (const Face& new_face);
       void make_faces ();
       void weight_average () ;

@@ -130,7 +130,7 @@ void FiniteVolume::compute_vertex_gradients ()
          }
          else if(bc_type == slip)
          {
-            Vector unit_normal = grid.face[i].normal / grid.face[i].normal.norm();
+            Vector unit_normal = grid.face[i].normal / grid.face[i].area;
             state.velocity -= unit_normal * (state.velocity * unit_normal);
          }
          else if(bc_type == inlet)
@@ -313,12 +313,12 @@ void FiniteVolume::compute_residual ()
          {
             state.velocity = 0.0;
 
-            Vector unit_normal = grid.face[i].normal / grid.face[i].normal.norm();
+            Vector unit_normal = grid.face[i].normal / grid.face[i].area;
             dTf -= unit_normal * (dTf * unit_normal);
          }
          else if(bc_type == slip)
          {
-            Vector unit_normal = grid.face[i].normal / grid.face[i].normal.norm();
+            Vector unit_normal = grid.face[i].normal / grid.face[i].area;
             state.velocity -= unit_normal * (state.velocity * unit_normal);
          }
          else if(bc_type == inlet)
@@ -364,7 +364,7 @@ void FiniteVolume::compute_dt ()
    double gamma = param.material.gamma;
    for(unsigned int i=0; i<grid.n_face; ++i)
    {
-      double area = grid.face[i].normal.norm();
+      double area = grid.face[i].area;
 
       unsigned int cl = grid.face[i].lcell;
 
@@ -414,6 +414,11 @@ void FiniteVolume::lusgs ()
    Flux flux_new, flux_old, summation_face; 
    Vector face_normal;
    const double gamma = param.material.gamma;
+   const double prandtl = param.material.prandtl;
+
+   // over relaxation factor; higher value improves stability
+   // but slows down convergence; needs to be tuned
+   const double omega = 1.5;
    
    // Forward sweep
    for (int i=0; i < grid.n_cell; ++i)
@@ -422,50 +427,56 @@ void FiniteVolume::lusgs ()
       summation_face.zero ();
       
       // Diagonal scalar value for LUSGS
-      dt[i] = dt[i] / param.cfl + 0.5 * dt[i];
+      // dt contains convective eigenvalue
+      dt[i] = dt[i] / param.cfl + 0.5 * omega * dt[i];
       
       // Loop over neighboring cells
       for (unsigned int j=0; j<4; ++j)
       {
          f = grid.cell[i].face[j] ;
          grid.find_cell_neighbour(f, i, neighbour_cell);
-         double lamda_viscous = 0.0; 
-         if(neighbour_cell != -1 && param.material.model == "ns")
+
+         if(param.material.model == "ns")
          {
             double T = param.material.temperature (primitive[i]);
             double mu = param.material.viscosity (T);
-            double area = grid.face[f].normal.norm();
-            double denominator = fabs( grid.face[f].normal * ( grid.cell[i].centroid - grid.cell[neighbour_cell].centroid )) ;
-            denominator *= primitive[i].density / area ;
-            lamda_viscous= 2 * mu * area / denominator ;
-            dt[i] += mu * area / denominator ;
+            double area = grid.face[f].area;
+            double rho = primitive[i].density; // TODO: take average across face
+
+            dt[i] += gamma * mu * area * area / (grid.cell[i].volume * rho * prandtl);
          } 
 
 
-         if (neighbour_cell != -1 && neighbour_cell < i && grid.face[f].type == -1)
+         if (grid.face[f].type == -1 && neighbour_cell < i)
          {               
             face_normal = grid.face[f].normal;
-	         if ( grid.face[f].rcell == i)
+	         if (grid.face[f].rcell == i)
 	            face_normal *= -1.0;
             
             param.material.euler_flux(primitive[neighbour_cell], 
                                       face_normal,
                                       flux_old);
             
-            double area = grid.face[f].normal.norm();
             
             PrimVar prim_avg = (primitive[i] + primitive[neighbour_cell])*0.5;
 	         double vel_normal  = prim_avg.velocity * face_normal;
 	         double c  = sqrt( gamma * prim_avg.pressure / prim_avg.density );
-	         double lamda  = fabs(vel_normal) + c * area; 
+            double area = grid.face[f].area;
+	         double lambda  = omega * (fabs(vel_normal) + c * area); 
+
+            // viscous eigenvalue
             if(param.material.model == "ns")
-              lamda += lamda_viscous ;
-              
+            {
+               Vector dr = grid.cell[i].centroid - grid.cell[neighbour_cell].centroid;
+               double T = param.material.temperature (prim_avg);
+               double mu = param.material.viscosity (T);
+               lambda += area * gamma * mu / (dr.norm() * prim_avg.density * prandtl);
+            }
 	         
             prim = param.material.con2prim(conserved_old[neighbour_cell]
                                            - (residual[neighbour_cell]*-1));
             param.material.euler_flux(prim, face_normal, flux_new);
-            summation_face += (residual[neighbour_cell]*lamda
+            summation_face += (residual[neighbour_cell]*lambda
                                - (flux_new - flux_old))*(-0.5);
             
          }
@@ -473,7 +484,7 @@ void FiniteVolume::lusgs ()
       } 
             
       residual[i] += summation_face;
-      residual[i] *= (-1.0/dt[i]);
+      residual[i] *= (-1.0/dt[i]); 
       // Now residual contains increment of conserved variable
    }
    
@@ -488,7 +499,8 @@ void FiniteVolume::lusgs ()
       {  
          f = grid.cell[i].face[j] ;
          grid.find_cell_neighbour(f , i, neighbour_cell);
-         if (neighbour_cell != -1 && neighbour_cell > i  && grid.face[f].type == -1)
+
+         if (grid.face[f].type == -1 && neighbour_cell > i)
          {	                
             face_normal = grid.face[f].normal;
             if ( grid.face[f].rcell == i)
@@ -498,26 +510,26 @@ void FiniteVolume::lusgs ()
                                       face_normal,
                                       flux_old);
             
-            double area = grid.face[f].normal.norm();
+            double area = grid.face[f].area;
             
             PrimVar prim_avg = (primitive[i] + primitive[neighbour_cell])*0.5;
             double vel_normal  = prim_avg.velocity * face_normal;
             double c  = sqrt( gamma * prim_avg.pressure / prim_avg.density );
-            double lamda  = fabs(vel_normal) + c * area;
+            double lambda  = omega * (fabs(vel_normal) + c * area);
+
             if(param.material.model == "ns")
             {
-               double T = param.material.temperature (primitive[i]);
+               Vector dr = grid.cell[i].centroid - grid.cell[neighbour_cell].centroid;
+               double T = param.material.temperature (prim_avg);
                double mu = param.material.viscosity (T);
-               double denominator = fabs(face_normal * ( grid.cell[i].centroid - grid.cell[neighbour_cell].centroid )) ;
-               denominator *= primitive[i].density / area ;
-               lamda += 2 * mu * area / denominator ;
+               lambda += area * gamma * mu / (dr.norm() * prim_avg.density * prandtl);
             }
 
             
             prim = param.material.con2prim(conserved_old[neighbour_cell] 
                                            - (residual[neighbour_cell]*-1));
             param.material.euler_flux(prim, face_normal, flux_new);
-            summation_face += (residual[neighbour_cell]*lamda -
+            summation_face += (residual[neighbour_cell]*lambda -
                                (flux_new - flux_old))*(-0.5);								 
          }
       }
