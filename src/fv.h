@@ -39,6 +39,11 @@ class FiniteVolume
                         bool                     has_right,
                         std::vector<PrimVar>&    state) const;
 
+      // Adding limited reconstruction
+      void reconstruct2(const unsigned int&      f,
+                        bool                     has_right,
+                        std::vector<PrimVar>&    state) const;
+
       void initialize ();
       void interpolate_vertex ();
       void compute_vertex_gradients ();
