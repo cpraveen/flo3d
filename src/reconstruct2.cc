@@ -20,60 +20,50 @@ void limited_state(const PrimVar& prim_v, /* vertex value */
       PrimVar fact1 = dFV * dCV;
       PrimVar fact2 = dFV * dPrim;
 
+      // First order reconstruction
+      state = prim_c;
+
+      // Now we add corrections with limiting
+
       // left density
       if(fact1.density > 0.0 && fact2.density > 0.0)
       {
          double r   = 0.5 * dFV.density / dPrim.density;
          double phi = LIMITER (r);
-         state.density = prim_c.density + 
-                         phi * 0.25 * dFV.density;
+         state.density += phi * 0.25 * dFV.density;
       }
-      else
-         state.density = prim_c.density;
 
       // left x velocity
       if(fact1.velocity.x > 0.0 && fact2.velocity.x > 0.0)
       {
          double r   = 0.5 * dFV.velocity.x / dPrim.velocity.x;
          double phi = LIMITER (r);
-         state.velocity.x = prim_c.velocity.x + 
-                            phi * 0.25 * dFV.velocity.x;
+         state.velocity.x += phi * 0.25 * dFV.velocity.x;
       }
-      else
-         state.velocity.x = prim_c.velocity.x;
 
       // left y velocity
       if(fact1.velocity.y > 0.0 && fact2.velocity.y > 0.0)
       {
          double r   = 0.5 * dFV.velocity.y / dPrim.velocity.y;
          double phi = LIMITER (r);
-         state.velocity.y = prim_c.velocity.y + 
-                            phi * 0.25 * dFV.velocity.y;
+         state.velocity.y += phi * 0.25 * dFV.velocity.y;
       }
-      else
-         state.velocity.y = prim_c.velocity.y;
 
       // left z velocity
       if(fact1.velocity.z > 0.0 && fact2.velocity.z > 0.0)
       {
          double r   = 0.5 * dFV.velocity.z / dPrim.velocity.z;
          double phi = LIMITER (r);
-         state.velocity.z = prim_c.velocity.z + 
-                               phi * 0.25 * dFV.velocity.z;
+         state.velocity.z += phi * 0.25 * dFV.velocity.z;
       }
-      else
-         state.velocity.z = prim_c.velocity.z;
 
       // left pressure
       if(fact1.pressure > 0.0 && fact2.pressure > 0.0)
       {
          double r   = 0.5 * dFV.pressure / dPrim.pressure;
          double phi = LIMITER (r);
-         state.pressure = prim_c.pressure + 
-                          phi * 0.25 * dFV.pressure;
+         state.pressure += phi * 0.25 * dFV.pressure;
       }
-      else
-         state.pressure = prim_c.pressure;
 }
 
 //------------------------------------------------------------------------------
@@ -125,40 +115,27 @@ void FiniteVolume::reconstruct2(const unsigned int& f,
       PrimVar dCV = primitive[cl] - primitive_vertex[vl];
       PrimVar fact = dFV * dCV;
 
+      // First order reconstruction
+      state[0] = primitive[cl];
+
       // density
       if(fact.density > 0.0)
-         state[0].density = primitive[cl].density + 
-            0.25 * dFV.density;
-      else
-         state[0].density = primitive[cl].density;
+         state[0].density += 0.25 * dFV.density;
 
       // x velocity
       if(fact.velocity.x > 0.0)
-         state[0].velocity.x = primitive[cl].velocity.x + 
-            0.25 * dFV.velocity.x;
-      else
-         state[0].velocity.x = primitive[cl].velocity.x;
+         state[0].velocity.x += 0.25 * dFV.velocity.x;
 
       // y velocity
       if(fact.velocity.y > 0.0)
-         state[0].velocity.y = primitive[cl].velocity.y + 
-            0.25 * dFV.velocity.y;
-      else
-         state[0].velocity.y = primitive[cl].velocity.y;
+         state[0].velocity.y += 0.25 * dFV.velocity.y;
 
       // z velocity
       if(fact.velocity.z > 0.0)
-         state[0].velocity.z = primitive[cl].velocity.z + 
-            0.25 * dFV.velocity.z;
-      else
-         state[0].velocity.z = primitive[cl].velocity.z;
+         state[0].velocity.z += 0.25 * dFV.velocity.z;
 
       // pressure
       if(fact.pressure > 0.0)
-         state[0].pressure = primitive[cl].pressure + 
-            0.25 * dFV.pressure;
-      else
-         state[0].pressure = primitive[cl].pressure;
-
+         state[0].pressure += 0.25 * dFV.pressure;
    }
 }
