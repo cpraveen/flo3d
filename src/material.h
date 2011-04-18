@@ -216,9 +216,11 @@ PrimVar PrimVar::operator* (const PrimVar& prim_var) const
 {
    PrimVar result;
 
-   result.density  = density  * prim_var.density;
-   result.velocity = velocity * prim_var.velocity;
-   result.pressure = pressure * prim_var.pressure;
+   result.density    = density  * prim_var.density;
+   result.velocity.x = velocity.x * prim_var.velocity.x;
+   result.velocity.y = velocity.y * prim_var.velocity.y;
+   result.velocity.z = velocity.z * prim_var.velocity.z;
+   result.pressure   = pressure * prim_var.pressure;
 
    return result;
 }
