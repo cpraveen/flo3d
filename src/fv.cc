@@ -474,7 +474,7 @@ void FiniteVolume::lusgs ()
             }
 	         
             prim = param.material.con2prim(conserved_old[neighbour_cell]
-                                           - (residual[neighbour_cell]*-1));
+                                           + residual[neighbour_cell]);
             param.material.euler_flux(prim, face_normal, flux_new);
             summation_face += (residual[neighbour_cell]*lambda
                                - (flux_new - flux_old))*(-0.5);
@@ -527,10 +527,10 @@ void FiniteVolume::lusgs ()
 
             
             prim = param.material.con2prim(conserved_old[neighbour_cell] 
-                                           - (residual[neighbour_cell]*-1));
+                                           + residual[neighbour_cell]);
             param.material.euler_flux(prim, face_normal, flux_new);
             summation_face += (residual[neighbour_cell]*lambda -
-                               (flux_new - flux_old))*(-0.5);								 
+                               (flux_new - flux_old))*(-0.5);
          }
       }
       residual[i] -= summation_face * (1.0/dt[i]);
@@ -575,7 +575,7 @@ void FiniteVolume::update_solution (const unsigned int r)
       
       for (unsigned int i=0; i<grid.n_cell; ++i)
       {
-         conserved = conserved_old[i] - (residual[i])*-1;
+         conserved = conserved_old[i] + residual[i];
          primitive[i] = param.material.con2prim (conserved);
       }
    }

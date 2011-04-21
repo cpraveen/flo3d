@@ -158,6 +158,10 @@ void Parameter::read_numeric ()
    skipComment (fin);
    fin >> input;
    checkString (input, "}");
+
+   // Some parameter checks
+   if(time_scheme == "lusgs")
+      assert (time_mode != "unsteady");
 }
 
 //------------------------------------------------------------------------------
