@@ -17,7 +17,7 @@ void limited_state(const PrimVar& prim_v, /* vertex value */
       PrimVar dFV = prim_f - prim_v;
       PrimVar dCV = prim_c - prim_v;
 
-      PrimVar fact1 = dFV * dCV;
+      PrimVar fact1 = dCV * dPrim;
       PrimVar fact2 = dFV * dPrim;
 
       // First order reconstruction
