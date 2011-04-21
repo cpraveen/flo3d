@@ -54,6 +54,7 @@ class ConVar
       ConVar& operator+= (const ConVar& con_var);
       ConVar  operator+  (const ConVar& con_var) const;
       ConVar  operator-  (const ConVar& con_var) const;
+      ConVar  operator+  (const Flux&   flux) const;
       ConVar  operator-  (const Flux&   flux) const;
       ConVar  operator*  (const double  scalar) const;
 
@@ -101,6 +102,9 @@ class Material
 
 };
 
+//------------------------------------------------------------------------------
+// Assign conserved variable
+//------------------------------------------------------------------------------
 inline
 ConVar& ConVar::operator= (const ConVar& con_var)
 {
@@ -111,6 +115,9 @@ ConVar& ConVar::operator= (const ConVar& con_var)
    return *this;
 }
 
+//------------------------------------------------------------------------------
+// Add conserved variable to given variable
+//------------------------------------------------------------------------------
 inline
 ConVar& ConVar::operator+= (const ConVar& con_var)
 {
@@ -121,6 +128,9 @@ ConVar& ConVar::operator+= (const ConVar& con_var)
    return *this;
 }
 
+//------------------------------------------------------------------------------
+// Add two conserved variables and return result
+//------------------------------------------------------------------------------
 inline
 ConVar ConVar::operator+ (const ConVar& con_var) const
 {
@@ -133,6 +143,9 @@ ConVar ConVar::operator+ (const ConVar& con_var) const
    return result;
 }
 
+//------------------------------------------------------------------------------
+// Subtract two conserved variables and return result
+//------------------------------------------------------------------------------
 inline
 ConVar ConVar::operator- (const ConVar& con_var) const
 {
@@ -145,6 +158,24 @@ ConVar ConVar::operator- (const ConVar& con_var) const
    return result;
 }
 
+//------------------------------------------------------------------------------
+// Add flux to conserved variable, used to update solution
+//------------------------------------------------------------------------------
+inline
+ConVar ConVar::operator+ (const Flux& flux) const
+{
+   ConVar result;
+
+   result.density  = density  + flux.mass_flux;
+   result.momentum = momentum + flux.momentum_flux;
+   result.energy   = energy   + flux.energy_flux;
+
+   return result;
+}
+
+//------------------------------------------------------------------------------
+// Subtract flux from conserved variable, used to update solution
+//------------------------------------------------------------------------------
 inline
 ConVar ConVar::operator- (const Flux& flux) const
 {
@@ -157,6 +188,9 @@ ConVar ConVar::operator- (const Flux& flux) const
    return result;
 }
 
+//------------------------------------------------------------------------------
+// Multiplied conserved variable by a scalar
+//------------------------------------------------------------------------------
 inline
 ConVar ConVar::operator* (const double scalar) const
 {
@@ -169,7 +203,9 @@ ConVar ConVar::operator* (const double scalar) const
    return result;
 }
 
-// Add two primitive variables
+//------------------------------------------------------------------------------
+// Add two primitive variables and return the result
+//------------------------------------------------------------------------------
 inline
 PrimVar PrimVar::operator+ (const PrimVar& prim_var) const
 {
@@ -182,7 +218,9 @@ PrimVar PrimVar::operator+ (const PrimVar& prim_var) const
    return result;
 }
 
-// Subtract two primitive variables
+//------------------------------------------------------------------------------
+// Subtract two primitive variables and return the result
+//------------------------------------------------------------------------------
 inline
 PrimVar PrimVar::operator- (const PrimVar& prim_var) const
 {
@@ -195,7 +233,9 @@ PrimVar PrimVar::operator- (const PrimVar& prim_var) const
    return result;
 }
 
+//------------------------------------------------------------------------------
 // Multiply primitive by scalar and return result
+//------------------------------------------------------------------------------
 inline
 PrimVar PrimVar::operator* (const double& scalar) const
 {
@@ -208,24 +248,28 @@ PrimVar PrimVar::operator* (const double& scalar) const
    return result;
 }
 
+//------------------------------------------------------------------------------
 // Multiply two primitive variables componentwise
 // Result is another primitive variable
 // NOTE: This is not scalar dot product
+//------------------------------------------------------------------------------
 inline
 PrimVar PrimVar::operator* (const PrimVar& prim_var) const
 {
    PrimVar result;
 
-   result.density    = density  * prim_var.density;
+   result.density    = density    * prim_var.density;
    result.velocity.x = velocity.x * prim_var.velocity.x;
    result.velocity.y = velocity.y * prim_var.velocity.y;
    result.velocity.z = velocity.z * prim_var.velocity.z;
-   result.pressure   = pressure * prim_var.pressure;
+   result.pressure   = pressure   * prim_var.pressure;
 
    return result;
 }
 
+//------------------------------------------------------------------------------
 // Multiply given primitive by scalar
+//------------------------------------------------------------------------------
 inline
 PrimVar& PrimVar::operator*= (const double& scalar)
 {
@@ -236,7 +280,9 @@ PrimVar& PrimVar::operator*= (const double& scalar)
    return *this;
 }
 
+//------------------------------------------------------------------------------
 // Add primitive variable to given primitive variable
+//------------------------------------------------------------------------------
 inline
 PrimVar& PrimVar::operator+= (const PrimVar& prim_var)
 {
@@ -246,6 +292,7 @@ PrimVar& PrimVar::operator+= (const PrimVar& prim_var)
 
    return *this;
 }
+
 //------------------------------------------------------------------------------
 // Convert primitive to conserved
 //------------------------------------------------------------------------------
