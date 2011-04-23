@@ -395,12 +395,17 @@ void FiniteVolume::compute_dt ()
       }
    }
    else
-      dt_global =1.0;
+      dt_global = 1.0;
 
    // For unsteady simulation, use global time step
    if(param.time_mode == "unsteady")
+   {
+      // Adjust time step so that final time is exactly reached
+      if(elapsed_time + dt_global > param.final_time)
+         dt_global = param.final_time - elapsed_time;
       for(unsigned int i=0; i<grid.n_cell; ++i)
          dt[i] = dt_global;
+   }
 }
 
 //------------------------------------------------------------------------------
@@ -628,32 +633,60 @@ void FiniteVolume::compute_residual_norm (const unsigned int iter)
    }
 
    residual_norm_total /= residual_norm_total0;
+}
 
-   // File output
-   res  << setw(8) << iter << "  " 
-        << scientific
-        << setprecision (4) 
-        << dt_global << "  " 
-        << residual_norm_total << "  "
-        << residual_norm.mass_flux << "  "
-        << residual_norm.momentum_flux.x << "  "
-        << residual_norm.momentum_flux.y << "  "
-        << residual_norm.momentum_flux.z << "  "
-        << residual_norm.energy_flux
-        << endl;
+//------------------------------------------------------------------------------
+// Log messages to screen and file
+//------------------------------------------------------------------------------
+void FiniteVolume::log_messages (const unsigned int iter)
+{
 
-   // Screen output
-   cout << setw(8) << iter << "  " 
-        << scientific
-        << setprecision (4) 
-        << dt_global << "  " 
-        << residual_norm_total << "  "
-        << residual_norm.mass_flux << "  "
-        << residual_norm.momentum_flux.x << "  "
-        << residual_norm.momentum_flux.y << "  "
-        << residual_norm.momentum_flux.z << "  "
-        << residual_norm.energy_flux
-        << endl;
+   if(param.time_mode == "steady")
+   {
+      // File output
+      res  << setw(8) << iter << "  " 
+           << scientific
+           << setprecision (4) 
+           << dt_global << "  " 
+           << residual_norm_total << "  "
+           << residual_norm.mass_flux << "  "
+           << residual_norm.momentum_flux.x << "  "
+           << residual_norm.momentum_flux.y << "  "
+           << residual_norm.momentum_flux.z << "  "
+           << residual_norm.energy_flux
+           << endl;
+
+      // Screen output
+      cout << setw(8) << iter << "  " 
+           << scientific
+           << setprecision (4) 
+           << dt_global << "  " 
+           << residual_norm_total << "  "
+           << residual_norm.mass_flux << "  "
+           << residual_norm.momentum_flux.x << "  "
+           << residual_norm.momentum_flux.y << "  "
+           << residual_norm.momentum_flux.z << "  "
+           << residual_norm.energy_flux
+           << endl;
+   }
+   else
+   {
+      // File output
+      res  << setw(8) << iter << "  " 
+           << scientific
+           << setprecision (4) 
+           << dt_global << "  " 
+           << elapsed_time 
+           << endl;
+
+      // Screen output
+      cout << setw(8) << iter << "  " 
+           << scientific
+           << setprecision (4) 
+           << dt_global << "  " 
+           << elapsed_time 
+           << endl;
+   }
 }
 
 //------------------------------------------------------------------------------
@@ -685,13 +718,13 @@ void FiniteVolume::output_restart ()
 void FiniteVolume::solve ()
 {
    unsigned int iter = 0;
-   double time = 0.0;
+   elapsed_time = 0.0;
    residual_norm_total = 1.0e20;
    res.open ("flo3d.res");
 
    while (residual_norm_total > param.min_residue &&
           iter < param.max_iter && 
-          time < param.final_time)
+          elapsed_time < param.final_time)
    {
       store_conserved_old ();
       compute_dt ();
@@ -705,7 +738,8 @@ void FiniteVolume::solve ()
       }
 
       ++iter;
-      time += dt_global;
+      elapsed_time += dt_global;
+      log_messages (iter);
 
       if(iter % param.write_frequency == 0) output (iter);
    }
