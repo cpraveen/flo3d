@@ -34,6 +34,7 @@ class FiniteVolume
       double               residual_norm_total0;
       std::vector<double>  dt;
       double               dt_global;
+      std::vector<Force>   force;
       double               elapsed_time;
 
       void reconstruct (const unsigned int&      f,
@@ -58,6 +59,8 @@ class FiniteVolume
       void output (const unsigned int iter);
       void output_restart ();
       void lusgs ();
+      void create_force_face_list ();
+      void compute_forces ();
       
 };
 

@@ -741,6 +741,7 @@ void FiniteVolume::solve ()
       elapsed_time += dt_global;
       log_messages (iter);
 
+      compute_forces ();
       if(iter % param.write_frequency == 0) output (iter);
    }
 
@@ -761,6 +762,8 @@ void FiniteVolume::run ()
 {
    // Read grid from file
    grid.read (param);
+
+   create_force_face_list ();
 
    // Set initial condition
    initialize ();
