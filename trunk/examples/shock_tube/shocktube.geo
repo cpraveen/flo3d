@@ -1,8 +1,11 @@
+// To run this:
+//   gmsh -3 -optimize_netgen shocktube.geo
+//
 
 Lx=1;
 Ly=.1;
 Lz=.1;
-Lx1=0.5;
+Lx1=0.5; // Location of initial discontinuity
 
 h = 0.01;
 
