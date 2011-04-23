@@ -343,18 +343,18 @@ void Parameter::read_integrals ()
          fin >> input;
          checkString (input, "{");
 
-         force.resize( force.size() + 1 );
-         fin >> force.back().name; // name to identify force
+         force_data.resize( force_data.size() + 1 );
+         fin >> force_data.back().name; // name to identify force
 
          while (!eos(fin))
          {
             int face_type;
             fin >> face_type;
-            force.back().face_type.push_back(face_type);
+            force_data.back().face_type.push_back(face_type);
          }
 
          // Check that there was atleast one face type given
-         assert (force.back().face_type.size() > 0);
+         assert (force_data.back().face_type.size() > 0);
       }
    }
 

@@ -7,6 +7,7 @@
 #include <fstream>
 #include "vec.h"
 #include "material.h"
+#include "force.h"
 
 // Coefficients for 3-stage RK scheme of Shu-Osher
 static const double a_rk[] = {0.0, 3.0/4.0, 1.0/3.0};
@@ -15,12 +16,6 @@ static const double b_rk[] = {1.0, 1.0/4.0, 2.0/3.0};
 enum GridType {gmsh};
 
 enum BCType { interior, slip, noslip, farfield, inlet, outlet, pressure };
-
-struct Force
-{
-   std::string name;
-   std::vector<int> face_type;
-};
 
 class Parameter
 {
@@ -53,7 +48,7 @@ class Parameter
       std::vector<std::string> write_variables;
       bool write_restart;
 
-      std::vector<Force> force;
+      std::vector<ForceData> force_data;
 
       void read ();
 
