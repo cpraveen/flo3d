@@ -34,6 +34,7 @@ class FiniteVolume
       double               residual_norm_total0;
       std::vector<double>  dt;
       double               dt_global;
+      double               elapsed_time;
 
       void reconstruct (const unsigned int&      f,
                         bool                     has_right,
@@ -51,6 +52,7 @@ class FiniteVolume
       void compute_residual ();
       void compute_dt ();
       void compute_residual_norm (const unsigned int iter);
+      void log_messages (const unsigned int iter);
       void update_solution (const unsigned int r);
       void solve ();
       void output (const unsigned int iter);
