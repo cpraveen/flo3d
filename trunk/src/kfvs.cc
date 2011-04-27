@@ -9,7 +9,7 @@ using namespace std;
 void Material::kfvs_split_flux (const double   sign,
                                 const Vector&  normal,
                                 const PrimVar& state,
-                                Flux&          flux)
+                                Flux&          flux) const
 {
    // Normal velocity
    const double un = state.velocity * normal;
@@ -31,10 +31,10 @@ void Material::kfvs_split_flux (const double   sign,
 //------------------------------------------------------------------------------
 // KFVS flux function
 //------------------------------------------------------------------------------
-void Material::kfvs (const PrimVar& left,
-                     const PrimVar& right,
-                     const Vector& normal,
-                     Flux& flux)
+void Material::kfvs_flux (const PrimVar& left,
+                          const PrimVar& right,
+                          const Vector& normal,
+                          Flux& flux) const
 {
    Flux pos, neg;
 

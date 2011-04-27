@@ -207,8 +207,16 @@ void Parameter::read_material ()
    skipComment (fin);
    fin >> input;
    checkString (input, "flux");
-   fin >> material.flux;
-   assert (material.flux == "roe");
+   fin >> input;
+   if(input == "roe")
+      material.flux_scheme = Material::roe;
+   else if(input == "kfvs")
+      material.flux_scheme = Material::kfvs;
+   else
+   {
+      cout << "read_material:: unknown flux scheme: " << input << endl;
+      abort ();
+   }
 
    skipComment (fin);
    fin >> input;
