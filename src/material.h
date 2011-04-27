@@ -75,39 +75,44 @@ class Material
       double Cp;
       double T_0, T_ref, mu_ref; // constants for sutherland law
       std::string model;
-      std::string flux;
+      enum FluxScheme { roe, kfvs };
+      FluxScheme flux_scheme;
 
       void initialize ();
       ConVar  prim2con (const PrimVar& prim_var);
       PrimVar con2prim (const ConVar&  con_var);
-      void    num_flux (const PrimVar& left, 
+      void num_flux(const PrimVar& left, 
+                    const PrimVar& right, 
+                    const Vector& normal, 
+                    Flux& flux) const;
+      void    roe_flux (const PrimVar& left, 
                         const PrimVar& right, 
                         const Vector& normal, 
-                        Flux& flux);
+                        Flux& flux) const;
       void kfvs_split_flux (const double   sign,
                             const Vector&  normal,
                             const PrimVar& state,
-                            Flux&          flux);
-      void    kfvs     (const PrimVar& left, 
+                            Flux&          flux) const;
+      void    kfvs_flux(const PrimVar& left, 
                         const PrimVar& right, 
                         const Vector& normal, 
-                        Flux& flux);
+                        Flux& flux) const;
       void    slip_flux (const PrimVar& state, 
                          const Vector& normal, 
-                         Flux& flux);
+                         Flux& flux) const;
       void    euler_flux (const PrimVar& prim, 
                           const Vector&  normal,
-                          Flux& flux);
+                          Flux& flux) const;
       void viscous_flux (const PrimVar& state, 
                          const Vector&  dU, 
                          const Vector&  dV, 
                          const Vector&  dW, 
                          const Vector&  dT, 
                          const Vector&  normal, 
-                         Flux&          flux);
-      double viscosity (const double T);
-      double temperature (const PrimVar& state);
-      double total_energy (const PrimVar& state);
+                         Flux&          flux) const;
+      double viscosity (const double T) const;
+      double temperature (const PrimVar& state) const;
+      double total_energy (const PrimVar& state) const;
 
 };
 
@@ -338,7 +343,7 @@ PrimVar Material::con2prim (const ConVar& con_var)
 // Viscosity coefficient according to sutherland law
 //------------------------------------------------------------------------------
 inline
-double Material::viscosity (const double T)
+double Material::viscosity (const double T) const
 {
    return mu_ref * std::pow(T/T_ref, 1.5) * (T_ref + T_0) / (T + T_0);
 }
@@ -347,7 +352,7 @@ double Material::viscosity (const double T)
 //  Compute temperature given primitive state
 //------------------------------------------------------------------------------
 inline
-double Material::temperature (const PrimVar& state)
+double Material::temperature (const PrimVar& state) const
 {
    return state.pressure / (gas_const * state.density);
 }
@@ -356,7 +361,7 @@ double Material::temperature (const PrimVar& state)
 // Total energy per unit volume
 //------------------------------------------------------------------------------
 inline
-double Material::total_energy (const PrimVar& state)
+double Material::total_energy (const PrimVar& state) const
 {
    return state.pressure / (gamma - 1.0) + 
           0.5 * state.density * state.velocity.square();
