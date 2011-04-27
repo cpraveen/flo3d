@@ -84,6 +84,14 @@ class Material
                         const PrimVar& right, 
                         const Vector& normal, 
                         Flux& flux);
+      void kfvs_split_flux (const double   sign,
+                            const Vector&  normal,
+                            const PrimVar& state,
+                            Flux&          flux);
+      void    kfvs     (const PrimVar& left, 
+                        const PrimVar& right, 
+                        const Vector& normal, 
+                        Flux& flux);
       void    slip_flux (const PrimVar& state, 
                          const Vector& normal, 
                          Flux& flux);
@@ -99,6 +107,7 @@ class Material
                          Flux&          flux);
       double viscosity (const double T);
       double temperature (const PrimVar& state);
+      double total_energy (const PrimVar& state);
 
 };
 
@@ -341,6 +350,16 @@ inline
 double Material::temperature (const PrimVar& state)
 {
    return state.pressure / (gas_const * state.density);
+}
+
+//------------------------------------------------------------------------------
+// Total energy per unit volume
+//------------------------------------------------------------------------------
+inline
+double Material::total_energy (const PrimVar& state)
+{
+   return state.pressure / (gamma - 1.0) + 
+          0.5 * state.density * state.velocity.square();
 }
 
 #endif
