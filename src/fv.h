@@ -40,6 +40,15 @@ class FiniteVolume
       void reconstruct (const unsigned int&      f,
                         bool                     has_right,
                         std::vector<PrimVar>&    state) const;
+      void reconstruct_first (const unsigned int&      f,
+                              bool                     has_right,
+                              std::vector<PrimVar>&    state) const;
+      void reconstruct_second (const unsigned int&      f,
+                               bool                     has_right,
+                               std::vector<PrimVar>&    state) const;
+      void reconstruct_limited (const unsigned int&      f,
+                                bool                     has_right,
+                                std::vector<PrimVar>&    state) const;
 
       // Adding limited reconstruction
       void reconstruct2(const unsigned int&      f,

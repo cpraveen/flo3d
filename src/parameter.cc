@@ -157,6 +157,22 @@ void Parameter::read_numeric ()
 
    skipComment (fin);
    fin >> input;
+   checkString (input, "reconstruct");
+   fin >> input;
+   if(input == "first")
+      reconstruct_scheme = Parameter::first;
+   else if(input == "second")
+      reconstruct_scheme = Parameter::second;
+   else if(input == "limited")
+      reconstruct_scheme = Parameter::limited;
+   else
+   {
+      cout << "read_numeric: unknown reconstruction scheme " << input << endl;
+      abort ();
+   }
+
+   skipComment (fin);
+   fin >> input;
    checkString (input, "}");
 
    // Some parameter checks
