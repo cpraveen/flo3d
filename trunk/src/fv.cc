@@ -180,25 +180,24 @@ void FiniteVolume::reconstruct (const unsigned int& f,
                                 bool                has_right,
                                 vector<PrimVar>&    state) const
 {
-   // Average on face
-   PrimVar face_avg;
-   face_avg.zero ();
-
-   for(unsigned int i=0; i<3; ++i)
-      face_avg += primitive_vertex[ grid.face[f].vertex[i] ];
-   face_avg *= (1.0/3.0);
-
-   // Left state
-   unsigned int vl = grid.face[f].lvertex;
-   unsigned int cl = grid.face[f].lcell;
-   state[0] = primitive[cl] + ( face_avg - primitive_vertex[vl] ) * 0.25;
-
-   // Right state
-   if(has_right)
+   switch(param.reconstruct_scheme)
    {
-      unsigned int vr = grid.face[f].rvertex;
-      unsigned int cr = grid.face[f].rcell;
-      state[1] = primitive[cr] + ( face_avg - primitive_vertex[vr] ) * 0.25;
+      case Parameter::first:
+         reconstruct_first (f, has_right, state);
+         break;
+
+      case Parameter::second:
+         reconstruct_second (f, has_right, state);
+         break;
+
+      case Parameter::limited:
+         reconstruct_limited (f, has_right, state);
+         break;
+
+      default:
+         cout << "reconstruct: unknown reconstruction scheme = " 
+              << param.reconstruct_scheme << endl;
+         abort ();
    }
 }
 

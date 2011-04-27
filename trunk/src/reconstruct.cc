@@ -5,6 +5,63 @@
 
 using namespace std;
 
+//------------------------------------------------------------------------------
+// First order Reconstruct left and right states
+//------------------------------------------------------------------------------
+void FiniteVolume::reconstruct_first
+(
+ const unsigned int& f,
+ bool                has_right,
+ vector<PrimVar>&    state
+) const
+{
+   // Left state
+   unsigned int cl = grid.face[f].lcell;
+   state[0] = primitive[cl];
+
+   // Right state
+   if(has_right)
+   {
+      unsigned int cr = grid.face[f].rcell;
+      state[1] = primitive[cr];
+   }
+}
+
+//------------------------------------------------------------------------------
+// Second order Reconstruct left and right states
+//------------------------------------------------------------------------------
+void FiniteVolume::reconstruct_second
+(
+ const unsigned int& f,
+ bool                has_right,
+ vector<PrimVar>&    state
+) const
+{
+   // Average on face
+   PrimVar face_avg;
+   face_avg.zero ();
+
+   for(unsigned int i=0; i<3; ++i)
+      face_avg += primitive_vertex[ grid.face[f].vertex[i] ];
+   face_avg *= (1.0/3.0);
+
+   // Left state
+   unsigned int vl = grid.face[f].lvertex;
+   unsigned int cl = grid.face[f].lcell;
+   state[0] = primitive[cl] + ( face_avg - primitive_vertex[vl] ) * 0.25;
+
+   // Right state
+   if(has_right)
+   {
+      unsigned int vr = grid.face[f].rvertex;
+      unsigned int cr = grid.face[f].rcell;
+      state[1] = primitive[cr] + ( face_avg - primitive_vertex[vr] ) * 0.25;
+   }
+}
+
+//------------------------------------------------------------------------------
+// Apply limiter
+//------------------------------------------------------------------------------
 void limited_state(const PrimVar& prim_v, /* vertex value */
                    const PrimVar& prim_c, /* cell value */
                    const PrimVar& prim_f, /* face value opposite to vertex */
@@ -69,9 +126,12 @@ void limited_state(const PrimVar& prim_v, /* vertex value */
 //------------------------------------------------------------------------------
 // Reconstruct left and right states
 //------------------------------------------------------------------------------
-void FiniteVolume::reconstruct2(const unsigned int& f,
-                                bool                has_right,
-                                vector<PrimVar>&    state) const
+void FiniteVolume::reconstruct_limited
+(
+ const unsigned int& f,
+ bool                has_right,
+ vector<PrimVar>&    state
+) const
 {
    // Average on face
    PrimVar face_avg;
