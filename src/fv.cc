@@ -701,8 +701,11 @@ void FiniteVolume::output (const unsigned int iter)
       writer.attach_vertex_data (primitive_vertex);
    }
 
-   writer.attach_cell_data (primitive);
-   writer.attach_cell_variables (param.write_variables);
+   if(param.write_variables.size() > 0)
+   {
+      writer.attach_cell_data (primitive);
+      writer.attach_cell_variables (param.write_variables);
+   }
 
    if(param.write_format == "vtk")
       writer.output_vtk ("flo3d.vtk");

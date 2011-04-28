@@ -8,7 +8,7 @@ numeric
 {
    time_mode    steady
    time_scheme  lusgs
-   cfl          1000000
+   cfl          1.0e6
    max_iter     100000
    final_time   1.0e20
    min_residue  1.0e-6
@@ -51,10 +51,9 @@ output
 {
    format    vtk
    frequency 200
-   vertex    false
+   vertex    true
    variables
    {
-      density velocity pressure mach
    }
    restart   false
 }
