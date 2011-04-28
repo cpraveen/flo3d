@@ -113,6 +113,7 @@ class Material
       double viscosity (const double T) const;
       double temperature (const PrimVar& state) const;
       double total_energy (const PrimVar& state) const;
+      double sound_speed (const PrimVar& state) const;
 
 };
 
@@ -365,6 +366,15 @@ double Material::total_energy (const PrimVar& state) const
 {
    return state.pressure / (gamma - 1.0) + 
           0.5 * state.density * state.velocity.square();
+}
+
+//------------------------------------------------------------------------------
+// sound speed
+//------------------------------------------------------------------------------
+inline
+double Material::sound_speed (const PrimVar& state) const
+{
+   return sqrt(gamma * state.pressure / state.density);
 }
 
 #endif
