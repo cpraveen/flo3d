@@ -26,7 +26,7 @@ pre_inf = 1.0/(GAMMA*Mach**2)
 q_inf   = 0.5
 
 #Bounding box containing the geometry
-xmin, xmax = 4, 6
+xmin, xmax = 4, 7
 ymin, ymax = 4, 6
 zmin, zmax = 0.01, 1.5
 
