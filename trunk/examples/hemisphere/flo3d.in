@@ -47,6 +47,7 @@ output
 {
    format    vtk
    frequency 200
+   vertex    false
    variables
    {
       density velocity pressure mach

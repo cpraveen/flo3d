@@ -50,6 +50,7 @@ class Parameter
       unsigned int write_frequency;
       std::vector<std::string> write_variables;
       bool write_restart;
+      bool write_vertex_variables;
 
       std::vector<ForceData> force_data;
 
