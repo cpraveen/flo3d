@@ -368,7 +368,7 @@ void FiniteVolume::compute_dt ()
       unsigned int cl = grid.face[i].lcell;
 
       double vel_normal_left = primitive[cl].velocity * grid.face[i].normal;
-      double c_left = sqrt( gamma * primitive[cl].pressure / primitive[cl].density );
+      double c_left = param.material.sound_speed (primitive[cl]);
 
       dt[cl] += fabs(vel_normal_left) + c_left * area;
 
@@ -376,7 +376,7 @@ void FiniteVolume::compute_dt ()
       {
          unsigned int cr = grid.face[i].rcell;
          double vel_normal_right = primitive[cr].velocity * grid.face[i].normal;
-         double c_right = sqrt( gamma * primitive[cr].pressure / primitive[cr].density );
+         double c_right = param.material.sound_speed (primitive[cr]);
 
          dt[cr] += fabs(vel_normal_right) + c_right * area;
       }
@@ -464,7 +464,7 @@ void FiniteVolume::lusgs ()
             
             PrimVar prim_avg = (primitive[i] + primitive[neighbour_cell])*0.5;
 	         double vel_normal  = prim_avg.velocity * face_normal;
-	         double c  = sqrt( gamma * prim_avg.pressure / prim_avg.density );
+	         double c  = param.material.sound_speed (prim_avg);
             double area = grid.face[f].area;
 	         double lambda  = omega * (fabs(vel_normal) + c * area); 
 
@@ -518,7 +518,7 @@ void FiniteVolume::lusgs ()
             
             PrimVar prim_avg = (primitive[i] + primitive[neighbour_cell])*0.5;
             double vel_normal  = prim_avg.velocity * face_normal;
-            double c  = sqrt( gamma * prim_avg.pressure / prim_avg.density );
+            double c  = param.material.sound_speed (prim_avg);
             double lambda  = omega * (fabs(vel_normal) + c * area);
 
             if(param.material.model == "ns")
