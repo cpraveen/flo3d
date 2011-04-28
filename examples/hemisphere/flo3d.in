@@ -1,0 +1,55 @@
+grid
+{
+   type   gmsh 
+   file   hemishpere.msh
+}
+
+numeric
+{
+   time_mode    steady
+   time_scheme  lusgs
+   cfl          1.0e3
+   max_iter     400000
+   final_time   1.0e20
+   min_residue  1.0e-6
+   reconstruct  limited
+}
+
+material
+{
+   gamma       1.4
+   gas_const   1.0
+   prandtl     1.0
+   model       euler
+   flux        kfvs
+}
+
+// Freestream mach = 3.0
+initial_condition
+{
+   density     1.0
+   velocity    0.0 0.0 -3.5673 
+   pressure    1.01351589
+}
+
+boundary
+{
+   600003   slip       0.0  0.0  0.0   0.0    0.0
+   600001   outlet     0.0  0.0  0.0   0.0    0.0
+   600002   farfield   1.0  0.0  0.0  -3.567  1.01351589
+}
+
+integrals
+{
+}
+
+output
+{
+   format    vtk
+   frequency 200
+   variables
+   {
+      density velocity pressure mach
+   }
+   restart   false
+}
