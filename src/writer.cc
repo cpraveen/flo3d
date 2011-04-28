@@ -111,16 +111,16 @@ void Writer::output_vtk (string filename)
    {
       vtk << "SCALARS density float 1" << endl;
       vtk << "LOOKUP_TABLE default" << endl;
-      for(unsigned int i=0; i<grid->n_cell; ++i)
+      for(unsigned int i=0; i<grid->n_vertex; ++i)
          vtk << (*vertex_primitive)[i].density << endl;
 
       vtk << "SCALARS pressure float 1" << endl;
       vtk << "LOOKUP_TABLE default" << endl;
-      for(unsigned int i=0; i<grid->n_cell; ++i)
+      for(unsigned int i=0; i<grid->n_vertex; ++i)
          vtk << (*vertex_primitive)[i].pressure << endl;
 
       vtk << "VECTORS velocity float" << endl;
-      for(unsigned int i=0; i<grid->n_cell; ++i)
+      for(unsigned int i=0; i<grid->n_vertex; ++i)
          vtk << (*vertex_primitive)[i].velocity.x << "  "
              << (*vertex_primitive)[i].velocity.y << "  "
              << (*vertex_primitive)[i].velocity.z

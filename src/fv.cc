@@ -694,6 +694,13 @@ void FiniteVolume::log_messages (const unsigned int iter)
 void FiniteVolume::output (const unsigned int iter)
 {
    Writer writer (grid, param.material);
+
+   if(param.write_vertex_variables)
+   {
+      interpolate_vertex ();
+      writer.attach_vertex_data (primitive_vertex);
+   }
+
    writer.attach_cell_data (primitive);
    writer.attach_cell_variables (param.write_variables);
 

@@ -414,6 +414,21 @@ void Parameter::read_output ()
 
    skipComment (fin);
    fin >> input;
+   checkString (input, "vertex");
+   fin >> input;
+   if(input == "true")
+      write_vertex_variables = true;
+   else if(input == "false")
+      write_vertex_variables = false;
+   else
+   {
+      cout << "read_output: unknown option = " << input << endl;
+      abort ();
+   }
+   
+
+   skipComment (fin);
+   fin >> input;
    checkString (input, "variables");
 
    fin >> input;
