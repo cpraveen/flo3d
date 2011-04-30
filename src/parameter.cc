@@ -326,11 +326,17 @@ void Parameter::read_boundary ()
       
       // Read primitive state for this boundary
       PrimVar state;
-      fin >> state.density;
-      fin >> state.velocity.x;
-      fin >> state.velocity.y;
-      fin >> state.velocity.z;
-      fin >> state.pressure;
+      fin >> state.density
+          >> state.velocity.x
+          >> state.velocity.y
+          >> state.velocity.z
+          >> state.pressure;
+
+      // Density and pressure must be positive
+      if(input == "inlet" || input == "farfield")
+         assert (state.density  > 0.0);
+      if(input == "inlet" || input == "farfield" || input == "pressure")
+         assert (state.pressure > 0.0);
       
       bc_state.insert (pair<int,PrimVar>(b_type, state));
 
