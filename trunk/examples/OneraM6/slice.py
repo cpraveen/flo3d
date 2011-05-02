@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-Generates cut?.vtp and shape?.dat files
+Generates cut?.vtp and section?.dat files
 cut?.vtp is a VTK XMLPolyData file -> Use paraview to visualize this
-shape?.dat is a plain ascii file which contains x, y, z, -Cp
+section?.dat is a plain ascii file which contains x, y, z, -Cp
 """
 
 import sys
@@ -26,6 +26,7 @@ pre_inf = 1.0/(GAMMA*Mach**2)
 q_inf   = 0.5
 
 #Bounding box containing the geometry
+#should not contain outer boundary
 xmin, xmax = 4, 7
 ymin, ymax = 4, 6
 zmin, zmax = 0.01, 1.5
@@ -39,7 +40,8 @@ Nz      = 1
 Ox      = 0
 Oy      = 0
 
-#List of cut planes to extract, z=0 is empty hence give small positive value
+#List of cut planes to extract
+#these are section for which experimental data is available
 span  = 1.1963
 zcuts = [0.2*span, 0.44*span, 0.65*span, 0.8*span, 0.9*span, 0.95*span, 0.99*span]
 
