@@ -24,7 +24,7 @@ endif
 
 HDR = $(wildcard *.h)
 SRC = $(wildcard *.cc)
-SRC += ../extern/fparser/fparser.cc ../extern/fparser/fpoptimizer.cc
+SRC += ../extern/fparser/fparser.cc
 OBJ = $(patsubst %.cc,%.o,$(SRC))
 INC = -I../extern/fparser
 
