@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <cstdlib>
 #include "fv.h"
 
@@ -45,8 +46,10 @@ void FiniteVolume::create_force_face_list ()
 // Compute forces
 // TODO: Currently computes only pressure forces
 //------------------------------------------------------------------------------
-void FiniteVolume::compute_forces ()
+void FiniteVolume::compute_forces (const unsigned int iter)
 {
+   force_file << setw(6) << iter << " " << scientific << setw(15);
+
    for(unsigned int i=0; i<force.size(); ++i)
    {
       force[i].value = 0.0;
@@ -58,5 +61,11 @@ void FiniteVolume::compute_forces ()
          reconstruct ( face_no, false, state );
          force[i].value += grid.face[face_no].normal * state[0].pressure;
       }
+
+      force_file << force[i].value.x << " " 
+                 << force[i].value.y << " " 
+                 << force[i].value.z << " ";
    }
+
+   force_file << endl;
 }

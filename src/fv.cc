@@ -643,17 +643,17 @@ void FiniteVolume::log_messages (const unsigned int iter)
    if(param.time_mode == "steady")
    {
       // File output
-      res  << setw(8) << iter << "  " 
-           << scientific
-           << setprecision (4) 
-           << dt_global << "  " 
-           << residual_norm_total << "  "
-           << residual_norm.mass_flux << "  "
-           << residual_norm.momentum_flux.x << "  "
-           << residual_norm.momentum_flux.y << "  "
-           << residual_norm.momentum_flux.z << "  "
-           << residual_norm.energy_flux
-           << endl;
+      res_file  << setw(8) << iter << "  " 
+                << scientific
+                << setprecision (4) 
+                << dt_global << "  " 
+                << residual_norm_total << "  "
+                << residual_norm.mass_flux << "  "
+                << residual_norm.momentum_flux.x << "  "
+                << residual_norm.momentum_flux.y << "  "
+                << residual_norm.momentum_flux.z << "  "
+                << residual_norm.energy_flux
+                << endl;
 
       // Screen output
       cout << setw(8) << iter << "  " 
@@ -671,12 +671,12 @@ void FiniteVolume::log_messages (const unsigned int iter)
    else
    {
       // File output
-      res  << setw(8) << iter << "  " 
-           << scientific
-           << setprecision (4) 
-           << dt_global << "  " 
-           << elapsed_time 
-           << endl;
+      res_file  << setw(8) << iter << "  " 
+                << scientific
+                << setprecision (4) 
+                << dt_global << "  " 
+                << elapsed_time 
+                << endl;
 
       // Screen output
       cout << setw(8) << iter << "  " 
@@ -729,7 +729,6 @@ void FiniteVolume::solve ()
    unsigned int iter = 0;
    elapsed_time = 0.0;
    residual_norm_total = 1.0e20;
-   res.open ("flo3d.res");
 
    while (residual_norm_total > param.min_residue &&
           iter < param.max_iter && 
@@ -750,18 +749,14 @@ void FiniteVolume::solve ()
       elapsed_time += dt_global;
       log_messages (iter);
 
-      compute_forces ();
+      compute_forces (iter);
       if(iter % param.write_frequency == 0) output (iter);
    }
-
-   res.close ();
 
    // Save final solution
    output (iter);
 
    if(param.write_restart) output_restart ();
-
-   
 }
 
 //------------------------------------------------------------------------------
