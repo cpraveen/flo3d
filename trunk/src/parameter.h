@@ -8,6 +8,7 @@
 #include "vec.h"
 #include "material.h"
 #include "force.h"
+#include "ic.h"
 
 // Coefficients for 3-stage RK scheme of Shu-Osher
 static const double a_rk[] = {0.0, 3.0/4.0, 1.0/3.0};
@@ -42,6 +43,8 @@ class Parameter
 
       std::string grid_file;
       GridType    grid_type;
+
+      InitialCondition initial_condition;
 
       std::map<int,BCType>  bc_type;
       std::map<int,PrimVar> bc_state;

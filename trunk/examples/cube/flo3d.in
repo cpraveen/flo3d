@@ -28,7 +28,9 @@ material
 initial_condition
 {
    density     1.0
-   velocity    1.0 0.0 0.0
+   xvelocity   1.0
+   yvelocity   0.0
+   zvelocity   0.0
    pressure    1.98412698412698412696
 }
 

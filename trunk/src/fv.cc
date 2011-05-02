@@ -54,9 +54,9 @@ void FiniteVolume::initialize ()
    }
    else
    {
-      cout << "Setting initial condition to freestream values\n";
+      cout << "Setting initial condition to input values\n";
       for(unsigned int i=0; i<grid.n_cell; ++i)
-         primitive[i] = param.prim_inf;
+         primitive[i] = param.initial_condition.value (grid.cell[i].centroid);
    }
 }
 

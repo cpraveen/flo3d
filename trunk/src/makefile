@@ -24,7 +24,10 @@ endif
 
 HDR = $(wildcard *.h)
 SRC = $(wildcard *.cc)
+SRC += ../extern/fparser/fparser.cc ../extern/fparser/fpoptimizer.cc
 OBJ = $(patsubst %.cc,%.o,$(SRC))
+INC = -I../extern/fparser
+
 
 TARGET = flo3d
 
@@ -36,10 +39,10 @@ flo3d: $(OBJ)
 $(OBJ): $(HDR)
 
 .cc.o: $(HDR)
-	$(CXX) $(CFLAGS) -c $*.cc
+	$(CXX) $(CFLAGS) $(INC) -c $*.cc -o $*.o
 
 clean:
-	rm -f *.o $(TARGET)
+	rm -f $(OBJ) $(TARGET)
 
 allclean:
 	make clean
