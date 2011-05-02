@@ -15,12 +15,20 @@ class FiniteVolume
       { 
          param.file = file;
          param.read ();
+
+         res_file.open ("flo3d.res");
+         force_file.open ("force.dat");
       }
-      ~FiniteVolume () {};
+      ~FiniteVolume () 
+      {
+         res_file.close ();
+         force_file.close ();
+      };
       void run ();
 
    private:
-      std::ofstream res;
+      std::ofstream res_file;
+      std::ofstream force_file;
       Parameter param;
       Grid      grid;
 
@@ -69,7 +77,7 @@ class FiniteVolume
       void output_restart ();
       void lusgs ();
       void create_force_face_list ();
-      void compute_forces ();
+      void compute_forces (const unsigned int iter);
       
 };
 
