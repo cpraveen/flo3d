@@ -12,6 +12,7 @@ numeric
    max_iter     1000000
    final_time   0.2
    min_residue  1.0e-6
+   reconstruct  limited
 }
 
 material
@@ -26,9 +27,11 @@ material
 // Freestream mach = 0.8395
 initial_condition
 {
-   density     1.0
-   velocity    0.0 0.0 0.0
-   pressure    1.0
+   density     (x<=0.5)*1.0 + (x>0.5)*0.125
+   xvelocity   0.0
+   yvelocity   0.0
+   zvelocity   0.0
+   pressure    (x<=0.5)*1.0 + (x>0.5)*0.1
 }
 
 boundary

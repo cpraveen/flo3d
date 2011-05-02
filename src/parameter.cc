@@ -260,21 +260,32 @@ void Parameter::read_initial_condition ()
    skipComment (fin);
    fin >> input;
    checkString (input, "density");
-   fin >> prim_inf.density;
-   assert (prim_inf.density > 0.0);
+   getline (fin, input);
+   initial_condition.add ("density", input);
 
    skipComment (fin);
    fin >> input;
-   checkString (input, "velocity");
-   fin >> prim_inf.velocity.x;
-   fin >> prim_inf.velocity.y;
-   fin >> prim_inf.velocity.z;
+   checkString (input, "xvelocity");
+   getline (fin, input);
+   initial_condition.add ("xvelocity", input);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "yvelocity");
+   getline (fin, input);
+   initial_condition.add ("yvelocity", input);
+
+   skipComment (fin);
+   fin >> input;
+   checkString (input, "zvelocity");
+   getline (fin, input);
+   initial_condition.add ("zvelocity", input);
 
    skipComment (fin);
    fin >> input;
    checkString (input, "pressure");
-   fin >> prim_inf.pressure;
-   assert (prim_inf.pressure > 0.0);
+   getline (fin, input);
+   initial_condition.add ("pressure", input);
 
    skipComment (fin);
    fin >> input;
