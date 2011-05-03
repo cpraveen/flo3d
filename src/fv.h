@@ -17,12 +17,15 @@ class FiniteVolume
          param.read ();
 
          res_file.open ("flo3d.res");
-         force_file.open ("force.dat");
+
+         if(param.force_data.size() > 0)
+            force_file.open ("force.dat");
       }
       ~FiniteVolume () 
       {
          res_file.close ();
-         force_file.close ();
+         if(param.force_data.size() > 0)
+            force_file.close ();
       };
       void run ();
 

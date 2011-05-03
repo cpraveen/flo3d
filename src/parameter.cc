@@ -210,6 +210,32 @@ void Parameter::read_material ()
 
    skipComment (fin);
    fin >> input;
+   checkString (input, "viscosity");
+   fin >> input;
+   if(input == "constant")
+   {
+      material.mu_model = Material::mu_constant;
+      fin >> material.mu_ref;
+      assert (material.mu_ref >= 0.0);
+   }
+   else if(input == "sutherland")
+   {
+      material.mu_model = Material::mu_sutherland;
+      fin >> material.mu_ref
+          >> material.T_ref
+          >> material.T_0;
+      assert (material.mu_ref > 0.0);
+      assert (material.T_ref > 0.0);
+      assert (material.T_0 > 0.0);
+   }
+   else
+   {
+      cout << "read_material: unknown viscosity type " << input << endl;
+      abort ();
+   }
+
+   skipComment (fin);
+   fin >> input;
    checkString (input, "prandtl");
    fin >> material.prandtl;
    assert (material.prandtl > 0.0);

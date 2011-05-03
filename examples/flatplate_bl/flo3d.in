@@ -19,6 +19,7 @@ material
 {
    gamma       1.4
    gas_const   287.0
+   viscosity   constant  1.716e-5
    prandtl     0.72
    model       ns
    flux        roe

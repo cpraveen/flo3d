@@ -37,10 +37,6 @@ class Parameter
 
       Material material;
 
-      double mach_inf;
-      Vector velocity_inf;
-      PrimVar prim_inf;
-
       std::string grid_file;
       GridType    grid_type;
 

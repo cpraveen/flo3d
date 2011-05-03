@@ -1,67 +1,13 @@
 #ifndef __MATERIAL_H__
 #define __MATERIAL_H__
 
+#include <iostream>
 #include <string>
 #include <cmath>
 #include "vec.h"
-
-//------------------------------------------------------------------------------
-// Primitive variable
-//------------------------------------------------------------------------------
-class PrimVar
-{
-   public:
-      double density, pressure;
-      Vector velocity;
-
-      PrimVar  operator+  (const PrimVar& prim_var) const;
-      PrimVar  operator-  (const PrimVar& prim_var) const;
-      PrimVar  operator*  (const double& scalar) const;
-      PrimVar  operator*  (const PrimVar& prim_var) const; // componentwise multi
-      PrimVar& operator*= (const double& scalar);
-      PrimVar& operator+= (const PrimVar& prim_var);
-      void zero ();
-};
-
-//------------------------------------------------------------------------------
-// Flux variable
-//------------------------------------------------------------------------------
-class Flux
-{
-   public:
-      double mass_flux;
-      Vector momentum_flux;
-      double energy_flux;
-
-      Flux& operator+= (const Flux& flux);
-      Flux& operator-= (const Flux& flux);
-      Flux& operator*= (const double& scalar);
-      Flux  operator+  (const Flux& flux);
-      Flux  operator*  (const double scalar);
-      Flux  operator-  (const Flux& flux);
-      void zero ();
-};
-
-//------------------------------------------------------------------------------
-// Conserved variable
-//------------------------------------------------------------------------------
-class ConVar
-{
-   public:
-      ConVar () {};
-      ~ConVar () {};
-      ConVar& operator=  (const ConVar& con_var);
-      ConVar& operator+= (const ConVar& con_var);
-      ConVar  operator+  (const ConVar& con_var) const;
-      ConVar  operator-  (const ConVar& con_var) const;
-      ConVar  operator+  (const Flux&   flux) const;
-      ConVar  operator-  (const Flux&   flux) const;
-      ConVar  operator*  (const double  scalar) const;
-
-      double density, energy;
-      Vector momentum;
-
-};
+#include "primvar.h"
+#include "flux.h"
+#include "convar.h"
 
 //------------------------------------------------------------------------------
 // Material class
@@ -77,6 +23,9 @@ class Material
       std::string model;
       enum FluxScheme { roe, kfvs };
       FluxScheme flux_scheme;
+
+      enum MuModel {mu_constant, mu_sutherland};
+      MuModel mu_model;
 
       void initialize ();
       ConVar  prim2con (const PrimVar& prim_var);
@@ -118,197 +67,6 @@ class Material
 };
 
 //------------------------------------------------------------------------------
-// Assign conserved variable
-//------------------------------------------------------------------------------
-inline
-ConVar& ConVar::operator= (const ConVar& con_var)
-{
-   density  = con_var.density;
-   momentum = con_var.momentum;
-   energy   = con_var.energy;
-
-   return *this;
-}
-
-//------------------------------------------------------------------------------
-// Add conserved variable to given variable
-//------------------------------------------------------------------------------
-inline
-ConVar& ConVar::operator+= (const ConVar& con_var)
-{
-   density  += con_var.density;
-   momentum += con_var.momentum;
-   energy   += con_var.energy;
-
-   return *this;
-}
-
-//------------------------------------------------------------------------------
-// Add two conserved variables and return result
-//------------------------------------------------------------------------------
-inline
-ConVar ConVar::operator+ (const ConVar& con_var) const
-{
-   ConVar result;
-
-   result.density  = density  + con_var.density;
-   result.momentum = momentum + con_var.momentum;
-   result.energy   = energy   + con_var.energy;
-
-   return result;
-}
-
-//------------------------------------------------------------------------------
-// Subtract two conserved variables and return result
-//------------------------------------------------------------------------------
-inline
-ConVar ConVar::operator- (const ConVar& con_var) const
-{
-   ConVar result;
-
-   result.density  = density  - con_var.density;
-   result.momentum = momentum - con_var.momentum;
-   result.energy   = energy   - con_var.energy;
-
-   return result;
-}
-
-//------------------------------------------------------------------------------
-// Add flux to conserved variable, used to update solution
-//------------------------------------------------------------------------------
-inline
-ConVar ConVar::operator+ (const Flux& flux) const
-{
-   ConVar result;
-
-   result.density  = density  + flux.mass_flux;
-   result.momentum = momentum + flux.momentum_flux;
-   result.energy   = energy   + flux.energy_flux;
-
-   return result;
-}
-
-//------------------------------------------------------------------------------
-// Subtract flux from conserved variable, used to update solution
-//------------------------------------------------------------------------------
-inline
-ConVar ConVar::operator- (const Flux& flux) const
-{
-   ConVar result;
-
-   result.density  = density  - flux.mass_flux;
-   result.momentum = momentum - flux.momentum_flux;
-   result.energy   = energy   - flux.energy_flux;
-
-   return result;
-}
-
-//------------------------------------------------------------------------------
-// Multiplied conserved variable by a scalar
-//------------------------------------------------------------------------------
-inline
-ConVar ConVar::operator* (const double scalar) const
-{
-   ConVar result;
-
-   result.density  = density  * scalar;
-   result.momentum = momentum * scalar; 
-   result.energy   = energy   * scalar;
-
-   return result;
-}
-
-//------------------------------------------------------------------------------
-// Add two primitive variables and return the result
-//------------------------------------------------------------------------------
-inline
-PrimVar PrimVar::operator+ (const PrimVar& prim_var) const
-{
-   PrimVar result;
-
-   result.density  = density  + prim_var.density;
-   result.velocity = velocity + prim_var.velocity;
-   result.pressure = pressure + prim_var.pressure;
-
-   return result;
-}
-
-//------------------------------------------------------------------------------
-// Subtract two primitive variables and return the result
-//------------------------------------------------------------------------------
-inline
-PrimVar PrimVar::operator- (const PrimVar& prim_var) const
-{
-   PrimVar result;
-
-   result.density  = density  - prim_var.density;
-   result.velocity = velocity - prim_var.velocity;
-   result.pressure = pressure - prim_var.pressure;
-
-   return result;
-}
-
-//------------------------------------------------------------------------------
-// Multiply primitive by scalar and return result
-//------------------------------------------------------------------------------
-inline
-PrimVar PrimVar::operator* (const double& scalar) const
-{
-   PrimVar result;
-
-   result.density  = density  * scalar;
-   result.velocity = velocity * scalar; 
-   result.pressure = pressure * scalar;
-
-   return result;
-}
-
-//------------------------------------------------------------------------------
-// Multiply two primitive variables componentwise
-// Result is another primitive variable
-// NOTE: This is not scalar dot product
-//------------------------------------------------------------------------------
-inline
-PrimVar PrimVar::operator* (const PrimVar& prim_var) const
-{
-   PrimVar result;
-
-   result.density    = density    * prim_var.density;
-   result.velocity.x = velocity.x * prim_var.velocity.x;
-   result.velocity.y = velocity.y * prim_var.velocity.y;
-   result.velocity.z = velocity.z * prim_var.velocity.z;
-   result.pressure   = pressure   * prim_var.pressure;
-
-   return result;
-}
-
-//------------------------------------------------------------------------------
-// Multiply given primitive by scalar
-//------------------------------------------------------------------------------
-inline
-PrimVar& PrimVar::operator*= (const double& scalar)
-{
-   density  *= scalar;
-   velocity *= scalar; 
-   pressure *= scalar;
-
-   return *this;
-}
-
-//------------------------------------------------------------------------------
-// Add primitive variable to given primitive variable
-//------------------------------------------------------------------------------
-inline
-PrimVar& PrimVar::operator+= (const PrimVar& prim_var)
-{
-   density  += prim_var.density;
-   velocity += prim_var.velocity;
-   pressure += prim_var.pressure;
-
-   return *this;
-}
-
-//------------------------------------------------------------------------------
 // Convert primitive to conserved
 //------------------------------------------------------------------------------
 inline
@@ -346,7 +104,18 @@ PrimVar Material::con2prim (const ConVar& con_var)
 inline
 double Material::viscosity (const double T) const
 {
-   return mu_ref * std::pow(T/T_ref, 1.5) * (T_ref + T_0) / (T + T_0);
+   switch (mu_model)
+   {
+      case mu_constant:
+         return mu_ref;
+
+      case mu_sutherland:
+         return mu_ref * std::pow(T/T_ref, 1.5) * (T_ref + T_0) / (T + T_0);
+
+      default:
+         std::cout << "viscosity: unknown model " << mu_model << std::endl;
+         abort ();
+   }
 }
 
 //------------------------------------------------------------------------------
