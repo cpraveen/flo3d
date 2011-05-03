@@ -13,87 +13,12 @@ void PrimVar::zero ()
    pressure = 0.0;
 }
 
-// Set all flux components to zero
-void Flux::zero ()
-{
-   mass_flux     = 0.0;
-   momentum_flux = 0.0;
-   energy_flux   = 0.0;
-}
-
-// Add flux to given flux
-Flux& Flux::operator+= (const Flux& flux)
-{
-   mass_flux     += flux.mass_flux;
-   momentum_flux += flux.momentum_flux;
-   energy_flux   += flux.energy_flux;
-
-   return *this;
-}
-
-// Subtract flux from given flux
-Flux& Flux::operator-= (const Flux& flux)
-{
-   mass_flux     -= flux.mass_flux;
-   momentum_flux -= flux.momentum_flux;
-   energy_flux   -= flux.energy_flux;
-
-   return *this;
-}
-
-// Multiply given flux by a scalar
-Flux& Flux::operator*= (const double& scalar)
-{
-   mass_flux     *= scalar;
-   momentum_flux *= scalar;
-   energy_flux   *= scalar;
-
-   return *this;
-}
-
-// Add two fluxes
-Flux Flux::operator+ (const Flux& flux)
-{
-   Flux result;
-
-   result.mass_flux     = mass_flux + flux.mass_flux;
-   result.momentum_flux = momentum_flux + flux.momentum_flux;
-   result.energy_flux   = energy_flux + flux.energy_flux;
-
-   return result;
-}
-
-Flux Flux::operator- (const Flux& flux)
-{
-   Flux result;
-   result.mass_flux     = mass_flux - flux.mass_flux;
-   result.momentum_flux = momentum_flux - flux.momentum_flux;
-   result.energy_flux   = energy_flux - flux.energy_flux;
-   return result;
-}   
-
-Flux Flux::operator* (const double scalar)
-{
-   Flux result;
-
-   result.mass_flux     = mass_flux * scalar;
-   result.momentum_flux = momentum_flux * scalar;
-   result.energy_flux   = energy_flux * scalar;
-
-   return result;
-}
-
 //------------------------------------------------------------------------------
 // Do some initializations
 //------------------------------------------------------------------------------
 void Material::initialize ()
 {
    Cp = gamma * gas_const / (gamma - 1.0);
-
-   // TODO: Check these values
-   T_ref = 273.15;
-   mu_ref = 1.716e-5;
-   T_0 = 110.4;
 }
 
 //------------------------------------------------------------------------------
