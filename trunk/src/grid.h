@@ -4,6 +4,7 @@
 #include <vector>
 #include "parameter.h"
 #include "vec.h"
+#include "face.h"
 
 class Cell
 {
@@ -13,19 +14,6 @@ class Cell
       int          face[4];
       double       volume;
       double       weight[4];
-};
-
-class Face
-{
-   public:
-      unsigned int vertex[3];
-      int          lcell, rcell;
-      int          lvertex, rvertex;
-      Vector       normal;
-      int          type;
-      double       area;
-
-      bool operator== (const Face& face) const;
 };
 
 class Grid
@@ -51,7 +39,7 @@ class Grid
 
    private:
       void read_gmsh (std::string grid_file);
-      void check_face_type (const std::map<int,BCType>& bc_type);
+      void check_face_type (const std::map<int,BoundaryCondition>& bc);
       void preproc ();
       void compute_cell_centroid ();
       void compute_cell_volume ();

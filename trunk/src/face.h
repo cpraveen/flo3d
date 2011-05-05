@@ -1,5 +1,23 @@
-#include "grid.h"
+#ifndef __FACE_H__
+#define __FACE_H__
 
+#include "vec.h"
+
+class Face
+{
+   public:
+      unsigned int vertex[3];
+      int          lcell, rcell;
+      int          lvertex, rvertex;
+      Vector       normal;
+      Vector       centroid;
+      int          type;
+      double       area;
+
+      bool operator== (const Face& face) const;
+};
+
+inline
 bool Face::operator== (const Face& face) const
 {
 
@@ -29,3 +47,5 @@ bool Face::operator== (const Face& face) const
 
    return false;
 }
+
+#endif

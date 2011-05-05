@@ -9,14 +9,13 @@
 #include "material.h"
 #include "force.h"
 #include "ic.h"
+#include "bc.h"
 
 // Coefficients for 3-stage RK scheme of Shu-Osher
 static const double a_rk[] = {0.0, 3.0/4.0, 1.0/3.0};
 static const double b_rk[] = {1.0, 1.0/4.0, 2.0/3.0};
 
 enum GridType {gmsh};
-
-enum BCType { interior, slip, noslip, farfield, inlet, outlet, pressure };
 
 class Parameter
 {
@@ -42,8 +41,7 @@ class Parameter
 
       InitialCondition initial_condition;
 
-      std::map<int,BCType>  bc_type;
-      std::map<int,PrimVar> bc_state;
+      std::map<int,BoundaryCondition> boundary_condition;
 
       std::string  write_format;
       unsigned int write_frequency;

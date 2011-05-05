@@ -41,7 +41,7 @@ void Material::roe_flux (const PrimVar& left,
    double vel_right_normal = right.velocity * unit_normal;
    double dV = vel_right_normal - vel_left_normal;
 
-   if(vel_normal > 0.0)
+   if(vel_normal >= 0.0)
    {
       double lambda = vel_normal - c;
       double coeff  = 0.5 * (dp - density * c * dV) / (c * c);

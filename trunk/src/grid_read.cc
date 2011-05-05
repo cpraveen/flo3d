@@ -23,7 +23,7 @@ void Grid::read (const Parameter& param)
    // At this stage, we have only boundary faces. We save this number.
    n_boundary_face = n_face;
 
-   check_face_type (param.bc_type);
+   check_face_type (param.boundary_condition);
    preproc ();
    info ();
 }
@@ -45,12 +45,12 @@ void Grid::info ()
 //------------------------------------------------------------------------------
 // Check that all boundary faces have been assigned a bc type
 //------------------------------------------------------------------------------
-void Grid::check_face_type (const map<int,BCType>& bc_type)
+void Grid::check_face_type (const map<int,BoundaryCondition>& bc)
 {
    for(unsigned int i=0; i<face.size(); ++i)
    {
       assert (face[i].type != -1);
-      if(bc_type.find(face[i].type) == bc_type.end())
+      if(bc.find(face[i].type) == bc.end())
       {
          cout << "check_face_type:\n";
          cout << "   No boundary condition specified for\n";

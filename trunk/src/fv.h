@@ -20,7 +20,7 @@ class FiniteVolume
 
          if(param.force_data.size() > 0)
             force_file.open ("force.dat");
-      }
+      };
       ~FiniteVolume () 
       {
          res_file.close ();
