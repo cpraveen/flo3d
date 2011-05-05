@@ -37,9 +37,25 @@ initial_condition
 
 boundary
 {
-   600003   slip       0.0  0.0  0.0   0.0    0.0
-   600001   outlet     0.0  0.0  0.0   0.0    0.0
-   600002   farfield   1.0  0.0  0.0  -3.567  1.01351589
+   600003
+   {
+      type        slip
+   }
+
+   600001
+   {
+      type        outlet
+   }
+
+   600002
+   {
+      type        farfield
+      density     1.0  
+      xvelocity   0.0
+      yvelocity   0.0
+      zvelocity  -3.567
+      pressure    1.01351589
+   }
 }
 
 integrals
