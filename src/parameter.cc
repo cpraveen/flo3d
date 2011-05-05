@@ -338,51 +338,29 @@ void Parameter::read_boundary ()
 
    while (!eos(fin))
    {
-      int b_type;
-      fin >> b_type >> input;
-      assert (b_type != -1); // -1 used for interior faces
+      int f_type;
+      fin >> f_type >> input;
+      assert (input == "{");
 
+      fin >> input;
+      checkString(input, "type");
+      string bc_type;
+      fin >> bc_type;
 
-      if(input=="farfield")
-         bc_type.insert (pair<int,BCType>(b_type, farfield));
-      else if(input=="slip")
-         bc_type.insert (pair<int,BCType>(b_type, slip));
-      else if(input=="noslip")
-         bc_type.insert (pair<int,BCType>(b_type, noslip));
-      else if(input=="inlet")
-         bc_type.insert (pair<int,BCType>(b_type, inlet));
-      else if(input=="outlet")
-         bc_type.insert (pair<int,BCType>(b_type, outlet));
-      else if(input=="pressure")
-         bc_type.insert (pair<int,BCType>(b_type, pressure));
-      else
+      vector<string> variable, function;
+      while(!eos(fin))
       {
-         cout << "   Unknown boundary type " << input << endl;
-         abort ();
+         fin >> input;
+         variable.push_back (input);
+         getline(fin, input);
+         function.push_back (input);
       }
-      
-      // Read primitive state for this boundary
-      PrimVar state;
-      fin >> state.density
-          >> state.velocity.x
-          >> state.velocity.y
-          >> state.velocity.z
-          >> state.pressure;
-
-      // Density and pressure must be positive
-      if(input == "inlet" || input == "farfield")
-         assert (state.density  > 0.0);
-      if(input == "inlet" || input == "farfield" || input == "pressure")
-         assert (state.pressure > 0.0);
-      
-      bc_state.insert (pair<int,PrimVar>(b_type, state));
+      BoundaryCondition bc(material, bc_type, variable, function);
+      boundary_condition.insert (pair<int,BoundaryCondition>(f_type, bc));
 
       skipComment (fin);
 
    }
-
-   // We added -1 as interior type
-   bc_type.insert (pair<int,BCType>(-1, interior));
 
 }
 

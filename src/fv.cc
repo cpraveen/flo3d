@@ -115,32 +115,18 @@ void FiniteVolume::compute_vertex_gradients ()
          unsigned int n2 = grid.face[i].vertex[2];
 
          // Average state on face
-         PrimVar state = primitive_vertex[n0] +
-                         primitive_vertex[n1] +
-                         primitive_vertex[n2];
-         state *= (1.0/3.0);
+         vector<PrimVar> states(2);
+         states[0] = primitive_vertex[n0] +
+                     primitive_vertex[n1] +
+                     primitive_vertex[n2];
+         states[0] *= (1.0/3.0);
 
          // Apply bc to average state
-         int face_type = grid.face[i].type;
-         BCType bc_type = param.bc_type[grid.face[i].type];
+         BoundaryCondition& bc = param.boundary_condition[grid.face[i].type];
+         bc.apply (grid.face[i], states);
 
-         if(bc_type == noslip)
-         {
-            state.velocity = 0.0;
-         }
-         else if(bc_type == slip)
-         {
-            Vector unit_normal = grid.face[i].normal / grid.face[i].area;
-            state.velocity -= unit_normal * (state.velocity * unit_normal);
-         }
-         else if(bc_type == inlet)
-         {
-            state = param.bc_state[face_type];
-         }
-         else if(bc_type == pressure)
-         {
-            state.pressure = param.bc_state[face_type].pressure;
-         }
+         // Average state
+         PrimVar state = (states[0] + states[1]) * 0.5;
 
          double T = param.material.temperature (state);
 
@@ -213,16 +199,14 @@ void FiniteVolume::compute_residual ()
    for(unsigned int i=0; i<grid.n_cell; ++i)
       residual[i].zero ();
 
-   unsigned int cl, cr;
-   vector<PrimVar> state(2);
-   Flux flux;
-
    // Loop over faces and accumulate flux
    for(unsigned int i=0; i<grid.n_face; ++i)
    {
+      unsigned int cl, cr;
+      vector<PrimVar> state(2);
+      Flux flux;
+
       int face_type = grid.face[i].type;
-      BCType bc_type = param.bc_type[grid.face[i].type];
-      
       cl = grid.face[i].lcell;
 
       if(face_type == -1) // interior face
@@ -233,51 +217,14 @@ void FiniteVolume::compute_residual ()
          residual[cl] += flux;
          residual[cr] -= flux;
       }
-      else if(bc_type == slip || bc_type == noslip)
-      {
-         reconstruct ( i, false, state );
-         param.material.slip_flux ( state[0], grid.face[i].normal, flux );
-         residual[cl] += flux;
-      }
-      else if(bc_type == farfield)
-      {
-         reconstruct ( i, false, state );
-         param.material.num_flux (state[0], 
-                                  param.bc_state[face_type], 
-                                  grid.face[i].normal, 
-                                  flux);
-         residual[cl] += flux;
-      }
-      else if(bc_type == inlet)
-      {
-         param.material.euler_flux(param.bc_state[face_type], 
-                                   grid.face[i].normal,
-                                   flux);
-         residual[cl] += flux;
-      }
-      else if(bc_type == outlet)
-      {
-         reconstruct ( i, false, state );
-         param.material.euler_flux(state[0],
-                                   grid.face[i].normal,
-                                   flux);
-         residual[cl] += flux;
-      }
-      else if(bc_type == pressure)
-      {
-         reconstruct ( i, false, state );
-         state[0].pressure = param.bc_state[face_type].pressure;
-         param.material.euler_flux(state[0],
-                                   grid.face[i].normal,
-                                   flux);
-         residual[cl] += flux;
-      }
       else
       {
-         cout << "Unknown face type !!!" << endl;
-         abort ();
+         reconstruct ( i, false, state );
+         BoundaryCondition& bc = param.boundary_condition[face_type];
+         bc.apply (grid.face[i], state);
+         param.material.num_flux ( state[0], state[1], grid.face[i].normal, flux );
+         residual[cl] += flux;
       }
-
    }
 
    // Viscous fluxes
@@ -288,7 +235,7 @@ void FiniteVolume::compute_residual ()
       for(unsigned int i=0; i<grid.n_face; ++i)
       {
          int face_type = grid.face[i].type;
-         BCType bc_type = param.bc_type[face_type];
+         BoundaryCondition& bc = param.boundary_condition[face_type];
 
          unsigned int n0 = grid.face[i].vertex[0];
          unsigned int n1 = grid.face[i].vertex[1];
@@ -301,32 +248,23 @@ void FiniteVolume::compute_residual ()
          Vector dTf = (dT[n0] + dT[n1] + dT[n2]) / 3.0;
 
          // Average state on face
-         PrimVar state = primitive_vertex[n0] + 
-                         primitive_vertex[n1] + 
-                         primitive_vertex[n2];
-         state *= (1.0/3.0);
+         vector<PrimVar> states(2);
+         states[0] = primitive_vertex[n0] + 
+                     primitive_vertex[n1] + 
+                     primitive_vertex[n2];
+         states[0] *= (1.0/3.0);
 
-         // Aply bc
+         // Compute states[1] from boundary condition
+         bc.apply (grid.face[i], states);
+
+         // Average state
+         PrimVar state = (states[0] + states[1]) * 0.5;
+
          // On solid walls, adiabatic condition
-         if(bc_type == noslip)
+         if(bc.type == BC::noslip && bc.adiabatic)
          {
-            state.velocity = 0.0;
-
             Vector unit_normal = grid.face[i].normal / grid.face[i].area;
             dTf -= unit_normal * (dTf * unit_normal);
-         }
-         else if(bc_type == slip)
-         {
-            Vector unit_normal = grid.face[i].normal / grid.face[i].area;
-            state.velocity -= unit_normal * (state.velocity * unit_normal);
-         }
-         else if(bc_type == inlet)
-         {
-            state = param.bc_state[face_type];
-         }
-         else if(bc_type == pressure)
-         {
-            state.pressure = param.bc_state[face_type].pressure;
          }
 
          // Compute viscous flux
@@ -360,7 +298,6 @@ void FiniteVolume::compute_dt ()
    for(unsigned int i=0; i<grid.n_cell; ++i)
       dt[i] = 0.0;
 
-   double gamma = param.material.gamma;
    for(unsigned int i=0; i<grid.n_face; ++i)
    {
       double area = grid.face[i].area;
