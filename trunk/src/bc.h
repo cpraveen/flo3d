@@ -11,7 +11,7 @@
 
 namespace BC
 {
-   enum BCType { slip, noslip, farfield, inlet, outlet, pressure };
+   enum BCType { none, slip, noslip, farfield, inlet, outlet, pressure };
 }
 
 //------------------------------------------------------------------------------
@@ -63,6 +63,8 @@ BoundaryCondition::BoundaryCondition (Material                 &material,
 :
    material(&material)
 {
+   type = BC::none;
+
    // Slip bc, no state is required
    if(bc_type == "slip")
    {
@@ -160,6 +162,7 @@ BoundaryCondition::BoundaryCondition (Material                 &material,
    else if(bc_type == "outlet")
    {
       assert (variable.size() == 0);
+      type = BC::outlet;
    }
    else
    {
