@@ -43,6 +43,26 @@ bool eos (ifstream& f)
 }
 
 //------------------------------------------------------------------------------
+// Return true if beginning of section string "{" is encountered
+// otherwise, put undo read and return false
+//------------------------------------------------------------------------------
+bool bos (ifstream& f)
+{
+   streampos curr_pos = f.tellg ();
+
+   string input;
+   f >> input;
+
+   if(input != "{")
+   {
+      f.seekg (curr_pos);
+      return false;
+   }
+   else
+      return true;
+}
+
+//------------------------------------------------------------------------------
 // Read parameters from file
 //------------------------------------------------------------------------------
 void Parameter::read ()
@@ -338,9 +358,13 @@ void Parameter::read_boundary ()
 
    while (!eos(fin))
    {
-      int f_type;
-      fin >> f_type >> input;
-      assert (input == "{");
+      vector<int> f_type;
+      while(!bos(fin))
+      {
+         int tmp;
+         fin >> tmp;
+         f_type.push_back (tmp);
+      }
 
       fin >> input;
       checkString(input, "type");
@@ -356,7 +380,8 @@ void Parameter::read_boundary ()
          function.push_back (input);
       }
       BoundaryCondition bc(material, bc_type, variable, function);
-      boundary_condition.insert (pair<int,BoundaryCondition>(f_type, bc));
+      for(unsigned int i=0; i<f_type.size(); ++i)
+         boundary_condition.insert (pair<int,BoundaryCondition>(f_type[i], bc));
 
       skipComment (fin);
 

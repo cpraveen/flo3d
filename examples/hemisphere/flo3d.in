@@ -9,7 +9,7 @@ numeric
    time_mode    steady
    time_scheme  lusgs
    cfl          1.0e3
-   max_iter     400000
+   max_iter     5000
    final_time   1.0e20
    min_residue  1.0e-6
    reconstruct  limited
