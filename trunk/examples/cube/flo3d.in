@@ -38,15 +38,6 @@ initial_condition
 boundary
 {
    100001
-   {
-      type       farfield  
-      density    1.0  
-      xvelocity  1.0  
-      yvelocity  0.0  
-      zvelocity  0.0  
-      pressure   1.98412698412698412696
-   }
-
    100002
    {
       type       farfield  
