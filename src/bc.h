@@ -156,6 +156,11 @@ BoundaryCondition::BoundaryCondition (Material                 &material,
       assert (has_density && has_xvelocity && has_yvelocity && has_zvelocity &&
               has_pressure);
    }
+   // At outflow nothing is specified
+   else if(bc_type == "outlet")
+   {
+      assert (variable.size() == 0);
+   }
    else
    {
       std::cout << "Unknown boundary condition " << bc_type << std::endl;
