@@ -1,0 +1,66 @@
+grid
+{
+   type   gmsh 
+   file   annulus.msh
+}
+
+numeric
+{
+   time_mode    steady
+   time_scheme  rk3
+   cfl          0.4
+   max_iter     200000
+   final_time   1.0e20
+   min_residue  1.0e-6
+   reconstruct  first
+}
+
+// Argon gas
+material
+{
+   gamma       1.667
+   gas_const   208.0
+   viscosity   constant  2.285e-5
+   prandtl     0.67
+   model       ns
+   flux        kfvs
+}
+
+initial_condition
+{
+   density       3.2
+   xvelocity     3.14159265358979e3*z 
+   yvelocity     0.0
+   zvelocity    -3.14159265358979e3*x
+   pressure      2.0e5
+}
+
+boundary
+{
+   1001
+   1002
+   1003
+   1004
+   {
+      type          noslip
+      xvelocity     3.14159265358979e3*z
+      yvelocity     0.0
+      zvelocity    -3.14159265358979e3*x
+      temperature   300.0
+   }
+}
+
+integrals
+{
+}
+
+output
+{
+   format    vtk
+   frequency 100
+   vertex    true
+   variables
+   {
+   }
+   restart false
+}
