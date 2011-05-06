@@ -166,7 +166,13 @@ BoundaryCondition::BoundaryCondition (Material                 &material,
    }
    else
    {
-      std::cout << "Unknown boundary condition " << bc_type << std::endl;
+      std::cout << "BoundaryCondition: Unknown boundary condition " << bc_type << std::endl;
+      abort();
+   }
+
+   if(type == BC::none)
+   {
+      std::cout << "BoundaryCondition: unknown bc for " << bc_type << std::endl;
       abort();
    }
 }
@@ -298,7 +304,8 @@ void BoundaryCondition::apply(const Face           &face,
          break;
 
       default:
-         std::cout << "Unknown boundary condition: " << type << std::endl;
+         std::cout << "BoundaryCondition::apply" << std::endl;
+         std::cout << "   Unknown boundary condition: " << type << std::endl;
          abort ();
    }
 }
