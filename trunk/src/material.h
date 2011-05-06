@@ -2,6 +2,7 @@
 #define __MATERIAL_H__
 
 #include <iostream>
+#include <cstdlib>
 #include <string>
 #include <cmath>
 #include "vec.h"
