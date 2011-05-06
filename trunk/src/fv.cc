@@ -235,7 +235,6 @@ void FiniteVolume::compute_residual ()
       for(unsigned int i=0; i<grid.n_face; ++i)
       {
          int face_type = grid.face[i].type;
-         BoundaryCondition& bc = param.boundary_condition[face_type];
 
          unsigned int n0 = grid.face[i].vertex[0];
          unsigned int n1 = grid.face[i].vertex[1];
@@ -254,17 +253,26 @@ void FiniteVolume::compute_residual ()
                      primitive_vertex[n2];
          states[0] *= (1.0/3.0);
 
-         // Compute states[1] from boundary condition
-         bc.apply (grid.face[i], states);
-
          // Average state
-         PrimVar state = (states[0] + states[1]) * 0.5;
+         PrimVar state;
 
-         // On solid walls, adiabatic condition
-         if(bc.type == BC::noslip && bc.adiabatic)
+         // Compute states[1] from boundary condition
+         if(face_type != -1)
          {
-            Vector unit_normal = grid.face[i].normal / grid.face[i].area;
-            dTf -= unit_normal * (dTf * unit_normal);
+            BoundaryCondition& bc = param.boundary_condition[face_type];
+            bc.apply (grid.face[i], states);
+            state = (states[0] + states[1]) * 0.5;
+            
+            // On solid walls, adiabatic condition
+            if(bc.type == BC::noslip && bc.adiabatic)
+            {
+               Vector unit_normal = grid.face[i].normal / grid.face[i].area;
+               dTf -= unit_normal * (dTf * unit_normal);
+            }
+         }
+         else
+         {
+            state = states[0];
          }
 
          // Compute viscous flux
