@@ -114,7 +114,7 @@ BoundaryCondition::BoundaryCondition (Material                 &material,
       assert (variable.size() == 1);
       type = BC::pressure;
       assert (variable[0] == "pressure");
-      pressure.Parse (variable[0], "x,y,z");
+      pressure.Parse (function[0], "x,y,z");
    }
    // All values are specified
    else if(bc_type == "inlet" || bc_type == "farfield")
