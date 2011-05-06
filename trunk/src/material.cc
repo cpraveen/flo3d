@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <cassert>
 #include "material.h"
 
 using namespace std;
@@ -19,6 +20,9 @@ void PrimVar::zero ()
 void Material::initialize ()
 {
    Cp = gamma * gas_const / (gamma - 1.0);
+
+   if(model == euler)
+      assert (mu_ref == 0.0);
 }
 
 //------------------------------------------------------------------------------
