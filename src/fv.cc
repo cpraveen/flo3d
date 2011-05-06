@@ -23,7 +23,7 @@ void FiniteVolume::initialize ()
    dt.resize (grid.n_cell);
 
    // For navier stokes, we need gradient of velocity and temperature
-   if(param.material.model == "ns")
+   if(param.material.model == Material::ns)
    {
       dU.resize (grid.n_vertex);
       dV.resize (grid.n_vertex);
@@ -228,7 +228,7 @@ void FiniteVolume::compute_residual ()
    }
 
    // Viscous fluxes
-   if(param.material.model == "ns")
+   if(param.material.model == Material::ns)
    {
       compute_vertex_gradients ();
 
@@ -385,7 +385,7 @@ void FiniteVolume::lusgs ()
          f = grid.cell[i].face[j] ;
          grid.find_cell_neighbour(f, i, neighbour_cell);
 
-         if(param.material.model == "ns")
+         if(param.material.model == Material::ns)
          {
             double T = param.material.temperature (primitive[i]);
             double mu = param.material.viscosity (T);
@@ -414,7 +414,7 @@ void FiniteVolume::lusgs ()
 	         double lambda  = omega * (fabs(vel_normal) + c * area); 
 
             // viscous eigenvalue
-            if(param.material.model == "ns")
+            if(param.material.model == Material::ns)
             {
                Vector dr = grid.cell[i].centroid - grid.cell[neighbour_cell].centroid;
                double T = param.material.temperature (prim_avg);
@@ -466,7 +466,7 @@ void FiniteVolume::lusgs ()
             double c  = param.material.sound_speed (prim_avg);
             double lambda  = omega * (fabs(vel_normal) + c * area);
 
-            if(param.material.model == "ns")
+            if(param.material.model == Material::ns)
             {
                Vector dr = grid.cell[i].centroid - grid.cell[neighbour_cell].centroid;
                double T = param.material.temperature (prim_avg);

@@ -16,12 +16,17 @@
 class Material
 {
    public:
+      Material ()
+      {
+         mu_ref = 0.0;
+      };
       double gamma;
       double gas_const;
       double prandtl;
       double Cp;
       double T_0, T_ref, mu_ref; // constants for sutherland law
-      std::string model;
+      enum FlowModel {euler, ns};
+      FlowModel model;
       enum FluxScheme { roe, kfvs };
       FluxScheme flux_scheme;
 

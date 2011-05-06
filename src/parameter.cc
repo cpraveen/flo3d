@@ -263,8 +263,16 @@ void Parameter::read_material ()
    skipComment (fin);
    fin >> input;
    checkString (input, "model");
-   fin >> material.model;
-   assert (material.model == "euler" || material.model == "ns");
+   fin >> input;
+   if(input == "euler")
+      material.model = Material::euler;
+   else if(input == "ns")
+      material.model = Material::ns;
+   else
+   {
+      cout << "read_material: unknown flow model " << input << endl;
+      abort ();
+   }
 
    skipComment (fin);
    fin >> input;
