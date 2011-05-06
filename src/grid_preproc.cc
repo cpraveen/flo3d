@@ -26,6 +26,20 @@ void Grid::compute_cell_centroid ()
 }
 
 //------------------------------------------------------------------------------
+// Compute face Centroid
+//------------------------------------------------------------------------------
+void Grid::compute_face_centroid ()
+{
+   for(unsigned int i=0; i<n_face; ++i)
+   { 
+      unsigned int v0, v1, v2;
+      v0 = face[i].vertex[0];
+      v1 = face[i].vertex[1];
+      v2 = face[i].vertex[2];
+      face[i].centroid = ( vertex[v0] + vertex[v1] + vertex[v2]) / 3.0;
+   }   
+}
+//------------------------------------------------------------------------------
 // Compute cell volumes
 //------------------------------------------------------------------------------
 void Grid::compute_cell_volume ()
@@ -396,6 +410,7 @@ void Grid::renumber_cell()
 void Grid::preproc ()
 {
    compute_cell_centroid ();
+   compute_face_centroid ();
    make_faces ();
    find_cell_faces ();
    renumber_cell ();

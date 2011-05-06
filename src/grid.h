@@ -42,6 +42,7 @@ class Grid
       void check_face_type (const std::map<int,BoundaryCondition>& bc);
       void preproc ();
       void compute_cell_centroid ();
+      void compute_face_centroid ();
       void compute_cell_volume ();
       void compute_face_normal_and_area ();
       void add_face (const Face& new_face);
