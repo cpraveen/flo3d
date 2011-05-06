@@ -25,7 +25,6 @@ material
    flux        roe
 }
 
-// Freestream mach = 0.8395
 initial_condition
 {
    density     (x<=0.5)*1.0 + (x>0.5)*0.125
@@ -37,9 +36,30 @@ initial_condition
 
 boundary
 {
-   100001      inlet      1.0    0.0       0.0       0.0  1.0
-   100003      slip       0.0    0.0       0.0       0.0  0.0
-   100002      outlet     0.125  0.0       0.0       0.0  0.1
+   100001
+   {
+      type       inlet
+      density    1.0
+      xvelocity  0.0
+      yvelocity  0.0
+      zvelocity  0.0
+      pressure   1.0
+   }
+
+   100002
+   {
+      type       inlet
+      density    0.125
+      xvelocity  0.0
+      yvelocity  0.0
+      zvelocity  0.0
+      pressure   0.1
+   }
+
+   100003
+   {
+      type       slip
+   }
 }
 
 integrals
