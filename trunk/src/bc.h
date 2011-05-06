@@ -39,6 +39,7 @@ class BoundaryCondition
                          std::vector<PrimVar> &state);
       void apply_farfield (const Face           &face,
                            std::vector<PrimVar> &state);
+      std::string    name;
       BC::BCType     type;
       bool           adiabatic;
       Material*      material;
@@ -61,6 +62,7 @@ BoundaryCondition::BoundaryCondition (Material                 &material,
                                       std::vector<std::string> &variable,
                                       std::vector<std::string> &function)
 :
+   name (bc_type),
    material(&material)
 {
    type = BC::none;
@@ -305,7 +307,7 @@ void BoundaryCondition::apply(const Face           &face,
 
       default:
          std::cout << "BoundaryCondition::apply" << std::endl;
-         std::cout << "   Unknown boundary condition: " << type << std::endl;
+         std::cout << "   Unknown boundary condition: " << name << std::endl;
          abort ();
    }
 }
