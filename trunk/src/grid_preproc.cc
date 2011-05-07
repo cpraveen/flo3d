@@ -323,7 +323,7 @@ void Grid::renumber_cell()
 	// Write initial cell numbering to file
 	if(debug)
 	{
-		ofstream out("cell_number_before.dat");
+		ofstream out("number0.dat");
 		
 		for(i=0; i<n_cell; ++i)
 		{ 
@@ -387,7 +387,7 @@ void Grid::renumber_cell()
 	// Save new cell numbering to file
 	if(debug)
 	{
-		ofstream out("cell_numbered_after.dat");
+		ofstream out("number1.dat");
 		for(i=0; i<n_cell; ++i)
 		{
 			out << i << " " << i << endl;
