@@ -1,3 +1,6 @@
+// inner sphere radius is 1
+R = 20; //outer sphere radius
+
 lc = 2*Pi/200;
 Point(1) = {0.0,0.0,0.0,lc};
 Point(2) = {1,0.0,0.0,lc};
@@ -36,7 +39,8 @@ Line Loop(27) = {-4,12,-6};
 Ruled Surface(28) = {27};
 Surface Loop(29) = {28,26,16,14,20,24,22,18};
 
-out[] = Dilate {{0,0,0},20}
+// Scale sphere surface to obtain outer boundary
+out[] = Dilate {{0,0,0},R}
 {
    Duplicata{ Surface{14,16,18,20,22,24,26,28}; }
 };
@@ -46,8 +50,10 @@ Surface Loop(300) = {30,34,38,54,42,50,46,58};
 
 Volume(31) = {300,29};
 
-// On outer boundary
-Characteristic Length{8,53,45,15,30,10} = 5;
+Field[1] = MathEval;
+Field[1].F = Sprintf("(x^2+y^2+z^2)*%g", lc);
+
+Background Field = 1;
 
 // try also netgen:
 // Mesh.Algorithm3D = 4;
