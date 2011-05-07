@@ -64,7 +64,6 @@ void FiniteVolume::reconstruct_second
 //------------------------------------------------------------------------------
 void limited_state(const PrimVar& prim_v, /* vertex value */
                    const PrimVar& prim_c, /* cell value */
-                   const PrimVar& prim_f, /* face value opposite to vertex */
                    const PrimVar& prim_n, /* neighbour cell value */
                          PrimVar& state)  /* reconstructed state */
 {
@@ -128,14 +127,6 @@ void FiniteVolume::reconstruct_limited
  vector<PrimVar>&    state
 ) const
 {
-   // Average on face
-   PrimVar face_avg;
-   face_avg.zero ();
-
-   for(unsigned int i=0; i<3; ++i)
-      face_avg += primitive_vertex[ grid.face[f].vertex[i] ];
-   face_avg *= (1.0/3.0);
-
    // Left state
    unsigned int vl = grid.face[f].lvertex;
    unsigned int cl = grid.face[f].lcell;
@@ -149,14 +140,12 @@ void FiniteVolume::reconstruct_limited
       // left state
       limited_state (primitive_vertex[vl],
                      primitive[cl],
-                     face_avg,
                      primitive[cr],
                      state[0]);
 
       // right state
       limited_state (primitive_vertex[vr],
                      primitive[cr],
-                     face_avg,
                      primitive[cl],
                      state[1]);
 
@@ -166,9 +155,34 @@ void FiniteVolume::reconstruct_limited
       // Boundary face
       // Only left state is present
 
-      PrimVar dCV = primitive[cl] - primitive_vertex[vl];
+      // Average on face
+      PrimVar face_avg;
+      face_avg.zero ();
 
-      // First order reconstruction
-      state[0] = primitive[cl] + dCV * (1.0/3.0);
+      for(unsigned int i=0; i<3; ++i)
+         face_avg += primitive_vertex[ grid.face[f].vertex[i] ];
+      face_avg *= (1.0/3.0);
+
+      PrimVar dCV = primitive[cl] - primitive_vertex[vl];
+      PrimVar dFC = face_avg - primitive[cl];
+      PrimVar fact= dCV * dFC;
+
+      state[0] = primitive[cl];
+
+      if(fact.density > 0.0)
+         state[0].density += (1.0/3.0) * dCV.density;
+
+      if(fact.velocity.x > 0.0)
+         state[0].velocity.x += (1.0/3.0) * dCV.velocity.x;
+
+      if(fact.velocity.y > 0.0)
+         state[0].velocity.y += (1.0/3.0) * dCV.velocity.y;
+
+      if(fact.velocity.z > 0.0)
+         state[0].velocity.z += (1.0/3.0) * dCV.velocity.z;
+
+      if(fact.pressure > 0.0)
+         state[0].pressure += (1.0/3.0) * dCV.pressure;
+
    }
 }

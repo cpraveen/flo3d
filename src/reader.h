@@ -170,7 +170,7 @@ bool Reader::bos ()
 }
 
 //------------------------------------------------------------------------------
-// Read str1 and check that it is equal to str2
+// Check that currently read string matches str1
 //------------------------------------------------------------------------------
 inline
 void Reader::entry (std::string str1)
@@ -181,13 +181,13 @@ void Reader::entry (std::string str1)
 
    if(str1 != str2)
    {
-      std::cout << "   Expecting " << str2 << " but found " << str1 << std::endl;
+      std::cout << "   Expecting " << str1 << " but found " << str2 << std::endl;
       abort ();
    }
 }
 
 //------------------------------------------------------------------------------
-// Read str1 and check that it is equal to str2
+// Check that section "str" is reached
 //------------------------------------------------------------------------------
 inline
 void Reader::begin_section (std::string str)
@@ -197,7 +197,7 @@ void Reader::begin_section (std::string str)
 }
 
 //------------------------------------------------------------------------------
-// Read str1 and check that it is equal to str2
+// Check that end of section is reached
 //------------------------------------------------------------------------------
 inline
 void Reader::end_section ()
