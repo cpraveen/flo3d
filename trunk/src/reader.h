@@ -6,6 +6,7 @@
 #include <iostream> // I/O
 #include <fstream>// file I/O
 #include <cassert>
+#include <cstdlib>
 
 //------------------------------------------------------------------------------
 // Class to read input file
