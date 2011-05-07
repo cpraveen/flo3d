@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <fstream>
+#include "reader.h"
 #include "vec.h"
 #include "material.h"
 #include "force.h"
@@ -21,7 +22,6 @@ class Parameter
 {
    public:
       char* file;
-      std::ifstream fin;
 
       std::string time_mode;
       std::string time_scheme;
@@ -54,13 +54,13 @@ class Parameter
       void read ();
 
    private:
-      void read_grid ();
-      void read_numeric ();
-      void read_material ();
-      void read_initial_condition ();
-      void read_boundary ();
-      void read_integrals ();
-      void read_output ();
+      void read_grid (Reader&);
+      void read_numeric (Reader&);
+      void read_material (Reader&);
+      void read_initial_condition (Reader&);
+      void read_boundary (Reader&);
+      void read_integrals (Reader&);
+      void read_output (Reader&);
 };
 
 #endif
