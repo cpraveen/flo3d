@@ -5,7 +5,7 @@
 #include <string>
 #include "vec.h"
 #include "material.h"
-#include "fparser.hh"
+#include "fparser.h"
 
 //------------------------------------------------------------------------------
 // Class to store initial condition functions
@@ -17,11 +17,11 @@ class InitialCondition
       PrimVar value (const Vector& p);
 
    private:
-      FunctionParser density;
-      FunctionParser xvelocity;
-      FunctionParser yvelocity;
-      FunctionParser zvelocity;
-      FunctionParser pressure;
+      FParser density;
+      FParser xvelocity;
+      FParser yvelocity;
+      FParser zvelocity;
+      FParser pressure;
 };
 
 //------------------------------------------------------------------------------
