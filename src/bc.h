@@ -5,7 +5,7 @@
 #include <string>
 #include <cassert>
 #include "face.h"
-#include "fparser.hh"
+#include "fparser.h"
 #include "primvar.h"
 #include "material.h"
 
@@ -45,12 +45,12 @@ class BoundaryCondition
       Material*      material;
 
    private:
-      FunctionParser density;
-      FunctionParser xvelocity;
-      FunctionParser yvelocity;
-      FunctionParser zvelocity;
-      FunctionParser pressure;
-      FunctionParser temperature;
+      FParser density;
+      FParser xvelocity;
+      FParser yvelocity;
+      FParser zvelocity;
+      FParser pressure;
+      FParser temperature;
 };
 
 //------------------------------------------------------------------------------
