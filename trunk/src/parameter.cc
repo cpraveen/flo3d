@@ -7,100 +7,35 @@
 
 using namespace std;
 
-// Function declaration
-ifstream& skipComment (ifstream &strm);
-
-//------------------------------------------------------------------------------
-// Check that two strings match
-//------------------------------------------------------------------------------
-void checkString (const string& str1, const string& str2)
-{
-   if(str1 != str2)
-   {
-      cout << "   Expecting " << str2 << " but found " << str1 << endl;
-      abort ();
-   }
-}
-
-//------------------------------------------------------------------------------
-// Return true if end of section string "}" is encountered
-// otherwise, put undo read and return false
-//------------------------------------------------------------------------------
-bool eos (ifstream& f)
-{
-   streampos curr_pos = f.tellg ();
-
-   string input;
-   f >> input;
-
-   if(input != "}")
-   {
-      f.seekg (curr_pos);
-      return false;
-   }
-   else
-      return true;
-}
-
-//------------------------------------------------------------------------------
-// Return true if beginning of section string "{" is encountered
-// otherwise, put undo read and return false
-//------------------------------------------------------------------------------
-bool bos (ifstream& f)
-{
-   streampos curr_pos = f.tellg ();
-
-   string input;
-   f >> input;
-
-   if(input != "{")
-   {
-      f.seekg (curr_pos);
-      return false;
-   }
-   else
-      return true;
-}
-
 //------------------------------------------------------------------------------
 // Read parameters from file
 //------------------------------------------------------------------------------
 void Parameter::read ()
 {
    cout << "Reading input file " << file << endl;
-   fin.open (file);
-   assert (fin.is_open());
+   Reader fin(file);
 
-   read_grid ();
-   read_numeric ();
-   read_material ();
-   read_initial_condition ();
-   read_boundary ();
-   read_integrals ();
-   read_output ();
-
-   fin.close ();
+   read_grid (fin);
+   read_numeric (fin);
+   read_material (fin);
+   read_initial_condition (fin);
+   read_boundary (fin);
+   read_integrals (fin);
+   read_output (fin);
 }
 
 //------------------------------------------------------------------------------
 // Read grid section
 //------------------------------------------------------------------------------
-void Parameter::read_grid ()
+void Parameter::read_grid (Reader &fin)
 {
    cout << "  Reading grid section\n";
 
    string input;
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "grid");
+   fin.begin_section ("grid");
 
-   fin >> input;
-   checkString (input, "{");
-
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "type");
+   fin.entry ("type");
    fin >> input;
    if(input=="gmsh")
       grid_type = gmsh;
@@ -110,74 +45,51 @@ void Parameter::read_grid ()
       abort ();
    }
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "file");
+   fin.entry ("file");
    fin >> grid_file;
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "}");
+   fin.end_section ();
 }
 
 //------------------------------------------------------------------------------
 // Read numeric section
 //------------------------------------------------------------------------------
-void Parameter::read_numeric ()
+void Parameter::read_numeric (Reader &fin)
 {
    cout << "  Reading numeric section\n";
 
    string input;
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "numeric");
+   fin.begin_section ("numeric");
 
-   fin >> input;
-   checkString (input, "{");
-
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "time_mode");
+   fin.entry ("time_mode");
    fin >> time_mode;
    assert (time_mode == "steady" || time_mode == "unsteady");
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "time_scheme");
+   fin.entry ("time_scheme");
    fin >> time_scheme;
    assert (time_scheme == "rk1" || time_scheme == "rk3" || time_scheme == "lusgs");
    if(time_scheme=="rk1")   n_rks = 1;
    if(time_scheme=="rk3")   n_rks = 3;
    if(time_scheme=="lusgs") n_rks = 1; 
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "cfl");
+   fin.entry ("cfl");
    fin >> cfl;
    assert (cfl > 0.0);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "max_iter");
+   fin.entry ("max_iter");
    fin >> max_iter;
    assert (max_iter > 0);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "final_time");
+   fin.entry ("final_time");
    fin >> final_time;
    assert (final_time > 0.0);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "min_residue");
+   fin.entry ("min_residue");
    fin >> min_residue;
    assert (min_residue > 0.0);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "reconstruct");
+   fin.entry ("reconstruct");
    fin >> input;
    if(input == "first")
       reconstruct_scheme = Parameter::first;
@@ -191,9 +103,7 @@ void Parameter::read_numeric ()
       abort ();
    }
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "}");
+   fin.end_section ();
 
    // Some parameter checks
    if(time_scheme == "lusgs")
@@ -203,34 +113,23 @@ void Parameter::read_numeric ()
 //------------------------------------------------------------------------------
 // Read material section
 //------------------------------------------------------------------------------
-void Parameter::read_material ()
+void Parameter::read_material (Reader &fin)
 {
    cout << "  Reading material section\n";
 
    string input;
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "material");
+   fin.begin_section ("material");
 
-   fin >> input;
-   checkString (input, "{");
-
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "gamma");
+   fin.entry ("gamma");
    fin >> material.gamma;
    assert (material.gamma > 1.0);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "gas_const");
+   fin.entry ("gas_const");
    fin >> material.gas_const;
    assert (material.gas_const > 0.0);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "viscosity");
+   fin.entry ("viscosity");
    fin >> input;
    if(input == "constant")
    {
@@ -241,9 +140,9 @@ void Parameter::read_material ()
    else if(input == "sutherland")
    {
       material.mu_model = Material::mu_sutherland;
-      fin >> material.mu_ref
-          >> material.T_ref
-          >> material.T_0;
+      fin >> material.mu_ref;
+      fin >> material.T_ref;
+      fin >> material.T_0;
       assert (material.mu_ref > 0.0);
       assert (material.T_ref > 0.0);
       assert (material.T_0 > 0.0);
@@ -254,15 +153,11 @@ void Parameter::read_material ()
       abort ();
    }
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "prandtl");
+   fin.entry ("prandtl");
    fin >> material.prandtl;
    assert (material.prandtl > 0.0);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "model");
+   fin.entry ("model");
    fin >> input;
    if(input == "euler")
       material.model = Material::euler;
@@ -274,9 +169,7 @@ void Parameter::read_material ()
       abort ();
    }
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "flux");
+   fin.entry ("flux");
    fin >> input;
    if(input == "roe")
       material.flux_scheme = Material::roe;
@@ -288,9 +181,7 @@ void Parameter::read_material ()
       abort ();
    }
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "}");
+   fin.end_section ();
 
    material.initialize ();
 }
@@ -298,133 +189,98 @@ void Parameter::read_material ()
 //------------------------------------------------------------------------------
 // Read initial condition
 //------------------------------------------------------------------------------
-void Parameter::read_initial_condition ()
+void Parameter::read_initial_condition (Reader &fin)
 {
    cout << "  Reading initial condition section\n";
 
    string input;
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "initial_condition");
+   fin.begin_section ("initial_condition");
 
-   fin >> input;
-   checkString (input, "{");
-
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "density");
-   getline (fin, input);
+   fin.entry ("density");
+   fin.getline (input);
    initial_condition.add ("density", input);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "xvelocity");
-   getline (fin, input);
+   fin.entry ("xvelocity");
+   fin.getline (input);
    initial_condition.add ("xvelocity", input);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "yvelocity");
-   getline (fin, input);
+   fin.entry ("yvelocity");
+   fin.getline (input);
    initial_condition.add ("yvelocity", input);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "zvelocity");
-   getline (fin, input);
+   fin.entry ("zvelocity");
+   fin.getline (input);
    initial_condition.add ("zvelocity", input);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "pressure");
-   getline (fin, input);
+   fin.entry ("pressure");
+   fin.getline (input);
    initial_condition.add ("pressure", input);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "}");
+   fin.end_section ();
 }
 
 //------------------------------------------------------------------------------
 // Read boundary conditions
 //------------------------------------------------------------------------------
-void Parameter::read_boundary ()
+void Parameter::read_boundary (Reader &fin)
 {
    cout << "  Reading boundary section\n";
 
    string input;
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "boundary");
+   fin.begin_section ("boundary");
 
-   fin >> input;
-   checkString (input, "{");
-
-   skipComment (fin);
-
-   while (!eos(fin))
+   while (!fin.eos())
    {
       vector<int> f_type;
-      while(!bos(fin))
+      while(!fin.bos())
       {
          int tmp;
          fin >> tmp;
          f_type.push_back (tmp);
       }
 
-      fin >> input;
-      checkString(input, "type");
+      fin.entry ("type");
       string bc_type;
       fin >> bc_type;
 
       vector<string> variable, function;
-      while(!eos(fin))
+      while(!fin.eos())
       {
          fin >> input;
          variable.push_back (input);
-         getline(fin, input);
+         fin.getline(input);
          function.push_back (input);
       }
       BoundaryCondition bc(material, bc_type, variable, function);
       for(unsigned int i=0; i<f_type.size(); ++i)
          boundary_condition.insert (pair<int,BoundaryCondition>(f_type[i], bc));
-
-      skipComment (fin);
-
    }
-
 }
 
 //------------------------------------------------------------------------------
 // Read integrals section
 //------------------------------------------------------------------------------
-void Parameter::read_integrals ()
+void Parameter::read_integrals (Reader &fin)
 {
    cout << "  Reading integrals section\n";
 
    string input;
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "integrals");
+   fin.begin_section ("integrals");
 
-   fin >> input;
-   checkString (input, "{");
-
-   while (!eos(fin))
+   while (!fin.eos())
    {
       fin >> input;
       if(input=="force") // integral type is force
       {
-         fin >> input;
-         checkString (input, "{");
+         fin.entry ("{");
 
          force_data.resize( force_data.size() + 1 );
          fin >> force_data.back().name; // name to identify force
 
-         while (!eos(fin))
+         while (!fin.eos())
          {
             int face_type;
             fin >> face_type;
@@ -441,34 +297,23 @@ void Parameter::read_integrals ()
 //------------------------------------------------------------------------------
 // Read output section
 //------------------------------------------------------------------------------
-void Parameter::read_output ()
+void Parameter::read_output (Reader &fin)
 {
    cout << "  Reading output section\n";
 
    string input;
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "output");
+   fin.begin_section ("output");
 
-   fin >> input;
-   checkString (input, "{");
-
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "format");
+   fin.entry ("format");
    fin >> write_format;
    assert (write_format == "vtk");
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "frequency");
+   fin.entry ("frequency");
    fin >> write_frequency;
    assert (write_frequency > 0);
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "vertex");
+   fin.entry ("vertex");
    fin >> input;
    if(input == "true")
       write_vertex_variables = true;
@@ -481,14 +326,9 @@ void Parameter::read_output ()
    }
    
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "variables");
+   fin.begin_section ("variables");
 
-   fin >> input;
-   checkString (input, "{");
-
-   while (!eos(fin))
+   while (!fin.eos())
    {
       fin >> input;
       assert (input=="density" || input=="velocity" || input=="pressure" ||
@@ -496,9 +336,7 @@ void Parameter::read_output ()
       write_variables.push_back (input);
    }
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "restart");
+   fin.entry ("restart");
    fin >> input;
    if(input=="false")
       write_restart = false;
@@ -510,7 +348,5 @@ void Parameter::read_output ()
       abort ();
    }
 
-   skipComment (fin);
-   fin >> input;
-   checkString (input, "}");
+   fin.end_section ();
 }
