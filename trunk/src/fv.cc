@@ -114,14 +114,11 @@ void FiniteVolume::compute_vertex_gradients ()
          unsigned int n1 = grid.face[i].vertex[1];
          unsigned int n2 = grid.face[i].vertex[2];
 
-         // Average state on face
+         // states on boundary face
          vector<PrimVar> states(2);
-         states[0] = primitive_vertex[n0] +
-                     primitive_vertex[n1] +
-                     primitive_vertex[n2];
-         states[0] *= (1.0/3.0);
+         states[0] = primitive[cl];
 
-         // Apply bc to average state
+         // Apply bc to get states[1]
          BoundaryCondition& bc = param.boundary_condition[grid.face[i].type];
          bc.apply (grid.face[i], states);
 
