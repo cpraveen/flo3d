@@ -42,15 +42,15 @@ class BoundaryCondition
       std::string    name;
       BC::BCType     type;
       bool           adiabatic;
-      Material*      material;
 
    private:
-      FParser density;
-      FParser xvelocity;
-      FParser yvelocity;
-      FParser zvelocity;
-      FParser pressure;
-      FParser temperature;
+      Material*      material;
+      FParser        density;
+      FParser        xvelocity;
+      FParser        yvelocity;
+      FParser        zvelocity;
+      FParser        pressure;
+      FParser        temperature;
 };
 
 //------------------------------------------------------------------------------
