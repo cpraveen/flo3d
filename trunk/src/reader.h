@@ -47,34 +47,42 @@ class Reader
 inline
 void Reader::skipComment ()
 {
-	char c;
-	const int c_MAX_LINESIZE=std::numeric_limits<int>::max();
-	
-	if(!f) return;
-	
-	while(isspace(c=f.get())||c==','||c==';');
-	
-	if(c=='#'||c=='%'||(c=='/' && f.peek()=='/'))
-	{
-		//skip the rest of the line
-		f.ignore(c_MAX_LINESIZE, '\n');
-	}
-	else if (c=='/' && f.peek()=='*')
-	{
-		//skip everything in the comment block
-		c=f.get();          //skip the first '*'
-		char last='\0';
-		while(!(f.eof())&&f.good())
-		{
-			c=f.get();
-			if(c=='/'&&last=='*')break;
-			else last=c;
-		}
-	}
-	else if(c!=EOF)
-	{
-		f.putback(c);
-	}
+   char c;
+   const int c_MAX_LINESIZE=std::numeric_limits<int>::max();
+   bool has_comment = false;
+   
+   if(!f) return;
+   
+   while(isspace(c=f.get())||c==','||c==';');
+   
+   if(c=='#'||c=='%'||(c=='/' && f.peek()=='/'))
+   {
+      //skip the rest of the line
+      f.ignore(c_MAX_LINESIZE, '\n');
+      has_comment = true;
+   }
+   else if (c=='/' && f.peek()=='*')
+   {
+      //skip everything in the comment block
+      c=f.get();          //skip the first '*'
+      char last='\0';
+      while(!(f.eof())&&f.good())
+      {
+         c=f.get();
+         if(c=='/'&&last=='*')break;
+         else last=c;
+      }
+      has_comment = true;
+   }
+   else if(c!=EOF)
+   {
+      f.putback(c);
+   }
+
+   // If comment line was found, then there may be more comments
+   // We skip until no comment lines are found
+   if(has_comment)
+      skipComment ();
 }
 
 //------------------------------------------------------------------------------
