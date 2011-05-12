@@ -1,0 +1,83 @@
+grid
+{
+   type   gmsh 
+   file   plate.msh
+}
+
+numeric
+{
+   time_mode    steady
+   time_scheme  rk3
+   cfl          0.8
+   max_iter     200000
+   final_time   1.0e20
+   min_residue  1.0e-6
+   reconstruct  second
+}
+
+material
+{
+   gamma       1.4
+   gas_const   287.0
+   viscosity   constant  8.0e-4
+   prandtl     0.72
+   model       ns
+   flux        roe
+}
+
+initial_condition
+{
+   density       0.1
+   xvelocity     86.797
+   yvelocity     0.0
+   zvelocity     0.0
+   pressure      8610.0
+}
+
+boundary
+{
+   100001
+   {
+      type       inlet
+      density    0.1
+      xvelocity  86.797
+      yvelocity  0.0
+      zvelocity  0.0
+      pressure   8610.0
+   }
+
+   100002
+   {
+      type       noslip
+      xvelocity  0.0
+      yvelocity  0.0
+      zvelocity  0.0
+   }
+
+   100003 // top
+   100005 // outlet
+   {
+      type       pressure
+      pressure   8610.0
+   }
+
+   100004
+   {
+      type       slip
+   }
+}
+
+integrals
+{
+}
+
+output
+{
+   format    vtk
+   frequency 100
+   vertex    true
+   variables
+   {
+   }
+   restart   false
+}
