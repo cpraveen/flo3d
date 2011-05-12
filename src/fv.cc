@@ -157,34 +157,6 @@ void FiniteVolume::compute_vertex_gradients ()
 }
 
 //------------------------------------------------------------------------------
-// Reconstruct left and right states
-//------------------------------------------------------------------------------
-void FiniteVolume::reconstruct (const unsigned int& f,
-                                bool                has_right,
-                                vector<PrimVar>&    state) const
-{
-   switch(param.reconstruct_scheme)
-   {
-      case Parameter::first:
-         reconstruct_first (f, has_right, state);
-         break;
-
-      case Parameter::second:
-         reconstruct_second (f, has_right, state);
-         break;
-
-      case Parameter::limited:
-         reconstruct_limited (f, has_right, state);
-         break;
-
-      default:
-         cout << "reconstruct: unknown reconstruction scheme = " 
-              << param.reconstruct_scheme << endl;
-         abort ();
-   }
-}
-
-//------------------------------------------------------------------------------
 // Compute residual for each cell
 //------------------------------------------------------------------------------
 void FiniteVolume::compute_residual ()

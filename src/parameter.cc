@@ -95,8 +95,12 @@ void Parameter::read_numeric (Reader &fin)
       reconstruct_scheme = Parameter::first;
    else if(input == "second")
       reconstruct_scheme = Parameter::second;
+   else if(input == "secondF")
+      reconstruct_scheme = Parameter::secondF;
    else if(input == "limited")
       reconstruct_scheme = Parameter::limited;
+   else if(input == "limitedF")
+      reconstruct_scheme = Parameter::limitedF;
    else
    {
       cout << "read_numeric: unknown reconstruction scheme " << input << endl;
