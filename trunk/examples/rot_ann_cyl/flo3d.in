@@ -29,9 +29,9 @@ material
 initial_condition
 {
    density       3.2
-   xvelocity     3.14159265358979e3*z 
+   xvelocity     2*pi*500*z
    yvelocity     0.0
-   zvelocity    -3.14159265358979e3*x
+   zvelocity    -2*pi*500*x
    pressure      2.0e5
 }
 
@@ -43,9 +43,9 @@ boundary
    1004
    {
       type          noslip
-      xvelocity     3.14159265358979e3*z
+      xvelocity     2*pi*500*z
       yvelocity     0.0
-      zvelocity    -3.14159265358979e3*x
+      zvelocity    -2*pi*500*x
       temperature   300.0
    }
 }
@@ -62,5 +62,5 @@ output
    variables
    {
    }
-   restart false
+   restart   true
 }
