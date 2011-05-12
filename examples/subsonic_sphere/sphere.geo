@@ -50,6 +50,9 @@ Surface Loop(300) = {30,34,38,54,42,50,46,58};
 
 Volume(31) = {300,29};
 
+// On outer boundary
+Characteristic Length{8,53,45,15,30,10} = 5;
+
 Field[1] = MathEval;
 Field[1].F = Sprintf("(x^2+y^2+z^2)*%g", lc);
 
