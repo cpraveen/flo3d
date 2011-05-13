@@ -1,0 +1,71 @@
+grid
+{
+   type   gmsh 
+   file   RAEplane.msh
+}
+
+numeric
+{
+   time_mode    steady
+   time_scheme  lusgs
+   cfl          1.0e5
+   max_iter     20000
+   final_time   1.0e20
+   min_residue  1.0e-6
+   reconstruct  limited
+}
+
+material
+{
+   gamma       1.4
+   gas_const   1.0
+   viscosity   constant  0
+   prandtl     0.7
+   model       euler
+   flux        roe
+}
+
+// Freestream mach = 0.9 , AOA = 1 degree , 
+initial_condition
+{
+   density     0.3766
+   xvelocity   299.107
+   yvelocity   5.4
+   zvelocity   0.0 
+   pressure    29765
+}
+
+boundary
+{
+   200001
+   {
+      type   slip
+   }
+
+   200002
+   200003
+   200004
+   {
+      type        farfield
+      density     0.3766
+      xvelocity   299.107
+      yvelocity   5.4
+      zvelocity   0.0 
+      pressure    29765
+   }
+}
+
+integrals
+{
+}
+
+output
+{
+   format     vtk
+   frequency  200
+   vertex     true
+   variables
+   {
+   }
+   restart   false
+}
