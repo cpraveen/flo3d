@@ -1,0 +1,9 @@
+The test case is part of AGARD 138 report.
+
+Download grid from here
+
+http://flo3d.googlecode.com/files/RAEplane.msh.gz
+
+The grid is taken from Freecase collection, see here
+
+http://www.aero.polimi.it/freecase/?OpenFOAM_%2B_Code_Aster:Aerodynamic_problems:RAE_A_plane
