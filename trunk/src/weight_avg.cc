@@ -67,13 +67,14 @@ void Grid::weight_average ()
       // For boundary point, we dont bother with weights since we are 
       // going to do arithmetic averaging
       // WARNING: Smallness of determinant depends on scale
-      if (bdpoint[i]==1 && fabs(Det) < 1.0e-14)
+      if (bdpoint[i]==1 && fabs(Det) < 1.0e-15)
       {
          Rx[i] = Ry[i] = Rz[i] = 0.0;
       }  
-      else if (bdpoint[i]==0 && fabs(Det) < 1.0e-14)
+      else if (bdpoint[i]==0 && fabs(Det) < 1.0e-15)
       {
-         cout << "weight_avg: no solution or many solution";
+         cout << "weight_avg: no solution or many solution\n";
+         cout << "vertex = " << i << "  Det = " << Det << endl;
          abort();
       }
       else

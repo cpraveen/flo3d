@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <sstream>
 #include "parameter.h"
 #include "fv.h"
 #include "writer.h"
@@ -621,8 +622,22 @@ void FiniteVolume::output (const unsigned int iter)
       writer.attach_cell_variables (param.write_variables);
    }
 
+   static int counter = 0;
+   string filename = "flo3d";
+   if(param.time_mode == "unsteady")
+   {
+      stringstream ss;
+      ss << counter;
+      filename += "-" + ss.str() + ".vtk";
+      ++counter;
+   }
+   else
+   {
+      filename += ".vtk";
+   }
+
    if(param.write_format == "vtk")
-      writer.output_vtk ("flo3d.vtk");
+      writer.output_vtk (filename);
 }
 
 //------------------------------------------------------------------------------
