@@ -22,14 +22,20 @@ void Grid::weight_average ()
    vector<double> Ixy (n_vertex, 0.0);
    vector<double> Iyz (n_vertex, 0.0);
    vector<double> Izx (n_vertex, 0.0);
+
+   vector<int> bdpoint (n_vertex, 0);
    
    double dx, dy, dz;
+
+   // Mark points which are on boundary
+   for(unsigned int i=0; i<n_face; ++i)
+      if(face[i].type != -1)
+         for(unsigned int j=0; j<3; ++j)
+            bdpoint[face[i].vertex[j]] = 1;
    
    // Compute matrix entries and rhs
    for (unsigned int i=0; i< n_cell ; i++)
    {  
-     
-      
       for (unsigned int j=0; j<4 ; j++)
       {     
          v =  cell[i].vertex[j];
@@ -48,24 +54,28 @@ void Grid::weight_average ()
          Iyz[v] += dy * dz;
          Izx[v] += dz * dx;
       }
-      
    }
-   
    
    // Solve matrix problem
    double Det, lambda_x, lambda_y, lambda_z;
    for (unsigned int i=0; i< n_vertex ; i++)
    {
-      
       Det = Ixx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) -  
             Ixy[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) +  
             Izx[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]);
       
-      if (Det == 0.0 )
+      // For boundary point, we dont bother with weights since we are 
+      // going to do arithmetic averaging
+      // WARNING: Smallness of determinant depends on scale
+      if (bdpoint[i]==1 && fabs(Det) < 1.0e-14)
+      {
+         Rx[i] = Ry[i] = Rz[i] = 0.0;
+      }  
+      else if (bdpoint[i]==0 && fabs(Det) < 1.0e-14)
       {
          cout << "weight_avg: no solution or many solution";
          abort();
-      }  
+      }
       else
       {
          lambda_x = -Rx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) + 
@@ -82,7 +92,6 @@ void Grid::weight_average ()
          Ry[i] = lambda_y / Det;
          Rz[i] = lambda_z / Det;
       }
-      
    }
    
    // For boundary vertices, we do arithmetic averaging

@@ -325,8 +325,9 @@ void FiniteVolume::reconstruct_limitedF
       // Only left state is present
 
       PrimVar dFV = face_avg - primitive_vertex[vl];
+      PrimVar dFC = face_avg - primitive[cl];
       PrimVar dCV = primitive[cl] - primitive_vertex[vl];
-      PrimVar fact = dFV * dCV;
+      PrimVar fact = dFC * dCV;
 
       // First order reconstruction
       state[0] = primitive[cl];
