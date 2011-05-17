@@ -1,17 +1,17 @@
 #include <vector>
-#include "parameter.h"
-#include "grid.h"
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include "parameter.h"
+#include "grid.h"
 
-using namespace std ;
+using namespace std;
 
 void Grid::weight_average ()
 {     
+   const double pw = 0.0;
+
    cout << "Computing averaging weights ...\n";
-   
-   unsigned int v ;
    
    vector<double> Rx  (n_vertex, 0.0);
    vector<double> Ry  (n_vertex, 0.0);
@@ -25,8 +25,6 @@ void Grid::weight_average ()
 
    vector<int> bdpoint (n_vertex, 0);
    
-   double dx, dy, dz;
-
    // Mark points which are on boundary
    for(unsigned int i=0; i<n_face; ++i)
       if(face[i].type != -1)
@@ -34,44 +32,40 @@ void Grid::weight_average ()
             bdpoint[face[i].vertex[j]] = 1;
    
    // Compute matrix entries and rhs
-   for (unsigned int i=0; i< n_cell ; i++)
-   {  
-      for (unsigned int j=0; j<4 ; j++)
+   for (unsigned int i=0; i< n_cell; i++)
+      for (unsigned int j=0; j<4; j++)
       {     
-         v =  cell[i].vertex[j];
+         unsigned int v =  cell[i].vertex[j];
          
-         dx = cell[i].centroid.x - vertex[v].x;
-         dy = cell[i].centroid.y - vertex[v].y;
-         dz = cell[i].centroid.z - vertex[v].z;
+         Vector dCV = cell[i].centroid - vertex[v];
+         dCV       /= pow(dCV.norm(), pw);
          
-         Rx[v] += dx;
-         Ry[v] += dy;
-         Rz[v] += dz;
-         Ixx[v] += dx * dx;
-         Iyy[v] += dy * dy;
-         Izz[v] += dz * dz;
-         Ixy[v] += dx * dy;
-         Iyz[v] += dy * dz;
-         Izx[v] += dz * dx;
+         Rx[v]  += dCV.x;
+         Ry[v]  += dCV.y;
+         Rz[v]  += dCV.z;
+         Ixx[v] += dCV.x * dCV.x;
+         Iyy[v] += dCV.y * dCV.y;
+         Izz[v] += dCV.z * dCV.z;
+         Ixy[v] += dCV.x * dCV.y;
+         Iyz[v] += dCV.y * dCV.z;
+         Izx[v] += dCV.z * dCV.x;
       }
-   }
    
    // Solve matrix problem
-   double Det, lambda_x, lambda_y, lambda_z;
-   for (unsigned int i=0; i< n_vertex ; i++)
+   for (unsigned int i=0; i< n_vertex; i++)
    {
-      Det = Ixx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) -  
-            Ixy[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) +  
-            Izx[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]);
+      double Det = Ixx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) -  
+                   Ixy[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) +  
+                   Izx[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]);
       
       // For boundary point, we dont bother with weights since we are 
       // going to do arithmetic averaging
       // WARNING: Smallness of determinant depends on scale
-      if (bdpoint[i]==1 && fabs(Det) < 1.0e-15)
+      if (bdpoint[i]==1 && fabs(Det) < 1.0e-14)
       {
          Rx[i] = Ry[i] = Rz[i] = 0.0;
       }  
-      else if (bdpoint[i]==0 && fabs(Det) < 1.0e-15)
+      else if (bdpoint[i]==0 && fabs(Det) < 1.0e-14)
       {
          cout << "weight_avg: no solution or many solution\n";
          cout << "vertex = " << i << "  Det = " << Det << endl;
@@ -79,15 +73,15 @@ void Grid::weight_average ()
       }
       else
       {
-         lambda_x = -Rx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) + 
-                     Ry[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) -  
-                     Rz[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]);
-         lambda_y =  Rx[i]*(Ixy[i]*Izz[i] - Izx[i]*Iyz[i]) - 
-                     Ry[i]*(Ixx[i]*Izz[i] - Izx[i]*Izx[i]) +  
-                     Rz[i]*(Ixx[i]*Iyz[i] - Ixy[i]*Izx[i]);
-         lambda_z = -Rx[i]*(Ixy[i]*Iyz[i] - Izx[i]*Iyy[i]) + 
-                     Ry[i]*(Ixx[i]*Iyz[i] - Izx[i]*Ixy[i]) -  
-                     Rz[i]*(Ixx[i]*Iyy[i] - Ixy[i]*Ixy[i]);
+         double lambda_x = -Rx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) + 
+                            Ry[i]*(Ixy[i]*Izz[i] - Iyz[i]*Izx[i]) -  
+                            Rz[i]*(Ixy[i]*Iyz[i] - Iyy[i]*Izx[i]);
+         double lambda_y =  Rx[i]*(Ixy[i]*Izz[i] - Izx[i]*Iyz[i]) - 
+                            Ry[i]*(Ixx[i]*Izz[i] - Izx[i]*Izx[i]) +  
+                            Rz[i]*(Ixx[i]*Iyz[i] - Ixy[i]*Izx[i]);
+         double lambda_z = -Rx[i]*(Ixy[i]*Iyz[i] - Izx[i]*Iyy[i]) + 
+                            Ry[i]*(Ixx[i]*Iyz[i] - Izx[i]*Ixy[i]) -  
+                            Rz[i]*(Ixx[i]*Iyy[i] - Ixy[i]*Ixy[i]);
          
          Rx[i] = lambda_x / Det;
          Ry[i] = lambda_y / Det;
@@ -100,42 +94,41 @@ void Grid::weight_average ()
       if ( face[i].type != -1 )
          for (unsigned int j=0; j<3; j++)
          {
-            v =  face[i].vertex[j] ;
+            unsigned int v = face[i].vertex[j];
             Rx[v] = Ry[v] = Rz[v] = 0.0;
          }          
    
    
-   // Compute weights
-   double min_weight, max_weight ;
-   min_weight =  1.0e20;
-   max_weight = -1.0e20;
+   // Compute normalized weights
    vector<double> sum_weight(n_vertex, 0.0);
    
    for (unsigned int i=0; i<n_cell; i++)
    {  
-      for (unsigned int j=0; j<4 ; j++)
+      for (unsigned int j=0; j<4; j++)
       {     
-         v =  cell[i].vertex[j] ;
-         cell[i].weight[j] = 1.0 + Rx[v] * (cell[i].centroid.x - vertex[v].x) + 
-                                   Ry[v] * (cell[i].centroid.y - vertex[v].y) + 
-                                   Rz[v] * (cell[i].centroid.z - vertex[v].z);
-         
-         min_weight = min ( min_weight, cell[i].weight[j] );
-         max_weight = max ( max_weight, cell[i].weight[j] );
+         unsigned int v = cell[i].vertex[j];
+         Vector dCV     = cell[i].centroid - vertex[v];
+         dCV           /= pow(dCV.norm(), pw);
+         cell[i].weight[j] = 1.0 + Rx[v] * dCV.x +
+                                   Ry[v] * dCV.y +
+                                   Rz[v] * dCV.z;
          
          sum_weight[v] += cell[i].weight[j];
       }
    }
    
    // Divide by sum of weights to normalize
-   for (unsigned int i=0; i< n_cell ; i++)
-   {  
+   // Also compute min/max weights
+   double min_weight =  1.0e20;
+   double max_weight = -1.0e20;
+   for (unsigned int i=0; i< n_cell; i++)
       for(unsigned int j=0; j<4; ++j)
+      {
          cell[i].weight[j] /= sum_weight[cell[i].vertex[j]];
-   }
-   
+         min_weight = min ( min_weight, cell[i].weight[j] );
+         max_weight = max ( max_weight, cell[i].weight[j] );
+      }
    
    cout << "  minimum vertex weight                  : "<< min_weight << endl;
    cout << "  maximum vertex weight                  : "<< max_weight << endl;
-   
 }
