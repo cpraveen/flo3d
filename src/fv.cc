@@ -57,7 +57,11 @@ void FiniteVolume::initialize ()
    {
       cout << "Setting initial condition to input values\n";
       for(unsigned int i=0; i<grid.n_cell; ++i)
+      {
          primitive[i] = param.initial_condition.value (grid.cell[i].centroid);
+         assert (primitive[i].density  > 0.0);
+         assert (primitive[i].pressure > 0.0);
+      }
    }
 }
 
