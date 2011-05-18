@@ -69,11 +69,10 @@ integrals
 output
 {
    format    vtk
-   frequency 200
-   vertex    false
+   frequency 100
+   vertex    true
    variables
    {
-      density velocity pressure mach
    }
    restart   false
 }
