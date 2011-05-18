@@ -73,8 +73,23 @@ Plane Surface(7) = {7};
 Surface Loop(1) = {1,2,3,4,5,6};
 Volume(1) = {1};
 
-Physical Volume(100000) = {1, 21};
+Symmetry{0,1,0,0}
+{
+  Duplicata{Surface{7}; Volume{1};}
+}
 
-Physical Surface(100001) = {1}; //Inflow plane
-Physical Surface(100002) = {6}; //Outflow plane
-Physical Surface(100003) = {2,3,4,5}; //side plane
+Symmetry{0,0,1,0}
+{
+  Duplicata{Surface{7}; Volume{1};}
+}
+
+Symmetry{0,1,0,0}
+{
+  Duplicata{Surface{49}; Volume{54};}
+}
+
+Physical Volume(100000) = {1, 22, 54, 86};
+
+Physical Surface(100001) = {1,23,55,87}; //Inflow plane
+Physical Surface(100002) = {6,48,80,112}; //Outflow plane
+Physical Surface(100003) = {4,38,3,65,33,97,70,102}; //side plane
