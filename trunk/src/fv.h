@@ -66,11 +66,9 @@ class FiniteVolume
       void reconstruct_limitedF(const unsigned int&      f,
                                 bool                     has_right,
                                 std::vector<PrimVar>&    state) const;
-
-      // Adding limited reconstruction
-      void reconstruct2(const unsigned int&      f,
-                        bool                     has_right,
-                        std::vector<PrimVar>&    state) const;
+      void reconstruct_jameson (const unsigned int&      f,
+                                bool                     has_right,
+                                std::vector<PrimVar>&    state) const;
 
       void initialize ();
       void interpolate_vertex ();

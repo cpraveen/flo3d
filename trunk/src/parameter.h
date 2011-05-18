@@ -31,8 +31,13 @@ class Parameter
       double final_time;
       double min_residue;
 
-      enum ReconstructScheme { first, second, secondF, limited, limitedF };
+      enum ReconstructScheme 
+      { 
+         first, second, secondF, limited, limitedF, jameson
+      };
+
       ReconstructScheme reconstruct_scheme;
+      double lim_power;
 
       Material material;
 
