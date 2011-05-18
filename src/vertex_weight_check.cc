@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <iostream>
 
-//#include "parameter.h"
 #include "grid.h"
 #include "writer.h"
 
