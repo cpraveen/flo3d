@@ -52,6 +52,7 @@ void Grid::weight_average ()
       }
    
    // Solve matrix problem
+   double min_det = 1.0e20;
    for (unsigned int i=0; i< n_vertex; i++)
    {
       double Det = Ixx[i]*(Iyy[i]*Izz[i] - Iyz[i]*Iyz[i]) -  
@@ -86,6 +87,8 @@ void Grid::weight_average ()
          Rx[i] = lambda_x / Det;
          Ry[i] = lambda_y / Det;
          Rz[i] = lambda_z / Det;
+
+         min_det = min(min_det, Det);
       }
    }
    
@@ -132,4 +135,5 @@ void Grid::weight_average ()
    
    cout << "  minimum vertex weight                  : "<< min_weight << endl;
    cout << "  maximum vertex weight                  : "<< max_weight << endl;
+   cout << "  minimum determinant                    : "<< min_det    << endl;
 }
