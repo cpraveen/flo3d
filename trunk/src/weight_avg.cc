@@ -112,6 +112,7 @@ void Grid::weight_average ()
          cell[i].weight[j] = 1.0 + Rx[v] * dCV.x +
                                    Ry[v] * dCV.y +
                                    Rz[v] * dCV.z;
+         cell[i].weight[j] /= pow(dCV.norm(), pw);
          
          sum_weight[v] += cell[i].weight[j];
       }

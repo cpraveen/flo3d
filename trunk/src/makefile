@@ -1,5 +1,5 @@
 # Possible compilers: g++, icpc
-CXX    = icpc
+CXX    = g++
 
 #
 # DONT CHANGE ANYTHING BELOW
