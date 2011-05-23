@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <sstream>
+#include <ctime>
 #include "parameter.h"
 #include "fv.h"
 #include "writer.h"
@@ -710,6 +711,13 @@ void FiniteVolume::run ()
    if(preprocess)
       return;
 
+   // Measure time taken for solution
+   time_t start_time, end_time;
+   start_time = time(NULL);
+
    // Solve the problem
    solve ();
+
+   end_time = time(NULL);
+   cout << "Time taken for computation = " << difftime(end_time, start_time)/3600.0 << " hours\n";
 }
