@@ -9,6 +9,7 @@
 #include "writer.h"
 
 extern bool restart;
+extern bool preprocess;
 
 using namespace std;
 
@@ -704,6 +705,10 @@ void FiniteVolume::run ()
 
    // Set initial condition
    initialize ();
+
+   // If -p flag given on command line, then we stop
+   if(preprocess)
+      return;
 
    // Solve the problem
    solve ();

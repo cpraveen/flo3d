@@ -5,6 +5,7 @@
 
 bool debug;
 bool restart;
+bool preprocess;
 
 using namespace std;
 
