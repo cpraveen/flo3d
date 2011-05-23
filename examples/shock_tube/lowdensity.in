@@ -1,0 +1,68 @@
+// See Toro: Test case 2
+// Solution has two rarefactions and density/pressure become very small 
+// in the middle of the computational domain
+
+grid
+{
+   type   gmsh 
+   file   shocktube.msh
+}
+
+numeric
+{
+   time_mode    unsteady
+   time_scheme  rk3
+   cfl          0.8
+   max_iter     1000000
+   final_time   0.15
+   min_residue  1.0e-6
+   reconstruct  limited
+}
+
+material
+{
+   gamma       1.4
+   gas_const   1.0
+   viscosity   constant  0.0
+   prandtl     1.0
+   model       euler
+   flux        kfvs
+}
+
+initial_condition
+{
+   density     1.0
+   xvelocity   (x<=0.5)*(-2.0) + (x>0.5)*(2.0)
+   yvelocity   0.0
+   zvelocity   0.0
+   pressure    0.4
+}
+
+boundary
+{
+   100001
+   100002
+   {
+      type       outlet
+   }
+
+   100003
+   {
+      type       slip
+   }
+}
+
+integrals
+{
+}
+
+output
+{
+   format    vtk
+   frequency 100
+   vertex    true
+   variables
+   {
+   }
+   restart   false
+}
