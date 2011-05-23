@@ -13,7 +13,7 @@ for j=1:ndata
    cl2(j) = data(j,4) / (qinf * area);
 end
 
-plot(iter, cd, iter, cl)
+plot(iter, cd, iter, cl1, iter, cl2)
 fprintf(1,'Cd = %e\n', cd(ndata));
 fprintf(1,'Cl = %e\n', cl1(ndata));
 fprintf(1,'Cl = %e\n', cl2(ndata));
