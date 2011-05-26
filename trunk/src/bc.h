@@ -31,6 +31,8 @@ class BoundaryCondition
                        std::vector<PrimVar> &state);
       void apply_noslip (const Face           &face,
                          std::vector<PrimVar> &state);
+      void apply_noslip (const Vector &vertex,
+                         PrimVar      &state);
       void apply_pressure (const Face           &face,
                            std::vector<PrimVar> &state);
       void apply_inlet (const Face           &face,
@@ -65,6 +67,7 @@ BoundaryCondition::BoundaryCondition (Material                 &material,
    name (bc_type),
    material(&material)
 {
+   // Set to none for safety purpose
    type = BC::none;
 
    // Slip bc, no state is required
@@ -182,6 +185,8 @@ BoundaryCondition::BoundaryCondition (Material                 &material,
 //------------------------------------------------------------------------------
 // Normal velocity is zero
 // Find state[1] so that average state has zero normal velocity
+// u[1] = u[0] - 2 (u[0] * n) n
+// Then u[1] * n = - u[0] * n
 //------------------------------------------------------------------------------
 inline
 void BoundaryCondition::apply_slip(const Face           &face,
@@ -215,6 +220,20 @@ void BoundaryCondition::apply_noslip(const Face           &face,
       state[0].pressure = material->gas_const * state[0].density * T;
       state[1].pressure = state[0].pressure;
    }
+}
+
+//------------------------------------------------------------------------------
+// Set velocity for noslip point
+// Used in vertex averaging 
+//------------------------------------------------------------------------------
+inline
+void BoundaryCondition::apply_noslip(const Vector &vertex,
+                                     PrimVar      &state)
+{
+   double point[3]  = {vertex.x, vertex.y, vertex.z};
+   state.velocity.x = xvelocity.Eval(point);
+   state.velocity.y = yvelocity.Eval(point);
+   state.velocity.z = zvelocity.Eval(point);
 }
 
 //------------------------------------------------------------------------------
