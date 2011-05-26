@@ -1,18 +1,18 @@
 // inner sphere radius is 1
-R = 20; //outer sphere radius
+R = 20;        //outer sphere radius
+lc = 2*Pi/200; // characteristic length
 
-lc = 2*Pi/200;
-Point(1) = {0.0,0.0,0.0,lc};
-Point(2) = {1,0.0,0.0,lc};
-Point(3) = {0,1,0.0,lc};
+Point(1) = {0.0,0.0,0.0};
+Point(2) = {1,0.0,0.0};
+Point(3) = {0,1,0.0};
 Circle(1) = {2,1,3};
-Point(4) = {-1,0,0.0,lc};
-Point(5) = {0,-1,0.0,lc};
+Point(4) = {-1,0,0.0};
+Point(5) = {0,-1,0.0};
 Circle(2) = {3,1,4};
 Circle(3) = {4,1,5};
 Circle(4) = {5,1,2};
-Point(6) = {0,0,-1,lc};
-Point(7) = {0,0,1,lc};
+Point(6) = {0,0,-1};
+Point(7) = {0,0,1};
 Circle(5) = {3,1,6};
 Circle(6) = {6,1,5};
 Circle(7) = {5,1,7};
@@ -50,17 +50,18 @@ Surface Loop(300) = {30,34,38,54,42,50,46,58};
 
 Volume(31) = {300,29};
 
-// On outer boundary
-Characteristic Length{8,53,45,15,30,10} = 5;
+// Attractor to sphere surface
+Field[1] = Attractor;
+Field[1].FacesList = {14,16,18,20,22,24,26,28};
 
-Field[1] = MathEval;
-Field[1].F = Sprintf("(x^2+y^2+z^2)*%g", lc);
+Field[2] = MathEval;
+Field[2].F = Sprintf("(1+F1^2)*%g", lc);
 
-Background Field = 1;
+Background Field = 2;
 
 // try also netgen:
 // Mesh.Algorithm3D = 4;
 
 Physical Volume(100000) = {31};
-Physical Surface(100001) = {14,20,22,18,16,24,26,28}; // sphere surface
-Physical Surface(100002) = {34,54,50,30,42,46,38,58}; // outer boundary
+Physical Surface(100001) = {14,16,18,20,22,24,26,28}; // sphere surface
+Physical Surface(100002) = {30,34,38,54,42,50,46,58}; // outer boundary
