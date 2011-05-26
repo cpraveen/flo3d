@@ -1,0 +1,77 @@
+grid
+{
+   type   gmsh 
+   file   pipe.msh
+}
+
+numeric
+{
+   time_mode    steady
+   time_scheme  rk3
+   cfl          0.4
+   max_iter     50000
+   final_time   100
+   min_residue  1.0e-6
+   reconstruct  second
+}
+
+material
+{
+   gamma       1.4
+   gas_const   287
+   viscosity   constant  1.12
+   prandtl     0.72
+   model       ns
+   flux        roe
+}
+
+initial_condition
+{
+   density     1.0
+   xvelocity   0.0
+   yvelocity   0.0
+   zvelocity   r := sqrt(x^2+y^2); 111.61*(1 - r^2)
+   pressure    1.05e5 + ((z+5.0)/10.0)*(1e5 - 1.05e5)
+}
+
+boundary
+{
+   100003 // inlet boundary
+   {
+      type       farfield
+      density    1.0
+      xvelocity  0.0
+      yvelocity  0.0
+      zvelocity  r := sqrt(x^2+y^2); 111.61*(1 - r^2)
+      pressure   1.05e5
+   }
+
+   100002 // outlet boundary
+   {
+      type       pressure
+      pressure   1.00e5
+   }
+
+   100001
+   {
+      type       noslip
+      xvelocity  0.0
+      yvelocity  0.0
+      zvelocity  0.0
+   }
+}
+
+integrals
+{
+}
+
+output
+{
+   format      vtk
+   frequency   1000
+   vertex      true
+   variables
+   {
+   }
+   restart     true
+}
