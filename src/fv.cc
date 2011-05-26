@@ -78,6 +78,22 @@ void FiniteVolume::interpolate_vertex ()
    for(unsigned int i=0; i<grid.n_cell; ++i)
       for(unsigned int j=0; j<4; ++j)
          primitive_vertex[grid.cell[i].vertex[j]] += primitive[i] * grid.cell[i].weight[j];
+
+   // For Navier-Stokes we correct boundary velocity for noslip boundary
+   if(param.material.model == Material::ns)
+   {
+      for(unsigned int i=0; i<grid.n_boundary_face; ++i)
+      {
+         BoundaryCondition& bc = param.boundary_condition[grid.face[i].type];
+         if(bc.type == BC::noslip)
+            for(unsigned int j=0; j<3; ++j)
+            {
+               const unsigned int v = grid.face[i].vertex[j];
+               bc.apply_noslip (grid.vertex[v],
+                                primitive_vertex[v]);
+            }
+      }
+   }
 }
 
 //------------------------------------------------------------------------------
@@ -712,12 +728,12 @@ void FiniteVolume::run ()
       return;
 
    // Measure time taken for solution
-   time_t start_time, end_time;
-   start_time = time(NULL);
+   // Store current time
+   time_t start_time = time(NULL);
 
    // Solve the problem
    solve ();
 
-   end_time = time(NULL);
+   time_t end_time = time(NULL);
    cout << "Time taken for computation = " << difftime(end_time, start_time)/3600.0 << " hours\n";
 }
