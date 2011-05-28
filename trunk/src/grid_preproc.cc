@@ -93,7 +93,7 @@ void Grid::compute_face_normal_and_area ()
       check_normal_l = face[i].normal * ( vertex[lvertex]- vertex[v0]);
 
       if ( check_normal_l > 0.0 )
-      	 face[i].normal *=  -1.0 ;
+          face[i].normal *=  -1.0 ;
 
       face[i].area = face[i].normal.norm();
   }
@@ -250,38 +250,38 @@ void Grid::make_faces ()
 //------------------------------------------------------------------------------
 void Grid::find_cell_faces ()
 {
-	cout << "Finding faces for each cell ..." << endl;
-	
-	unsigned int i, j;
-	int lcell, rcell;
-	
-	// First put all faces to -1
-	for(i=0; i<n_cell; ++i)
-	{
-		cell[i].face[0] = -1;
-		cell[i].face[1] = -1;
-		cell[i].face[2] = -1;
-		cell[i].face[3] = -1;
-	}
+   cout << "Finding faces for each cell ..." << endl;
    
-	for(i=0; i<n_face; ++i)
-	{
-		lcell = face[i].lcell;
-		j = 0;
-		while(cell[lcell].face[j] != -1)
-			++j;
-		cell[lcell].face[j] = i;
-				
+   unsigned int i, j;
+   int lcell, rcell;
+   
+   // First put all faces to -1
+   for(i=0; i<n_cell; ++i)
+   {
+      cell[i].face[0] = -1;
+      cell[i].face[1] = -1;
+      cell[i].face[2] = -1;
+      cell[i].face[3] = -1;
+   }
+   
+   for(i=0; i<n_face; ++i)
+   {
+      lcell = face[i].lcell;
+      j = 0;
+      while(cell[lcell].face[j] != -1)
+         ++j;
+      cell[lcell].face[j] = i;
+            
       rcell = face[i].rcell;
-		if(rcell != -1)
-		{ 
-			j = 0;
-			while(cell[rcell].face[j] != -1)
-				++j;
-			cell[rcell].face[j] = i;
-		}
+      if(rcell != -1)
+      { 
+         j = 0;
+         while(cell[rcell].face[j] != -1)
+            ++j;
+         cell[rcell].face[j] = i;
+      }
     }
-	
+   
 }
 
 //------------------------------------------------------------------------------
@@ -309,98 +309,98 @@ void Grid::find_cell_neighbour( const unsigned int& face_no,
 //------------------------------------------------------------------------------
 void Grid::renumber_cell()
 {  
-	int i, j, current_cell, old_cell, k;
-	int neighbour =-1;
-	vector<Cell> renumbering;
-	vector< unsigned int > new_num, old_num;
-	// new_num vector says directly the value of renumbering tag for a old cell number
-	// old_num vector says what is the value of old cell number for a given renumbering tag
-	// renumbering cell vector is a dummy vector to reshuffle all old cell according to new numbering 
-	new_num.resize(n_cell,0);
-	old_num.resize(n_cell,0);
-	renumbering.resize(n_cell);
-	
-	// Write initial cell numbering to file
-	if(debug)
-	{
-		ofstream out("number0.dat");
-		
-		for(i=0; i<n_cell; ++i)
-		{ 
-			out << i << " " << i << endl;
-			for(j=0; j<4; ++j)
-			{    
-				find_cell_neighbour (cell[i].face[j], i, neighbour);
-				if (neighbour != -1)
-					out << i << " " << neighbour << endl;
-			}
-		}
-		out.close();
-	}
-	
-	k=1; // k is the renumbering tag according to the algorithm
-	for(i=0; i<n_cell; ++i)
-	{ 
-		j = 0;
-		current_cell = old_num[i] ;
-		while(cell[current_cell].face[j] != -1 && j <= 3)
-		{     
-			find_cell_neighbour (cell[current_cell].face[j], current_cell, neighbour);
-			old_cell = neighbour;
-			if (old_cell != -1)
-			{
-				if (new_num[old_cell] == 0 && old_cell != 0)
-				{
-					old_num[k] = old_cell;
-					new_num[old_cell] = k;
-					++k;
-				}
-			}
-			++j;
-		}
-	}
-	
-	// here coping old cells according to new numbers
-	for(i=0; i<n_cell; ++i)
-	{
-		old_cell = old_num[i];
-		renumbering[i] = cell[old_cell];
-	}
+   int i, j, current_cell, old_cell, k;
+   int neighbour =-1;
+   vector<Cell> renumbering;
+   vector< unsigned int > new_num, old_num;
+   // new_num vector says directly the value of renumbering tag for a old cell number
+   // old_num vector says what is the value of old cell number for a given renumbering tag
+   // renumbering cell vector is a dummy vector to reshuffle all old cell according to new numbering 
+   new_num.resize(n_cell,0);
+   old_num.resize(n_cell,0);
+   renumbering.resize(n_cell);
    
-	// shifting all renumbered values back to cell
-	for(i=0; i<n_cell; ++i)
-	{
-		cell[i] = renumbering[i];
-	}
-	
-	// changed cell numbers in faces left and right part
-	int lcell, rcell;
-	for(i=0; i<n_face; ++i)
-	{
-		lcell = face[i].lcell ;
-		rcell = face[i].rcell ;
-		face[i].lcell = new_num[lcell];
-		if(rcell != -1)
-			face[i].rcell = new_num[rcell];
-	}         
-	
-	// Save new cell numbering to file
-	if(debug)
-	{
-		ofstream out("number1.dat");
-		for(i=0; i<n_cell; ++i)
-		{
-			out << i << " " << i << endl;
-			for(j=0; j<4; ++j)
-			{    
-				find_cell_neighbour (cell[i].face[j], i, neighbour);
-				if (neighbour != -1)
-					out << i << " " << neighbour << endl;
-			}
-			
-		}
-		out.close();
-	}
+   // Write initial cell numbering to file
+   if(debug)
+   {
+      ofstream out("number0.dat");
+      
+      for(i=0; i<n_cell; ++i)
+      { 
+         out << i << " " << i << endl;
+         for(j=0; j<4; ++j)
+         {    
+            find_cell_neighbour (cell[i].face[j], i, neighbour);
+            if (neighbour != -1)
+               out << i << " " << neighbour << endl;
+         }
+      }
+      out.close();
+   }
+   
+   k=1; // k is the renumbering tag according to the algorithm
+   for(i=0; i<n_cell; ++i)
+   { 
+      j = 0;
+      current_cell = old_num[i] ;
+      while(cell[current_cell].face[j] != -1 && j <= 3)
+      {     
+         find_cell_neighbour (cell[current_cell].face[j], current_cell, neighbour);
+         old_cell = neighbour;
+         if (old_cell != -1)
+         {
+            if (new_num[old_cell] == 0 && old_cell != 0)
+            {
+               old_num[k] = old_cell;
+               new_num[old_cell] = k;
+               ++k;
+            }
+         }
+         ++j;
+      }
+   }
+   
+   // here coping old cells according to new numbers
+   for(i=0; i<n_cell; ++i)
+   {
+      old_cell = old_num[i];
+      renumbering[i] = cell[old_cell];
+   }
+   
+   // shifting all renumbered values back to cell
+   for(i=0; i<n_cell; ++i)
+   {
+      cell[i] = renumbering[i];
+   }
+   
+   // changed cell numbers in faces left and right part
+   int lcell, rcell;
+   for(i=0; i<n_face; ++i)
+   {
+      lcell = face[i].lcell ;
+      rcell = face[i].rcell ;
+      face[i].lcell = new_num[lcell];
+      if(rcell != -1)
+         face[i].rcell = new_num[rcell];
+   }         
+   
+   // Save new cell numbering to file
+   if(debug)
+   {
+      ofstream out("number1.dat");
+      for(i=0; i<n_cell; ++i)
+      {
+         out << i << " " << i << endl;
+         for(j=0; j<4; ++j)
+         {    
+            find_cell_neighbour (cell[i].face[j], i, neighbour);
+            if (neighbour != -1)
+               out << i << " " << neighbour << endl;
+         }
+         
+      }
+      out.close();
+   }
 }   
 
 
