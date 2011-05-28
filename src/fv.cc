@@ -261,6 +261,14 @@ void FiniteVolume::compute_residual ()
                Vector unit_normal = grid.face[i].normal / grid.face[i].area;
                dTf -= unit_normal * (dTf * unit_normal);
             }
+            else if(bc.type == BC::slip) // mirror boundary
+            {
+               Vector unit_normal = grid.face[i].normal / grid.face[i].area;
+               dUf -= unit_normal * (dUf * unit_normal);
+               dVf -= unit_normal * (dVf * unit_normal);
+               dWf -= unit_normal * (dWf * unit_normal);
+               dTf -= unit_normal * (dTf * unit_normal);
+            }
          }
          else
          {
