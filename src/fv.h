@@ -80,6 +80,7 @@ class FiniteVolume
       void log_messages (const unsigned int iter);
       void update_solution (const unsigned int r);
       void solve ();
+      void compute_bounds () const;
       void output (const unsigned int iter);
       void output_restart ();
       void lusgs ();
