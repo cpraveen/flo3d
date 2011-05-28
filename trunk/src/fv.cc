@@ -681,6 +681,43 @@ void FiniteVolume::output_restart ()
 }
 
 //------------------------------------------------------------------------------
+// Find minimum and maximum values in the solution
+//------------------------------------------------------------------------------
+void FiniteVolume::compute_bounds () const
+{
+   PrimVar prim_min;
+   PrimVar prim_max;
+
+   prim_min.density    =  1.0e20;
+   prim_min.velocity.x =  1.0e20;
+   prim_min.velocity.y =  1.0e20;
+   prim_min.velocity.z =  1.0e20;
+   prim_min.pressure   =  1.0e20;
+
+   prim_max.density    = -1.0e20;
+   prim_max.velocity.x = -1.0e20;
+   prim_max.velocity.y = -1.0e20;
+   prim_max.velocity.z = -1.0e20;
+   prim_max.pressure   = -1.0e20;
+
+   for(unsigned int i=0; i<grid.n_cell; ++i)
+   {
+      prim_min.density    = min(prim_min.density,    primitive[i].density);
+      prim_min.velocity.x = min(prim_min.velocity.x, primitive[i].velocity.x);
+      prim_min.velocity.y = min(prim_min.velocity.y, primitive[i].velocity.y);
+      prim_min.velocity.z = min(prim_min.velocity.z, primitive[i].velocity.z);
+      prim_min.pressure   = min(prim_min.pressure  , primitive[i].pressure  );
+
+      prim_max.density    = max(prim_max.density,    primitive[i].density);
+      prim_max.velocity.x = max(prim_max.velocity.x, primitive[i].velocity.x);
+      prim_max.velocity.y = max(prim_max.velocity.y, primitive[i].velocity.y);
+      prim_max.velocity.z = max(prim_max.velocity.z, primitive[i].velocity.z);
+      prim_max.pressure   = max(prim_max.pressure  , primitive[i].pressure  );
+   }
+
+}
+
+//------------------------------------------------------------------------------
 // Perform time marching iterations
 //------------------------------------------------------------------------------
 void FiniteVolume::solve ()
