@@ -239,6 +239,12 @@ void BoundaryCondition::apply_noslip(const Vector &vertex,
    state.velocity.x = xvelocity.Eval(point);
    state.velocity.y = yvelocity.Eval(point);
    state.velocity.z = zvelocity.Eval(point);
+
+   if(!adiabatic)
+   {
+      double T = temperature.Eval(point);
+      state.pressure = material->gas_const * state.density * T;
+   }
 }
 
 //------------------------------------------------------------------------------
