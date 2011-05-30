@@ -6,6 +6,7 @@
 extern bool debug;
 extern bool restart;
 extern bool preprocess;
+extern bool bounds;
 
 using namespace std;
 
@@ -21,14 +22,11 @@ void process_command_line (int   argc,
    if(argc < 3)
       show_options ();
 
-   // By default, debug is off
-   debug = false;
-
-   // By default, restart is off
-   restart = false;
-
-   // By default, preprocess is off
+   // By default, all are off
+   debug      = false;
+   restart    = false;
    preprocess = false;
+   bounds     = false;
 
    int i = 1;
    bool found_input_file = false;
@@ -46,6 +44,10 @@ void process_command_line (int   argc,
       else if(strcmp(argv[i],"-p")==0)
       {
          preprocess = true;
+      }
+      else if(strcmp(argv[i],"-b")==0)
+      {
+         bounds = true;
       }
       else if(strcmp(argv[i],"-i")==0)
       {
@@ -77,5 +79,6 @@ void show_options ()
    cout << "   -d            Enable debug mode (optional)\n";
    cout << "   -r            Read restart file for initial condition (optional)\n";
    cout << "   -p            Do everything but do not solve (optional)\n";
+   cout << "   -b            Compute min/max range of solution (optional)\n";
    abort ();
 }

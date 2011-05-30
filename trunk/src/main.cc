@@ -6,6 +6,7 @@
 bool debug;
 bool restart;
 bool preprocess;
+bool bounds;
 
 using namespace std;
 
