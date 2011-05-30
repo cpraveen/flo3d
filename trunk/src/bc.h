@@ -27,6 +27,8 @@ class BoundaryCondition
                          std::vector<std::string> &function);
       void apply (const Face            &face,
                   std::vector<PrimVar> &state);
+      void apply (const Vector  &vertex,
+                  PrimVar       &state);
       void apply_slip (const Face           &face,
                        std::vector<PrimVar> &state);
       void apply_noslip (const Face           &face,
@@ -35,8 +37,12 @@ class BoundaryCondition
                          PrimVar      &state);
       void apply_pressure (const Face           &face,
                            std::vector<PrimVar> &state);
+      void apply_pressure (const Vector &vertex,
+                           PrimVar      &state);
       void apply_inlet (const Face           &face,
                         std::vector<PrimVar> &state);
+      void apply_inlet (const Vector  &vertex,
+                        PrimVar       &state);
       void apply_outlet (const Face           &face,
                          std::vector<PrimVar> &state);
       void apply_farfield (const Face           &face,
@@ -217,8 +223,7 @@ void BoundaryCondition::apply_noslip(const Face           &face,
    else
    {
       double T = temperature.Eval(point);
-      state[0].pressure = material->gas_const * state[0].density * T;
-      state[1].pressure = state[0].pressure;
+      state[1].pressure = material->gas_const * state[1].density * T;
    }
 }
 
@@ -244,13 +249,27 @@ void BoundaryCondition::apply_pressure (const Face           &face,
                                         std::vector<PrimVar> &state)
 {
    double point[3] = {face.centroid.x, face.centroid.y, face.centroid.z};
-   state[0].pressure  = pressure.Eval(point);
 
    state[1] = state[0];
+   state[1].pressure  = pressure.Eval(point);
+}
+
+//------------------------------------------------------------------------------
+// Reset pressure value. Other states remain same
+// Used in vertex averaging 
+//------------------------------------------------------------------------------
+inline
+void BoundaryCondition::apply_pressure (const Vector  &vertex,
+                                        PrimVar       &state)
+{
+   double point[3]  = {vertex.x, vertex.y, vertex.z};
+   state.pressure  = pressure.Eval(point);
 }
 
 //------------------------------------------------------------------------------
 // At inlet all values are specified
+// Both states are set to inlet values
+// e.g., supersonic inlet
 //------------------------------------------------------------------------------
 inline
 void BoundaryCondition::apply_inlet (const Face           &face,
@@ -264,6 +283,22 @@ void BoundaryCondition::apply_inlet (const Face           &face,
    state[1].pressure   = pressure.Eval(point);
 
    state[0] = state[1];
+}
+
+//------------------------------------------------------------------------------
+// At inlet all values are specified
+// Used in vertex averaging 
+//------------------------------------------------------------------------------
+inline
+void BoundaryCondition::apply_inlet (const Vector &vertex,
+                                     PrimVar      &state)
+{
+   double point[3]  = {vertex.x, vertex.y, vertex.z};
+   state.density    = density.Eval(point);
+   state.velocity.x = xvelocity.Eval(point);
+   state.velocity.y = yvelocity.Eval(point);
+   state.velocity.z = zvelocity.Eval(point);
+   state.pressure   = pressure.Eval(point);
 }
 
 //------------------------------------------------------------------------------
@@ -322,6 +357,47 @@ void BoundaryCondition::apply(const Face           &face,
 
       case BC::farfield:
          apply_farfield (face, state);
+         break;
+
+      default:
+         std::cout << "BoundaryCondition::apply" << std::endl;
+         std::cout << "   Unknown boundary condition: " << name << std::endl;
+         abort ();
+   }
+}
+
+//------------------------------------------------------------------------------
+// Apply dirichlet boundary condition based on type
+// This is for boundary vertices
+//------------------------------------------------------------------------------
+inline
+void BoundaryCondition::apply(const Vector  &vertex,
+                              PrimVar       &state)
+{
+   switch(type)
+   {
+      // Nothing to do
+      case BC::slip:
+         break;
+
+      case BC::noslip:
+         apply_noslip (vertex, state);
+         break;
+
+      case BC::pressure:
+         apply_pressure (vertex, state);
+         break;
+
+      case BC::inlet:
+         apply_inlet (vertex, state);
+         break;
+
+      // Nothing to do
+      case BC::outlet:
+         break;
+
+      // Nothing to do
+      case BC::farfield:
          break;
 
       default:

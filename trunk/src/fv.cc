@@ -79,19 +79,19 @@ void FiniteVolume::interpolate_vertex ()
       for(unsigned int j=0; j<4; ++j)
          primitive_vertex[grid.cell[i].vertex[j]] += primitive[i] * grid.cell[i].weight[j];
 
-   // For Navier-Stokes we correct boundary velocity for noslip boundary
+   // For Navier-Stokes we correct boundary values with dirichlet BC
+   // At present, there are no dirichlet bc for inviscid flows
    if(param.material.model == Material::ns)
    {
       for(unsigned int i=0; i<grid.n_boundary_face; ++i)
       {
          BoundaryCondition& bc = param.boundary_condition[grid.face[i].type];
-         if(bc.type == BC::noslip)
-            for(unsigned int j=0; j<3; ++j)
-            {
-               const unsigned int v = grid.face[i].vertex[j];
-               bc.apply_noslip (grid.vertex[v],
-                                primitive_vertex[v]);
-            }
+         for(unsigned int j=0; j<3; ++j)
+         {
+            const unsigned int v = grid.face[i].vertex[j];
+            bc.apply (grid.vertex[v],
+                      primitive_vertex[v]);
+         }
       }
    }
 }
