@@ -11,6 +11,7 @@
 
 extern bool restart;
 extern bool preprocess;
+extern bool bounds;
 
 using namespace std;
 
@@ -628,9 +629,13 @@ void FiniteVolume::log_messages (const unsigned int iter)
            << scientific
            << setprecision (4) 
            << dt_global << "  " 
-           << elapsed_time 
+           << elapsed_time << "  "
+           << residual_norm_total
            << endl;
    }
+
+   if(bounds)
+      compute_bounds ();
 }
 
 //------------------------------------------------------------------------------
@@ -714,6 +719,22 @@ void FiniteVolume::compute_bounds () const
       prim_max.velocity.z = max(prim_max.velocity.z, primitive[i].velocity.z);
       prim_max.pressure   = max(prim_max.pressure  , primitive[i].pressure  );
    }
+
+   cout << "\t\t Density  :" 
+        << setw(15) << prim_min.density 
+        << setw(15) << prim_max.density << endl;
+   cout << "\t\t xVelocity:"
+        << setw(15) << prim_min.velocity.x 
+        << setw(15) << prim_max.velocity.x << endl;
+   cout << "\t\t yVelocity:"
+        << setw(15) << prim_min.velocity.y 
+        << setw(15) << prim_max.velocity.y << endl;
+   cout << "\t\t zVelocity:"
+        << setw(15) << prim_min.velocity.z 
+        << setw(15) << prim_max.velocity.z << endl;
+   cout << "\t\t Pressure :"
+        << setw(15) << prim_min.pressure 
+        << setw(15) << prim_max.pressure << endl;
 
 }
 
