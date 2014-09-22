@@ -1,7 +1,7 @@
 #include <cmath>
 #include "fv.h"
 
-#define LIMITER(r)  (2*(r)/(1+(r)*(r)))
+#define LIMITER(r)  ((r<2.0) ? 1.0 : (2/(r)))
 
 using namespace std;
 

@@ -304,6 +304,14 @@ void FiniteVolume::compute_residual ()
 //------------------------------------------------------------------------------
 void FiniteVolume::compute_dt ()
 {
+   if(param.time_mode == "unsteady" && param.cfl <= 0.0)
+   {
+      dt_global = param.time_step;
+      for(unsigned int i=0; i<grid.n_cell; ++i)
+         dt[i] = dt_global;
+      return;
+   }
+
    for(unsigned int i=0; i<grid.n_cell; ++i)
       dt[i] = 0.0;
 
@@ -657,11 +665,27 @@ void FiniteVolume::output (const unsigned int iter)
       writer.attach_cell_variables (param.write_variables);
    }
 
+   // Create file name with unique number: flo3d-######.vtk
    static int counter = 0;
    string filename = "flo3d";
    if(param.time_mode == "unsteady")
    {
       stringstream ss;
+      if(counter < 10)
+         ss << "00000";
+      else if(counter < 100)
+         ss << "0000";
+      else if(counter < 1000)
+         ss << "000";
+      else if(counter < 10000)
+         ss << "00";
+      else if(counter < 100000)
+         ss << "0";
+      else
+      {
+         cout << "output: Number of files too large\n";
+         abort ();
+      }
       ss << counter;
       filename += "-" + ss.str() + ".vtk";
       ++counter;

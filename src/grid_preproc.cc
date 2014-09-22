@@ -100,6 +100,35 @@ void Grid::compute_face_normal_and_area ()
 }
 
 //------------------------------------------------------------------------------
+// Compute face normals
+//------------------------------------------------------------------------------
+void Grid::compute_h ()
+{
+
+   h_min = 1.0e20;
+   h_max = 0.0;
+
+   for(unsigned int i=0; i<n_face; ++i)
+   {
+      unsigned int vl = face[i].lvertex;
+      unsigned int cl = face[i].lcell;
+      double hl = (cell[cl].centroid - vertex[vl]).norm();
+
+      h_min = min (h_min, hl);
+      h_max = max (h_max, hl);
+
+      if(face[i].type == -1)
+      {
+         unsigned int vr = face[i].rvertex;
+         unsigned int cr = face[i].rcell;
+         double hr = (cell[cr].centroid - vertex[vr]).norm();
+         h_min = min (h_min, hr);
+         h_max = max (h_max, hr);
+      }
+  }
+}
+
+//------------------------------------------------------------------------------
 // Add new_face to face list
 //------------------------------------------------------------------------------
 void Grid::add_face (const Face& new_face)
@@ -416,6 +445,7 @@ void Grid::preproc ()
    renumber_cell ();
    compute_cell_volume ();
    compute_face_normal_and_area ();
+   compute_h ();
    weight_average ();
    vertex_weight_check ();
 }
