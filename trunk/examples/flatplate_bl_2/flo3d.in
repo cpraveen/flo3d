@@ -38,7 +38,7 @@ boundary
 {
    100001
    {
-      type       inlet
+      type       farfield
       density    0.1
       xvelocity  86.797
       yvelocity  0.0
@@ -61,7 +61,8 @@ boundary
       pressure   8610.0
    }
 
-   100004
+   100004 // sides
+   100006 // inlet bottom portion
    {
       type       slip
    }

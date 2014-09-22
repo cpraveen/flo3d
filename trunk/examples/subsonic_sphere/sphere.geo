@@ -1,6 +1,7 @@
 // inner sphere radius is 1
 R = 20;        //outer sphere radius
-lc = 2*Pi/200; // characteristic length
+lc1 = 2*Pi/200; // characteristic length
+lc2 = 2*Pi*R/20; // characteristic length
 
 Point(1) = {0.0,0.0,0.0};
 Point(2) = {1,0.0,0.0};
@@ -55,7 +56,8 @@ Field[1] = Attractor;
 Field[1].FacesList = {14,16,18,20,22,24,26,28};
 
 Field[2] = MathEval;
-Field[2].F = Sprintf("(1+F1^2)*%g", lc);
+Field[2].F = Sprintf("(1-(F1/%g)^1.5)*%g + (F1/%g)^1.5*%g", R, lc1, R, lc2);
+//Field[2].F = Sprintf("(1+F1^2)*%g", lc);
 
 Background Field = 2;
 
