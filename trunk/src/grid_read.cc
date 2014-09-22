@@ -40,6 +40,8 @@ void Grid::info ()
    cout << "  Number of bdry faces = " << n_boundary_face << endl;
    cout << "  Minimum cell volume  = " << min_cell_volume << endl;
    cout << "  Maximum cell volume  = " << max_cell_volume << endl;
+   cout << "  Minimum length       = " << h_min << endl;
+   cout << "  Maximum length       = " << h_max << endl;
 }
 
 //------------------------------------------------------------------------------

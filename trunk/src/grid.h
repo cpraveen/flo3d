@@ -26,6 +26,7 @@ class Grid
       unsigned int n_boundary_face;
       double min_cell_volume;
       double max_cell_volume;
+      double h_min, h_max;
       std::vector<Vector> vertex;
       std::vector<Cell>   cell;
       std::vector<Face>   face;
@@ -45,6 +46,7 @@ class Grid
       void compute_face_centroid ();
       void compute_cell_volume ();
       void compute_face_normal_and_area ();
+      void compute_h ();
       void add_face (const Face& new_face);
       void make_faces ();
       void weight_average () ;

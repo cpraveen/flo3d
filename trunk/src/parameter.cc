@@ -73,9 +73,15 @@ void Parameter::read_numeric (Reader &fin)
    if(time_scheme=="rk3")   n_rks = 3;
    if(time_scheme=="lusgs") n_rks = 1; 
 
+   fin.entry ("time_step");
+   fin >> time_step;
+   assert (time_step >= 0.0);
+
    fin.entry ("cfl");
    fin >> cfl;
-   assert (cfl > 0.0);
+   if(time_mode == "steady") assert (cfl > 0.0);
+   if(time_step <= 0.0) assert (cfl > 0.0);
+   if(cfl <= 0.0) assert (time_step > 0.0);
 
    fin.entry ("max_iter");
    fin >> max_iter;

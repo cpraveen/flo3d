@@ -27,6 +27,7 @@ class Parameter
       std::string time_scheme;
       unsigned int n_rks;
       unsigned int max_iter;
+      double time_step;
       double cfl;
       double final_time;
       double min_residue;
