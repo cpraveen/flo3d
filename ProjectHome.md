@@ -1,0 +1,1 @@
+flo3d is a 3-dimensional flow solver for inviscid and viscous fluids. It solves the Euler and Navier-Stokes equations on unstructured grids.
